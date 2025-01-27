@@ -1,0 +1,103 @@
+/* DiscussionForum.css */
+.discussion-forum {
+    padding: 20px;
+    background-color: #f9f9f9;
+    font-family: Arial, sans-serif;
+  }
+  
+  .forum-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 30px;
+  }
+  
+  .ask-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .question-input {
+    height: 100px;
+    resize: vertical;
+  }
+  
+  .image-picker {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .image-picker span {
+    margin-left: 8px;
+    color: #666;
+  }
+  
+  .submit-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .submit-btn:hover {
+    background-color: #45a049;
+  }
+  
+  .questions-list {
+    margin-top: 20px;
+  }
+  
+  .question-card {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .question-card h2 {
+    margin-bottom: 10px;
+  }
+  
+  .replies-container {
+    margin-top: 20px;
+  }
+  
+  .replies-container h3 {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .reply-card {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+  }
+  
+  .reply-input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    resize: vertical;
+  }
+  

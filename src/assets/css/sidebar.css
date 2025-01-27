@@ -1,0 +1,159 @@
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #ffffff;
+}
+
+.main-content-wrapper {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+}
+
+.sidebar {
+  width: 250px;
+  padding: 20px;
+  background-color: #ffffff;
+ 
+  
+  overflow: hidden;
+  height: 125vh;
+
+  position: -webkit-sticky; /* For Safari */
+  position: sticky;
+  top: 0;
+  animation: fadeInLeft 1.5s ease-in-out; /* Animation added */
+}
+
+.search-bar {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  animation: slideInDown 1s ease; /* Animation added */
+}
+
+.tags-list {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  animation: fadeIn 2s ease; /* Animation added */
+}
+
+.tags-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tags-list::-webkit-scrollbar-thumb {
+  background-color: #000000;
+  border-radius: 4px;
+}
+
+.tags-list::-webkit-scrollbar-thumb:hover {
+  background-color: #000000;
+}
+
+.tag-item {
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  animation: fadeInUp 1s ease; /* Animation added */
+}
+
+.tag-item:hover {
+  background-color: #b6b6b6;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  animation: fadeInRight 1.5s ease-in-out; /* Animation added */
+}
+
+/* Keyframes for animations */
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 80%;
+    height: 100vh; /* Ensure the sidebar spreads to the whole screen height */
+    position: fixed; /* Make it sticky */
+    top: 0;
+    left: 0;
+    z-index: 1000; /* Ensure the sidebar is above all content */
+    margin: 0; /* Remove margin */
+    border-radius: 0; /* Remove border-radius */
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: 10px;
+  }
+
+  .icon {
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+}
