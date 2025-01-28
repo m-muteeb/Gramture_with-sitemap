@@ -2,7 +2,7 @@ import React from 'react';
 import { Row, Col, Image } from 'antd';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import myImage from '../assets/images/owner.jpg';
-import { FaFacebook, FaTwitter, FaLinkedin, FaInstagram } from 'react-icons/fa';
+import { FaFacebook, FaTwitter, FaYoutube, FaInstagram } from 'react-icons/fa';
 
 import img from '../assets/images/about.jpg'; // Your logo image
 
@@ -82,19 +82,41 @@ const About = () => {
             </p>
             {/* Social Media Icons */}
             <div className="social-icons text-center">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-                <FaFacebook size={30} className="social-icon" style={{ color: '#3b5998' }} />
-              </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-                <FaTwitter size={30} className="social-icon" style={{ color: '#00acee' }} />
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
-                <FaLinkedin size={30} className="social-icon" style={{ color: '#0e76a8' }} />
-              </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-                <FaInstagram size={30} className="social-icon" style={{ color: '#e4405f' }} />
-              </a>
-            </div>
+              <a
+                 href="https://www.facebook.com/Gramture"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="social-icon facebook"
+               >
+                 <FaFacebook size={24} />
+               </a>
+               <a
+                 href="https://twitter.com/Gramture"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="social-icon twitter"
+               >
+                 <FaTwitter size={24} />
+               </a>
+               <a
+                 href="https://www.instagram.com/gramture/"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="social-icon instagram"
+               >
+                 <FaInstagram size={24} />
+               </a>
+               
+               <a
+                 href="https://www.youtube.com/@gramture"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="social-icon youtube"
+               >
+                 <FaYoutube size={24} />
+               </a>
+               
+             </div>
           </div>
         </Col>
 

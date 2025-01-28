@@ -7,7 +7,7 @@ import { MdExpandMore, MdExpandLess } from 'react-icons/md';
 
 import '../assets/css/sidebar.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { fireStore } from '../firebase/firebase'; // Ensure this path points to your Firebase configuration
 
 const Sidebar = () => {
@@ -33,11 +33,14 @@ const Sidebar = () => {
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        const querySnapshot = await getDocs(collection(fireStore, 'topics'));
+        // Create a query to order the data by timestamp in ascending order
+        const q = query(collection(fireStore, 'topics'), orderBy('timestamp', 'asc'));
+
+        const querySnapshot = await getDocs(q);
         const data = {};
 
         querySnapshot.forEach((doc) => {
-          const { class: className, category, subCategory } = doc.data();
+          const { class: className, category, subCategory, timestamp } = doc.data();
           if (!data[className]) {
             data[className] = {};
           }

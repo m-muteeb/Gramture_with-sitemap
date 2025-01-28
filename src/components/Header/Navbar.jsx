@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Collapse } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { fireStore } from "../../firebase/firebase"; // Adjust path as needed
 
 const Navbar = () => {
@@ -28,12 +28,14 @@ const Navbar = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const querySnapshot = await getDocs(collection(fireStore, "topics"));
+        // Create a query to order the data by timestamp in ascending order
+        const q = query(collection(fireStore, "topics"), orderBy("timestamp", "asc"));
 
+        const querySnapshot = await getDocs(q);
         const data = {};
 
         querySnapshot.forEach((doc) => {
-          const { class: className, category, subCategory } = doc.data();
+          const { class: className, category, subCategory, timestamp } = doc.data();
 
           // Skip classes that should not be included
           if (["Class 9", "Class 10", "Class 11", "Class 12"].includes(className)) {

@@ -68,7 +68,7 @@ const Topbar = () => {
         <div className="topbar-links">
           <Link to="/" className="topbar-link">Home</Link>
           <Link to="/about" className="topbar-link">About Us</Link>
-          <Link to="/results" className="topbar-link">Results</Link>
+          <Link to="/discussion_forum" className="topbar-link">Discussion Fourm</Link>
         </div>
 
         {/* Right: Search Icon */}

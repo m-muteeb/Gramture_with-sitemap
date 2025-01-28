@@ -23,7 +23,7 @@ const Footer = () => {
               <ul className="footer-nav list-unstyled d-flex justify-content-center gap-3">
                 <li><a href="/" className="text-light text-decoration-none">Home</a></li>
                 <li><a href="/about" className="text-light text-decoration-none">About us</a></li>
-                <li><a href="/results" className="text-light text-decoration-none">Results</a></li>
+                <li><a href="/discussion_forum" className="text-light text-decoration-none">Discussion Fourm</a></li>
                 
                 
               </ul>
@@ -39,7 +39,7 @@ const Footer = () => {
             {/* Social Icons */}
             <div className="social-icons mt-3">
   <a
-    href="https://www.facebook.com"
+    href="https://www.facebook.com/Gramture"
     target="_blank"
     rel="noopener noreferrer"
     className="social-icon facebook"
@@ -47,7 +47,7 @@ const Footer = () => {
     <FaFacebook size={24} />
   </a>
   <a
-    href="https://www.twitter.com"
+    href="https://twitter.com/Gramture"
     target="_blank"
     rel="noopener noreferrer"
     className="social-icon twitter"
@@ -55,45 +55,23 @@ const Footer = () => {
     <FaTwitter size={24} />
   </a>
   <a
-    href="https://www.instagram.com"
+    href="https://www.instagram.com/gramture/"
     target="_blank"
     rel="noopener noreferrer"
     className="social-icon instagram"
   >
     <FaInstagram size={24} />
   </a>
+  
   <a
-    href="https://www.linkedin.com"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="social-icon linkedin"
-  >
-    <FaLinkedin size={24} />
-  </a>
-  <a
-    href="https://www.youtube.com"
+    href="https://www.youtube.com/@gramture"
     target="_blank"
     rel="noopener noreferrer"
     className="social-icon youtube"
   >
     <FaYoutube size={24} />
   </a>
-  <a
-    href="https://www.github.com"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="social-icon github"
-  >
-    <FaGithub size={24} />
-  </a>
-  <a
-    href="https://www.pinterest.com"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="social-icon pinterest"
-  >
-    <FaPinterest size={24} />
-  </a>
+  
 </div>
 
           </Col>
