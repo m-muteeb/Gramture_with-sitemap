@@ -1,6 +1,6 @@
 import React from "react";
 import { Container, Row, Col } from "react-bootstrap";
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaYoutube, FaGithub, FaPinterest } from "react-icons/fa"; // Added new icons
+import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaYoutube, FaWhatsapp, FaPinterest } from "react-icons/fa"; // Added new icons
 import "../assets/css/footer.css"; // Custom CSS for additional styling
 import logo from "../assets/images/logo.png.png"; // Replace with your logo path
 
@@ -71,6 +71,15 @@ const Footer = () => {
   >
     <FaYoutube size={24} />
   </a>
+   <a
+                   href="https://wa.me/+923036660025"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="social-icon youtube"
+                   style={{color: '#25d366' }}
+                 >
+                   <FaWhatsapp size={24} />
+                 </a>
   
 </div>
 

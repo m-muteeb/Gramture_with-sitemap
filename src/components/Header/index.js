@@ -8,7 +8,8 @@ import Header from './MidNavbar';
 function Index() {
   return (
     
-      <><Topbar />
+      <>
+      <Topbar />
       <Header />
        <Navbar />
       </>

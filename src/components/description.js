@@ -112,39 +112,92 @@ export default function Description() {
   };
 
   const renderFile = (fileUrl) => {
+    // Check for Google Drive file URL
     if (fileUrl.includes('drive.google.com')) {
+      // Extract the file ID from the Google Drive URL
       const fileId = fileUrl.split('/d/')[1].split('/')[0];
+
+      // Provide a link to open the Google Drive file directly instead of embedding it
       return (
-        <iframe
-          src={`https://drive.google.com/file/d/${fileId}/preview`}
-          width="100%"
-          height="500px"
-          style={{ border: 'none' }}
-          allow="autoplay"
-        ></iframe>
+        <div style={{ width: '100%', height: 'auto', textAlign: 'center' }}>
+          <a 
+            href={`https://drive.google.com/file/d/${fileId}/view`} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#0073e6',
+              padding: '10px 20px',
+              color: '#fff',
+              textDecoration: 'none',
+              borderRadius: '5px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+            }}
+          >
+            Open Google Drive File
+          </a>
+        </div>
       );
     }
+
+    // Check for PDF files
     if (fileUrl.includes('.pdf')) {
       return (
-        <embed
-          src={fileUrl}
-          width="100%"
-          height="500px"
-          style={{ border: 'none' }}
-        />
+        <div style={{ width: '100%', textAlign: 'center' }}>
+          <a 
+            href={fileUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#ff5722',
+              padding: '10px 20px',
+              color: '#fff',
+              textDecoration: 'none',
+              borderRadius: '5px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+            }}
+          >
+            Open PDF File
+          </a>
+        </div>
       );
     }
+
+    // Check for image files
     if (fileUrl.includes('.jpg') || fileUrl.includes('.jpeg') || fileUrl.includes('.png')) {
-      return <img src={fileUrl} alt="File" style={{ width: '100%', height: 'auto', border: 'none' }} />;
+      return (
+        <div style={{ width: '100%', textAlign: 'center' }}>
+          <img
+            src={fileUrl}
+            alt="File"
+            style={{
+              width: '100%',
+              maxWidth: '500px',
+              height: 'auto',
+              border: 'none',
+              borderRadius: '5px',
+            }}
+          />
+        </div>
+      );
     }
-    return <p>No preview available for this file.</p>;
+
+    // Fallback message for unsupported file types
+    return (
+      <p style={{ textAlign: 'center', color: '#888', fontSize: '1.2rem' }}>
+        No preview available for this file.
+      </p>
+    );
   };
 
   return (
     <div className="description-container" style={{ padding: '20px' }}>
-      <h1 className="page-title" style={{ textAlign: 'center', marginBottom: '20px', fontSize: '2.5rem', fontWeight: 'bold', color: '#000' }}>
+      <h3 className="page-title" style={{ textAlign: 'center', marginBottom: '20px', fontSize: '2.5rem', fontWeight: 'bold', color: '#000' }}>
         {subCategory}
-      </h1>
+      </h3>
       {loading ? (
         <div className="spinner-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
           <div className="spinner" style={{ border: '4px solid #f3f3f3', borderTop: '4px solid #3498db', borderRadius: '50%', width: '50px', height: '50px', animation: 'spin 2s linear infinite' }}></div>
@@ -154,25 +207,22 @@ export default function Description() {
           {products.length > 0 ? (
             products.map((product, index) => (
               <article key={product.id} className="product-article" style={{ marginBottom: '30px' }}>
-                <h2 className="product-title" style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FF0000' }}>
-                  {index + 1}. {product.topic}
-                </h2>
-                <div className="product-description" style={{ marginBottom: '20px' }}>
-                  <ReactQuill
-                    value={product.description}
-                    readOnly={true}
-                    theme="snow"
-                    modules={{ toolbar: false }}
-                    style={{
-                      height: '300px',
-                      border: 'none',
-                      boxShadow: 'none',
-                      padding: '10px',
-                    }}
-                  />
-                </div>
-                {product.fileURL && renderFile(product.fileURL)}
-              </article>
+              <h4 className="product-title" style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FF0000' }}>
+                {index + 1}. {product.topic}
+              </h4>
+            
+              {/* Render HTML description */}
+              <div className="product-description" style={{ marginBottom: '20px' }}>
+                <div 
+                  style={{ fontSize: '1.2rem', lineHeight: '1.6' }} 
+                  dangerouslySetInnerHTML={{ __html: product.description }} 
+                />
+              </div>
+            
+              {/* Render file if exists */}
+              {product.fileURL && renderFile(product.fileURL)}
+            </article>
+            
             ))
           ) : (
             <p style={{ textAlign: 'center', color: '#888', fontSize: '1.2rem' }}>No products found for this category.</p>
@@ -285,3 +335,4 @@ export default function Description() {
     </div>
   );
 }
+

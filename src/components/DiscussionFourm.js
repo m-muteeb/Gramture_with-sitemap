@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaImage, FaReply } from 'react-icons/fa'; // Import React Icons
-import { message, Modal, Input, Button } from 'antd'; // Import Modal and Ant Design components
+import { message, Modal, Input, Button, Spin } from 'antd'; // Import Modal and Ant Design components
 import { app, fireStore, storage } from '../firebase/firebase'; // Import Firebase config
 import { collection, addDoc, getDocs, updateDoc, doc } from 'firebase/firestore'; 
 import '../assets/css/discussion-forum.css';
@@ -14,6 +14,8 @@ const DiscussionForum = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [currentQuestionId, setCurrentQuestionId] = useState(null); // Store the current question ID for replying
+  const [loading, setLoading] = useState(false); // For button loaders
+  const [loadingReply, setLoadingReply] = useState(false); // For reply button loader
 
   // Fetch all questions and replies on page load
   useEffect(() => {
@@ -32,6 +34,7 @@ const DiscussionForum = () => {
   // Submit a new question to Firebase Firestore
   const submitQuestion = async () => {
     if (question && name && email) {
+      setLoading(true);
       try {
         const newQuestion = {
           question,
@@ -52,6 +55,8 @@ const DiscussionForum = () => {
       } catch (e) {
         message.error('Error posting question');
         console.error(e);
+      } finally {
+        setLoading(false);
       }
     } else {
       message.error('Please fill in all fields.');
@@ -64,6 +69,8 @@ const DiscussionForum = () => {
       message.error('Please fill in all fields before submitting.');
       return;
     }
+
+    setLoadingReply(true);
 
     try {
       const newReply = {
@@ -93,6 +100,8 @@ const DiscussionForum = () => {
     } catch (e) {
       message.error('Error posting reply');
       console.error(e);
+    } finally {
+      setLoadingReply(false);
     }
   };
 
@@ -163,8 +172,8 @@ const DiscussionForum = () => {
           />
         </div>
 
-        <button className="submit-btn" onClick={submitQuestion}>
-          Post Question
+        <button className="submit-btn" onClick={submitQuestion} disabled={loading}>
+          {loading ? <Spin size="small" /> : 'Post Question'}
         </button>
       </div>
 
@@ -198,57 +207,13 @@ const DiscussionForum = () => {
                 </div>
               ))}
 
-<button
-  className="reply-btn"
-  onClick={() => openReplyModal(item.id)}
-  style={{
-    display: 'inline-flex',
-    alignItems: 'center',
-    padding: '10px 24px',
-    background: 'linear-gradient(145deg, #6a11cb, #2575fc)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '50px',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    outline: 'none',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-    gap: '8px',
-    marginTop: '10px',
-  }}
-  onMouseEnter={(e) => {
-    e.target.style.background = 'linear-gradient(145deg, #2575fc, #6a11cb)';
-    e.target.style.transform = 'translateY(-4px)';
-    e.target.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.3)';
-    const icon = e.target.querySelector('svg');
-    if (icon) {
-      icon.style.transform = 'scale(1.2)';
-    }
-  }}
-  onMouseLeave={(e) => {
-    e.target.style.background = 'linear-gradient(145deg, #6a11cb, #2575fc)';
-    e.target.style.transform = 'none';
-    e.target.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
-    const icon = e.target.querySelector('svg');
-    if (icon) {
-      icon.style.transform = 'none';
-    }
-  }}
-  onMouseDown={(e) => {
-    e.target.style.transform = 'translateY(2px)';
-    e.target.style.boxShadow = 'none';
-  }}
-  onMouseUp={(e) => {
-    e.target.style.transform = 'none';
-    e.target.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
-  }}
->
-  <FaReply size={20} />
-  Reply
-</button>
-
+              <button
+                className="reply-btn"
+                onClick={() => openReplyModal(item.id)}
+                disabled={loadingReply}
+              >
+                {loadingReply ? <Spin size="small" /> : <><FaReply size={20} /> Reply</>}
+              </button>
             </div>
           </div>
         ))}
@@ -291,7 +256,7 @@ const DiscussionForum = () => {
             style={{ display: 'none' }}
           />
         </div>
-        <Button type="primary" onClick={submitReply} style={{ marginTop: '10px' }}>
+        <Button type="primary" onClick={submitReply} style={{ marginTop: '10px' }} loading={loadingReply}>
           Submit Reply
         </Button>
       </Modal>
@@ -300,4 +265,4 @@ const DiscussionForum = () => {
 };
 
 export default DiscussionForum;
-
+ 

@@ -2,7 +2,7 @@ import React from 'react';
 import { Row, Col, Image } from 'antd';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import myImage from '../assets/images/owner.jpg';
-import { FaFacebook, FaTwitter, FaYoutube, FaInstagram } from 'react-icons/fa';
+import { FaFacebook, FaTwitter, FaYoutube, FaInstagram, FaWhatsapp } from 'react-icons/fa';
 
 import img from '../assets/images/about.jpg'; // Your logo image
 
@@ -115,6 +115,16 @@ const About = () => {
                >
                  <FaYoutube size={24} />
                </a>
+               <a
+                 href="https://wa.me/+923036660025"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="social-icon youtube"
+                 style={{color: '#25d366' }}
+               >
+                 <FaWhatsapp size={24} />
+               </a>
+              
                
              </div>
           </div>
