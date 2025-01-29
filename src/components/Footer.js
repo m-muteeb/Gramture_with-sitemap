@@ -13,8 +13,15 @@ const Footer = () => {
           <Col xs={12} md={4} className="text-center text-md-start mb-3 mb-md-0">
             <img src={logo} alt="Gramture Logo" className="footer-logo mb-2" />
             <p className="mb-0">
-              <small href= "https://muteeb-portfolio1.firebaseapp.com/" >Developed by <strong>Code Nexus</strong></small>
-            </p>
+  <small>
+    Developed by <strong>
+      <a href="https://muteeb-portfolio1.firebaseapp.com/" target="_blank" rel="noopener noreferrer">
+        Code Nexus
+      </a>
+    </strong>
+  </small>
+</p>
+
           </Col>
 
           {/* Navigation Links */}
