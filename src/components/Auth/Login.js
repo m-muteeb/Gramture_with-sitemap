@@ -20,7 +20,7 @@ const Login = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       setSuccessMessage('Login successful! Redirecting...');
-      setTimeout(() => navigate('/add-grammar'), 1000); // Redirect after 2 seconds
+      setTimeout(() => navigate('/Add Grammar'), 1000); // Redirect after 2 seconds
     } catch (error) {
       setErrorMessage(error.message);
     }

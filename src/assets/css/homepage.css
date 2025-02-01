@@ -51,7 +51,7 @@ a:hover {
 /* Add gradient animation to h1 */
 .header-content h1 {
   font-size: 48px; /* Bigger heading */
-  margin: 10px 0;
+  margin: 0; /* Removed margin-top */
   font-weight: bold;
   line-height: 1.3;
   background: linear-gradient(90deg, #e7e410, #fffb00);
@@ -62,7 +62,7 @@ a:hover {
 
 .header-content p {
   font-size: 18px; /* Bigger heading */
-  margin: 10px 0;
+  margin: 0; /* Removed margin-top */
   font-weight: bold;
   line-height: 1.3;
   background: linear-gradient(90deg, #7e7474, #ffffff);

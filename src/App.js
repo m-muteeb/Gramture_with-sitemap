@@ -28,6 +28,7 @@ import PrivateRoute from "./Routes/PrivateRoute";
 import { AuthProvider } from "../src/contexts/AuthContext";
 import DiscusionFourm from "../src/components/DiscussionFourm";
 import Results  from "../src/components/Results";
+import Disclaimer from "../src/components/Disclaimer";
 const App = () => {
   const location = useLocation(); // Get the current location
 
@@ -61,6 +62,7 @@ const App = () => {
             <Route path="/about" element={<About />} />
             <Route path="/discussion_forum" element={<DiscusionFourm />} />
             <Route path="/results" element={<Results />} />
+            <Route path ="/disclaimer" element={<Disclaimer />} />
             
             {/* <Route path="/register" element={<Register />} /> */}
 

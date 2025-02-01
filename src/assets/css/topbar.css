@@ -104,9 +104,46 @@
   }
 
   /* Hide Links on Small Screens */
+  /* Hide all topbar links initially */
+.topbar-links {
+  display: none;
+}
+
+/* Show only icons for Home and About Us on small screens */
+@media (max-width: 600px) {
   .topbar-links {
+    display: flex;
+    flex-direction: row; /* Display links in a row */
+    justify-content: center; /* Center the links */
+    width: 100%;
+  }
+
+  .topbar-link {
+    font-size: 0; /* Hide text by setting font size to 0 */
+    flex: none; /* Do not force links to take up equal space */
+    text-align: center; /* Center the text */
+    margin: 0 5px; /* Decrease the distance between the links */
+  }
+
+  /* Show only icons */
+  .topbar-link svg {
+    display: inline-block; /* Show icons */
+    font-size: 24px; /* Adjust icon size if needed */
+    margin-right: 0; /* Remove margin as text is hidden */
+  }
+
+  /* Show only Home and About Us links */
+  .topbar-link:nth-child(1), /* Home */
+  .topbar-link:nth-child(2)  /* About Us */ {
+    display: flex;
+  }
+
+  /* Hide other links */
+  .topbar-link:nth-child(n+3) {
     display: none;
   }
+}
+
 
   /* Logo and Search Icon in the same line */
   .topbar-logo {

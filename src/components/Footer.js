@@ -1,6 +1,7 @@
 import React from "react";
 import { Container, Row, Col } from "react-bootstrap";
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaYoutube, FaWhatsapp, FaPinterest } from "react-icons/fa"; // Added new icons
+import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaYoutube, FaWhatsapp, FaPinterest, FaGithub } from "react-icons/fa";
+
 import "../assets/css/footer.css"; // Custom CSS for additional styling
 import logo from "../assets/images/logo.png.png"; // Replace with your logo path
 
@@ -40,7 +41,9 @@ const Footer = () => {
           {/* Privacy Policy and Rights */}
           <Col xs={12} md={4} className="text-center text-md-center">
             <p className="mb-1">
-              <a href="/privacy-policy" className="text-light text-decoration-none">Privacy Policy</a>
+            <a href="/privacy-policy" className="text-light text-decoration-none">Privacy Policy</a> | 
+<a href="/disclaimer" className="text-light text-decoration-none"> Disclaimer</a>
+
             </p>
             <p className="mb-0"><small>© 2025 Gramture. All Rights Reserved.</small></p>
             {/* Social Icons */}
@@ -86,6 +89,26 @@ const Footer = () => {
                    style={{color: '#25d366' }}
                  >
                    <FaWhatsapp size={24} />
+                 </a>
+                 <a
+                   href="www.linkedin.com/in/habib-ahmad-khan-b75a6b9a"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="social-icon youtube"
+                   style={{color: '#0e76a8' }}
+
+                 >
+                   < FaLinkedin size={24} />
+                 </a>
+                 <a
+                   href="https://github.com/habibahmadakhan"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="social-icon youtube"
+                   style={{color: '#808080' }}
+
+                 >
+                   <FaGithub size={24} />
                  </a>
   
 </div>
