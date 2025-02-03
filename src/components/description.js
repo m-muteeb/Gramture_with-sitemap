@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import ReactQuill from 'react-quill';
 import { message } from 'antd';
 import { getDocs, collection, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { getDownloadURL, ref, listAll } from 'firebase/storage';
 import { fireStore, storage } from '../firebase/firebase';
-import 'react-quill/dist/quill.snow.css';
 import { FaReply } from 'react-icons/fa';  // Removed the like icon
+import  "../assets/css/description.css"; // Added CSS file
 
 export default function Description() {
   const { subCategory } = useParams();
@@ -61,7 +60,7 @@ export default function Description() {
 
   const fetchComments = async () => {
     try {
-      const commentsRef = collection(fireStore, 'comments', subCategory, 'topicComments'); // Fetch comments for this subCategory
+      const commentsRef = collection(fireStore, 'comments', subCategory, 'topicComments');
       const querySnapshot = await getDocs(commentsRef);
       const commentsList = querySnapshot.docs.map((doc) => doc.data());
       setComments(commentsList);
@@ -81,8 +80,8 @@ export default function Description() {
   const handleSubmitComment = async () => {
     try {
       const docRef = await addDoc(collection(fireStore, 'comments', subCategory, 'topicComments'), newComment);
-      setComments([...comments, { id: docRef.id, ...newComment }]); // Add new comment with doc ID
-      setNewComment({ name: '', email: '', comment: '' }); // Clear the form
+      setComments([...comments, { id: docRef.id, ...newComment }]);
+      setNewComment({ name: '', email: '', comment: '' });
       message.success('Comment added successfully!');
     } catch (error) {
       message.error('Failed to add comment.');
@@ -112,17 +111,13 @@ export default function Description() {
   };
 
   const renderFile = (fileUrl) => {
-    // Check for Google Drive file URL
     if (fileUrl.includes('drive.google.com')) {
-      // Extract the file ID from the Google Drive URL
       const fileId = fileUrl.split('/d/')[1].split('/')[0];
-
-      // Provide a link to open the Google Drive file directly instead of embedding it
       return (
         <div style={{ width: '100%', height: 'auto', textAlign: 'center' }}>
-          <a 
-            href={`https://drive.google.com/file/d/${fileId}/view`} 
-            target="_blank" 
+          <a
+            href={`https://drive.google.com/file/d/${fileId}/view`}
+            target="_blank"
             rel="noopener noreferrer"
             style={{
               display: 'inline-block',
@@ -141,13 +136,12 @@ export default function Description() {
       );
     }
 
-    // Check for PDF files
     if (fileUrl.includes('.pdf')) {
       return (
         <div style={{ width: '100%', textAlign: 'center' }}>
-          <a 
-            href={fileUrl} 
-            target="_blank" 
+          <a
+            href={fileUrl}
+            target="_blank"
             rel="noopener noreferrer"
             style={{
               display: 'inline-block',
@@ -166,7 +160,6 @@ export default function Description() {
       );
     }
 
-    // Check for image files
     if (fileUrl.includes('.jpg') || fileUrl.includes('.jpeg') || fileUrl.includes('.png')) {
       return (
         <div style={{ width: '100%', textAlign: 'center' }}>
@@ -175,17 +168,18 @@ export default function Description() {
             alt="File"
             style={{
               width: '100%',
-              maxWidth: '500px',
               height: 'auto',
+              maxWidth: '90%', // Make sure it's responsive and adapts to the screen size
               border: 'none',
               borderRadius: '5px',
+              objectFit: 'contain',
+              margin: '0 auto',
             }}
           />
         </div>
       );
     }
 
-    // Fallback message for unsupported file types
     return (
       <p style={{ textAlign: 'center', color: '#888', fontSize: '1.2rem' }}>
         No preview available for this file.
@@ -207,22 +201,16 @@ export default function Description() {
           {products.length > 0 ? (
             products.map((product, index) => (
               <article key={product.id} className="product-article" style={{ marginBottom: '30px' }}>
-              <h4 className="product-title" style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FF0000' }}>
-                {index + 1}. {product.topic}
-              </h4>
-            
-              {/* Render HTML description */}
-              <div className="product-description" style={{ marginBottom: '20px' }}>
-                <div 
-                  style={{ fontSize: '1.2rem', lineHeight: '1.6' }} 
-                  dangerouslySetInnerHTML={{ __html: product.description }} 
-                />
-              </div>
-            
-              {/* Render file if exists */}
-              {product.fileURL && renderFile(product.fileURL)}
-            </article>
-            
+                <h4 className="product-title" style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FF0000' }}>
+                  {index + 1}. {product.topic}
+                </h4>
+
+                <div className="product-description" style={{ marginBottom: '20px' }}>
+                  <div style={{ fontSize: '1.2rem', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: product.description }} />
+                </div>
+
+                {product.fileURL && renderFile(product.fileURL)}
+              </article>
             ))
           ) : (
             <p style={{ textAlign: 'center', color: '#888', fontSize: '1.2rem' }}>No products found for this category.</p>
@@ -335,4 +323,3 @@ export default function Description() {
     </div>
   );
 }
-

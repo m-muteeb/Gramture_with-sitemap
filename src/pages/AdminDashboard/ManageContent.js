@@ -48,7 +48,7 @@ const ManageProducts = () => {
 
   const handleEdit = (record) => {
     setEditingProduct(record);
-    setDescription(record.description || '');
+    setDescription(record.description || ''); // Load existing description with formatting
     form.setFieldsValue({
       topic: record.topic,
       class: record.class,
@@ -87,7 +87,7 @@ const ManageProducts = () => {
       const updatedValues = {
         ...values,
         date: values.date ? values.date.format('YYYY-MM-DD HH:mm:ss') : '',
-        description: description,
+        description: description, // Save rich-text HTML description
       };
 
       // Only add the fileURL field if there's a new file or existing file
@@ -199,7 +199,7 @@ const ManageProducts = () => {
           visible={isModalVisible}
           onCancel={handleModalClose}
           footer={null}
-          width={800}
+          width={1200}
         >
           <Form
             form={form}
@@ -210,16 +210,14 @@ const ManageProducts = () => {
             <Form.Item
               label="Topic"
               name="topic"
-              rules={[{ required: true, message: 'Please enter the topic!' }]}
-            >
+              rules={[{ required: true, message: 'Please enter the topic!' }]}>
               <Input placeholder="Enter topic" />
             </Form.Item>
 
             <Form.Item
               label="Class"
               name="class"
-              rules={[{ required: true, message: 'Please select the class!' }]}
-            >
+              rules={[{ required: true, message: 'Please select the class!' }]}>
               <Select placeholder="Select class">
                 <Select.Option value="10">10</Select.Option>
               </Select>
@@ -228,24 +226,21 @@ const ManageProducts = () => {
             <Form.Item
               label="Category"
               name="category"
-              rules={[{ required: true, message: 'Please enter the category!' }]}
-            >
+              rules={[{ required: true, message: 'Please enter the category!' }]}>
               <Input placeholder="Enter category" />
             </Form.Item>
 
             <Form.Item
               label="SubCategory"
               name="subCategory"
-              rules={[{ required: true, message: 'Please enter the subcategory!' }]}
-            >
+              rules={[{ required: true, message: 'Please enter the subcategory!' }]}>
               <Input placeholder="Enter subcategory" />
             </Form.Item>
 
             <Form.Item
               label="Date"
               name="date"
-              rules={[{ required: true, message: 'Please select the date!' }]}
-            >
+              rules={[{ required: true, message: 'Please select the date!' }]}>
               <DatePicker
                 showTime
                 format="YYYY-MM-DD HH:mm:ss"
@@ -261,14 +256,15 @@ const ManageProducts = () => {
                 modules={{
                   toolbar: [
                     [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    ['bold', 'italic', 'underline'],
+                    [{ size: [] }],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                    [{ 'color': [] }, { 'background': [] }], // dropdown with defaults from theme
                     [{ 'align': [] }],
-                    ['link'],
-                    [{ 'color': [] }, { 'background': [] }],
-                    ['blockquote'],
-                    ['image'],
-                    ['video'],
+                    ['link', 'image'],
+                    [{ 'direction': 'rtl' }], // Support for Right-to-Left languages
+                    [{ 'script': 'sub' }, { 'script': 'super' }], // Superscript/Subscript
+                    ['clean'] // Remove formatting button
                   ],
                 }}
                 style={{ height: '200px', marginBottom: '50px' }}
@@ -281,8 +277,7 @@ const ManageProducts = () => {
                 <a href={editingProduct.fileURL} target="_blank" rel="noopener noreferrer">
                   Current File
                 </a>
-              ) : 'No file uploaded'}
-            >
+              ) : 'No file uploaded'}>
               <Upload
                 fileList={fileList}
                 beforeUpload={(file) => {
@@ -309,8 +304,3 @@ const ManageProducts = () => {
 };
 
 export default ManageProducts;
-
-
-
-
-

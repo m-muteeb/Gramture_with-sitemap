@@ -16,6 +16,7 @@ const ElegantText = styled.h1`
   font-weight: bold;
   letter-spacing: 2px;
   animation: animateText 5s infinite ease-in-out;
+  z-index : 10000;
 
   @keyframes animateText {
     0% {

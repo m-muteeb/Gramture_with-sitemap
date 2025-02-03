@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { fireStore } from "../../firebase/firebase";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
-
+import { Link } from "react-router-dom"; // Import Link
 
 const Navbar = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -136,9 +136,9 @@ const Navbar = () => {
                             <ul className="list-unstyled ms-3 mt-2">
                               {categoryData.subCategories.map((subCategory, subIdx) => (
                                 <li key={subIdx}>
-                                  <a href={`/construction/${subCategory}`} className="text-dark text-decoration-none">
+                                  <Link to={`/description/${subCategory}`} className="text-dark text-decoration-none">
                                     {subCategory}
-                                  </a>
+                                  </Link>
                                 </li>
                               ))}
                             </ul>

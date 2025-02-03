@@ -152,7 +152,11 @@ const Topbar = () => {
         {/* Right: Search Icon and Notification Bell */}
         <div className="topbar-right">
           {/* Notification Bell */}
-          <Badge count={notificationCount} overflowCount={99} style={{ display: isDropdownOpen ? 'none' : 'block' }} >
+          <Badge 
+            count={notificationCount} 
+            overflowCount={99} 
+            style={{ display: isDropdownOpen ? 'none' : 'block' }} 
+          >
             <Dropdown
               overlay={notificationMenu}
               trigger={['click']}
