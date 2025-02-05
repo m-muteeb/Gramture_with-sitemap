@@ -124,7 +124,7 @@ const Topbar = () => {
   };
 
   return (
-    <div className="topbar">
+    <div className="topbar" style={{ zIndex: 15000 }}>
       <div className="topbar-content">
         {/* Left: Logo */}
         <div className="topbar-logo">

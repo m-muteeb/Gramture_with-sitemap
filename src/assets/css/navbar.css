@@ -81,3 +81,10 @@
   
   }
 }
+@media (min-width: 992px) {
+  .navbar-offset {
+    width: calc(100% - 250px);
+    margin-left: 250px;
+  }
+}
+

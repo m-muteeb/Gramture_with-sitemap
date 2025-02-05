@@ -8,7 +8,7 @@ import { FaReply } from 'react-icons/fa';  // Removed the like icon
 import  "../assets/css/description.css"; // Added CSS file
 
 export default function Description() {
-  const { subCategory } = useParams();
+  const { subCategory } = useParams(); // We're still using this to fetch data, but won't display it as the main heading
   const [products, setProducts] = useState([]);
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -114,7 +114,7 @@ export default function Description() {
     if (fileUrl.includes('drive.google.com')) {
       const fileId = fileUrl.split('/d/')[1].split('/')[0];
       return (
-        <div style={{ width: '100%', height: 'auto', textAlign: 'center' }}>
+        <div style={{ width: '100%', height: 'auto', textAlign: 'center'}}>
           <a
             href={`https://drive.google.com/file/d/${fileId}/view`}
             target="_blank"
@@ -167,10 +167,10 @@ export default function Description() {
             src={fileUrl}
             alt="File"
             style={{
-              width: '100%',
-              height: 'auto',
-              maxWidth: '90%', // Make sure it's responsive and adapts to the screen size
-              border: 'none',
+              width: '70%',
+              height: '50%',
+              maxWidth: '70%', // Make sure it's responsive and adapts to the screen size
+              border: '18px',
               borderRadius: '5px',
               objectFit: 'contain',
               margin: '0 auto',
@@ -187,34 +187,89 @@ export default function Description() {
     );
   };
 
+  // Share the URL or copy it to clipboard
+  const handleShare = () => {
+    // Check if 'window' and 'window.location' are available
+    if (typeof window !== 'undefined' && window.location) {
+      const url = window.location.href;
+  
+      // Check if the Web Share API is supported (for mobile devices)
+      if (navigator.share) {
+        navigator.share({
+          title: 'Check out this article!',
+          url,
+        }).catch((error) => {
+          console.error('Error sharing:', error);
+          // Fallback to clipboard if Web Share fails
+          copyLinkToClipboard(url);
+        });
+      } else {
+        // Fallback: Copy URL to clipboard
+        copyLinkToClipboard(url);
+      }
+    } else {
+      // Log an error message if the window or location is not available
+      message.error('Unable to get the current URL.');
+      console.error('window.location is not available.');
+    }
+  };
+  
+  // Function to copy the link to the clipboard
+  const copyLinkToClipboard = (url) => {
+    navigator.clipboard.writeText(url).then(() => {
+      message.success('Link copied to clipboard!');
+    }).catch((error) => {
+      message.error('Failed to copy the link.');
+      console.error(error);
+    });
+  };
+  
+  
+  
+  
   return (
-    <div className="description-container" style={{ padding: '20px' }}>
-      <h3 className="page-title" style={{ textAlign: 'center', marginBottom: '20px', fontSize: '2.5rem', fontWeight: 'bold', color: '#000' }}>
-        {subCategory}
-      </h3>
+    <div className="description-container" style={{ padding: '20px', marginTop: '45px' }}>
       {loading ? (
         <div className="spinner-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
           <div className="spinner" style={{ border: '4px solid #f3f3f3', borderTop: '4px solid #3498db', borderRadius: '50%', width: '50px', height: '50px', animation: 'spin 2s linear infinite' }}></div>
         </div>
       ) : (
         <>
-          {products.length > 0 ? (
-            products.map((product, index) => (
-              <article key={product.id} className="product-article" style={{ marginBottom: '30px' }}>
-                <h4 className="product-title" style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FF0000' }}>
-                  {index + 1}. {product.topic}
-                </h4>
+          {products.length > 0 && (
+            <>
+              {/* Show the Topic as the main heading */}
+              <h3 className="page-title" style={{ textAlign: 'center', marginBottom: '20px', fontSize: '2.5rem', fontWeight: 'bold', color: '#000' }}>
+                {products[0].topic} {/* Display the first product's topic */}
+              </h3>
 
-                <div className="product-description" style={{ marginBottom: '20px' }}>
-                  <div style={{ fontSize: '1.2rem', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: product.description }} />
-                </div>
+              {products.map((product, index) => (
+                <article key={product.id} className="product-article" style={{ marginBottom: '30px' }}>
+                  <div className="product-description" style={{ marginBottom: '20px' }}>
+                    <div style={{ fontSize: '1.2rem', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: product.description }} />
+                  </div>
 
-                {product.fileURL && renderFile(product.fileURL)}
-              </article>
-            ))
-          ) : (
-            <p style={{ textAlign: 'center', color: '#888', fontSize: '1.2rem' }}>No products found for this category.</p>
+                  {product.fileURL && renderFile(product.fileURL)}
+                </article>
+              ))}
+            </>
           )}
+
+<button
+              onClick={handleShare}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#FF0000',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+                borderRadius: '5px',
+                width: '100%',
+                fontSize: '16px',
+              }}
+            >
+              Share this Article
+            </button>
+
           <div className="comment-section" style={{ marginTop: '40px' }}>
             <h3 style={{ textAlign: 'center', fontSize: '2rem', fontWeight: 'bold', color: '#000' }}>Leave a Comment</h3>
             <div className="comment-form" style={{ marginBottom: '30px' }}>
@@ -256,6 +311,10 @@ export default function Description() {
                 Submit Comment
               </button>
             </div>
+
+            {/* Share button */}
+           
+
             {comments.length > 0 ? (
               comments.map((comment, index) => (
                 <div key={index} className="comment-item" style={{ marginBottom: '20px' }}>

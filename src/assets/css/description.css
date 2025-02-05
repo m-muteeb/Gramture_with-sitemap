@@ -1,6 +1,6 @@
 /* General image styling */
 .product-article img {
-    width: 100%;  /* The image takes up 100% of the container width */
+    width: 50%;  /* The image takes up 100% of the container width */
     height: auto;  /* Maintain the aspect ratio */
     max-width: 90%;  /* Restrict the image to 90% of the container width */
     border: none;
@@ -12,7 +12,7 @@
   /* Media Query for smaller screens */
   @media (max-width: 768px) {
     .product-article img {
-      max-width: 100%;  /* Ensure the image fits the container on smaller screens */
+      max-width: 50%;  /* Ensure the image fits the container on smaller screens */
     }
   }
   

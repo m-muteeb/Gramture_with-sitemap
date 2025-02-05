@@ -29,6 +29,9 @@ import { AuthProvider } from "../src/contexts/AuthContext";
 import DiscusionFourm from "../src/components/DiscussionFourm";
 import Results  from "../src/components/Results";
 import Disclaimer from "../src/components/Disclaimer";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
 const App = () => {
   const location = useLocation(); // Get the current location
 

@@ -8,7 +8,7 @@ import { MdExpandMore, MdExpandLess } from 'react-icons/md';
 import '../assets/css/sidebar.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { fireStore } from '../firebase/firebase'; // Ensure this path points to your Firebase configuration
+import { fireStore } from '../firebase/firebase';
 
 const Sidebar = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,7 +33,6 @@ const Sidebar = () => {
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        // Create a query to order the data by timestamp in ascending order
         const q = query(collection(fireStore, 'topics'), orderBy('timestamp', 'asc'));
 
         const querySnapshot = await getDocs(q);
@@ -92,11 +91,13 @@ const Sidebar = () => {
   return (
     <div className="homepage d-flex">
       {/* Sidebar */}
-      <div className={`sidebar bg-light ${isSidebarOpen ? 'd-block' : 'd-none'} d-lg-block`}>
+      <div className={`sidebar ${isSidebarOpen ? 'd-block' : 'd-none'} d-lg-block`}>
+        {/* Collapse Button for Small Screens */}
         <div className="d-lg-none mb-3" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
           {isSidebarOpen ? <FaTimes className="icon" /> : <FaBars className="icon" />}
         </div>
 
+        {/* Search Bar */}
         <input
           type="text"
           placeholder="Search classes..."
@@ -105,15 +106,15 @@ const Sidebar = () => {
           className="form-control mb-3 search-bar"
         />
 
+        {/* Dropdown Content */}
         <div className="tags-list">
           {filteredClasses.map((dropdown, index) => (
             <div key={index} className="class-item">
               <div
-                className="d-flex justify-content-between align-items-center"
-                style={{ cursor: 'pointer' }}
+                className="d-flex justify-content-between align-items-center dropdown-header"
                 onClick={() => toggleDropdown(index)}
               >
-                <h6>{dropdown.title}</h6>
+                <h6 className="dropdown-title">{dropdown.title}</h6>
                 {openDropdown === index ? <MdExpandLess /> : <MdExpandMore />}
               </div>
               <Collapse in={openDropdown === index}>
@@ -121,28 +122,22 @@ const Sidebar = () => {
                   {dropdown.content.map((category, categoryIndex) => (
                     <div key={categoryIndex} className="mb-3">
                       <div
-                        className="d-flex justify-content-between align-items-center"
-                        style={{ cursor: 'pointer' }}
+                        className="d-flex justify-content-between align-items-center category-header"
                         onClick={(e) => {
-                          e.stopPropagation(); // Prevent the category click from toggling the main dropdown
+                          e.stopPropagation();
                           toggleCategory(index, categoryIndex);
                         }}
                       >
-                        <h6>{category.category}</h6>
-                        {openCategory[`${index}-${categoryIndex}`] ? (
-                          <BsChevronUp />
-                        ) : (
-                          <BsChevronDown />
-                        )}
+                        <h6 className="category-title">{category.category}</h6>
+                        {openCategory[`${index}-${categoryIndex}`] ? <BsChevronUp /> : <BsChevronDown />}
                       </div>
                       <Collapse in={openCategory[`${index}-${categoryIndex}`]}>
                         <ul className="list-unstyled mt-2 pl-4">
                           {category.subCategories.map((subCategory, subIdx) => (
                             <li key={subIdx} className="py-1">
-                              {/* Link to the Description component with the subCategory as a URL parameter */}
                               <Link
                                 to={`/description/${subCategory}`}
-                                style={{ textDecoration: 'none', color: 'black' }}
+                                className="sub-category-link"
                                 onClick={handleLinkClick}
                               >
                                 {subCategory}
@@ -160,8 +155,9 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {/* Main content */}
+      {/* Main Content */}
       <div className="content flex-grow-1">
+        {/* Mobile Sidebar Toggle Button */}
         <div className="d-lg-none p-3" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
           {isSidebarOpen ? <FaTimes className="icon" /> : <FaBars className="icon" />}
         </div>

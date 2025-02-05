@@ -1,7 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&display=swap');
 
 body {
-  font-family: 'Noto Nastaliq Urdu', serif;
+ 
 }
 .form-container {
     background-color: #f9f9f9;
@@ -9,3 +8,7 @@ body {
     border-radius: 10px;
   }
  
+  .ql-editor{
+    height: 100vh !important;
+    overflow-y: scroll !important;
+  }

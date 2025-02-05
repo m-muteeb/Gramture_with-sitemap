@@ -4,14 +4,16 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { fireStore } from "../../firebase/firebase";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
-import { Link } from "react-router-dom"; // Import Link
+import { Link } from "react-router-dom";
+import "../../assets/css/navbar.css";
 
 const Navbar = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [openSubDropdown, setOpenSubDropdown] = useState({});
-  const [categories, setCategories] = useState([]);
+  const [classes, setClasses] = useState([]); // Changed categories to classes
   const [visibleStartIndex, setVisibleStartIndex] = useState(0);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 992);
+  const [isNavbarOpen, setIsNavbarOpen] = useState(false);
   const dropdownRef = useRef();
 
   useEffect(() => {
@@ -24,7 +26,10 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
         setOpenDropdown(null);
         setOpenSubDropdown({});
       }
@@ -36,115 +41,159 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchClasses = async () => {
       try {
-        const q = query(collection(fireStore, "topics"), orderBy("timestamp", "asc"));
+        const q = query(
+          collection(fireStore, "topics"),
+          orderBy("timestamp", "asc")
+        );
         const querySnapshot = await getDocs(q);
         const data = {};
 
         querySnapshot.forEach((doc) => {
-          const { class: className, category, subCategory } = doc.data();
+          const { class: className, subCategory } = doc.data();
+          // Filter out any class-level categories you don't want
           if (["Class 9", "Class 10", "Class 11", "Class 12"].includes(className)) {
             return;
           }
           if (!data[className]) {
-            data[className] = {};
+            data[className] = [];
           }
-          if (!data[className][category]) {
-            data[className][category] = new Set();
-          }
-          data[className][category].add(subCategory);
+          data[className].push(subCategory);
         });
 
+        // Map the data to a more suitable structure (Classes and SubCategories)
         const formattedData = Object.keys(data).map((classKey) => ({
           class: classKey,
-          content: Object.keys(data[classKey]).map((categoryKey) => ({
-            category: categoryKey,
-            subCategories: Array.from(data[classKey][categoryKey]),
-          })),
+          subCategories: data[classKey],
         }));
-        setCategories(formattedData);
+        setClasses(formattedData);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("Error fetching classes:", error);
       }
     };
-    fetchCategories();
+    fetchClasses();
   }, []);
 
   const scrollNav = (direction) => {
     if (!isSmallScreen) {
       if (direction === "left" && visibleStartIndex > 0) {
         setVisibleStartIndex(visibleStartIndex - 1);
-      } else if (direction === "right" && visibleStartIndex + 6 < categories.length) {
+      } else if (
+        direction === "right" &&
+        visibleStartIndex + 6 < classes.length
+      ) {
         setVisibleStartIndex(visibleStartIndex + 1);
       }
     }
   };
 
+  const handleSubCategoryClick = () => {
+    if (isSmallScreen) {
+      setIsNavbarOpen(false);
+    }
+    setOpenDropdown(null);
+    setOpenSubDropdown({});
+  };
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light custom-navbar">
+    <nav
+      className="navbar navbar-expand-lg custom-navbar navbar-offset"
+      style={{
+        backgroundColor: "#fcf9f9",
+        zIndex: isSmallScreen ? 1000 : "auto",
+      }}
+    >
       <div className="container-fluid">
         {/* Toggle button for small screens */}
         <button
-          className="navbar-toggler"
+          className="navbar-toggler order-1"
           type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
+          onClick={() => setIsNavbarOpen(!isNavbarOpen)}
           aria-controls="navbarNav"
-          aria-expanded="false"
+          aria-expanded={isNavbarOpen}
           aria-label="Toggle navigation"
         >
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        {/* Left arrow (hidden on small screens) */}
-        <FaAngleLeft
-          className={`nav-arrow left-arrow d-none d-lg-flex ${visibleStartIndex === 0 ? "disabled" : ""}`}
-          onMouseEnter={() => scrollNav("left")}
-        />
+        {/* Brand or Logo */}
+        <Link to="/" className="navbar-brand order-2 ms-2">
+          {/* Your Logo or Brand Name */}
+        </Link>
 
-        <div className="collapse navbar-collapse justify-content-center" id="navbarNav">
-          <ul className="navbar-nav d-flex justify-content-center w-100" ref={dropdownRef} style={{ whiteSpace: "nowrap" }}>
-            {categories
-              .slice(isSmallScreen ? 0 : visibleStartIndex, isSmallScreen ? categories.length : visibleStartIndex + 6)
+        {/* Left arrow (hidden on small screens) */}
+        {!isSmallScreen && (
+          <FaAngleLeft
+            className={`nav-arrow left-arrow order-3 ${
+              visibleStartIndex === 0 ? "disabled" : ""
+            }`}
+            onClick={() => scrollNav("left")}
+          />
+        )}
+
+        <div
+          className={`collapse navbar-collapse justify-content-center order-4 ${
+            isNavbarOpen ? "show" : ""
+          }`}
+          id="navbarNav"
+        >
+          <ul
+            className="navbar-nav d-flex justify-content-center w-100"
+            ref={dropdownRef}
+          >
+            {classes
+              .slice(
+                isSmallScreen ? 0 : visibleStartIndex,
+                isSmallScreen ? classes.length : visibleStartIndex + 6
+              )
               .map((classData, index) => (
-                <li className="nav-item dropdown position-relative mx-2" key={index}>
+                <li
+                  className="nav-item dropdown position-relative mx-2"
+                  key={index}
+                >
                   <div
                     className="nav-link dropdown-toggle"
-                    onClick={() => setOpenDropdown(openDropdown === index ? null : index)}
-                    style={{ cursor: "pointer" }}
+                    onClick={() =>
+                      setOpenDropdown(openDropdown === index ? null : index)
+                    }
+                    style={{
+                      cursor: "pointer",
+                      wordWrap: "break-word",
+                      whiteSpace: "normal",
+                    }}
                   >
                     {classData.class}
                   </div>
                   <Collapse in={openDropdown === index}>
-                    <div className="dropdown-menu mt-0 shadow p-3 bg-light border">
-                      {classData.content.map((categoryData, catIndex) => (
-                        <div key={catIndex} className="mb-3">
-                          <div
-                            className="fw-bold text-primary d-flex justify-content-between align-items-center"
-                            onClick={() =>
-                              setOpenSubDropdown((prev) => ({
-                                ...prev,
-                                [index]: prev[index] === catIndex ? null : catIndex,
-                              }))
-                            }
-                            style={{ cursor: "pointer" }}
-                          >
-                            {categoryData.category}
-                          </div>
-                          <Collapse in={openSubDropdown[index] === catIndex}>
-                            <ul className="list-unstyled ms-3 mt-2">
-                              {categoryData.subCategories.map((subCategory, subIdx) => (
-                                <li key={subIdx}>
-                                  <Link to={`/description/${subCategory}`} className="text-dark text-decoration-none">
-                                    {subCategory}
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
-                          </Collapse>
-                        </div>
-                      ))}
+                    <div
+                      className="dropdown-menu mt-0 shadow p-3 bg-light border"
+                      style={{
+                        maxHeight: "300px",
+                        overflowY: "auto",
+                      }}
+                    >
+                      <div className="mb-3">
+                        <ul className="list-unstyled ms-3 mt-2">
+                          {classData.subCategories.map((subCategory, subIdx) => (
+                            <li key={subIdx}>
+                              <Link
+                                to={`/description/${subCategory}`}
+                                className="text-dark text-decoration-none"
+                                onClick={() => {
+                                  handleSubCategoryClick();
+                                }}
+                                style={{
+                                  wordWrap: "break-word",
+                                  whiteSpace: "normal",
+                                }}
+                              >
+                                {subCategory}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
                   </Collapse>
                 </li>
@@ -153,10 +202,14 @@ const Navbar = () => {
         </div>
 
         {/* Right arrow (hidden on small screens) */}
-        <FaAngleRight
-          className={`nav-arrow right-arrow d-none d-lg-flex ${visibleStartIndex + 6 >= categories.length ? "disabled" : ""}`}
-          onMouseEnter={() => scrollNav("right")}
-        />
+        {!isSmallScreen && (
+          <FaAngleRight
+            className={`nav-arrow right-arrow order-5 ${
+              visibleStartIndex + 6 >= classes.length ? "disabled" : ""
+            }`}
+            onClick={() => scrollNav("right")}
+          />
+        )}
       </div>
     </nav>
   );

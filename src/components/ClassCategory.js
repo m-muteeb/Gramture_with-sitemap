@@ -69,61 +69,75 @@ const DropdownComponent = () => {
   };
 
   return (
-    <div className="container">
-      <h2 className="text-center mt-4">Study Online - For FREE</h2>
-      <p className="text-center text-muted mb-4">
+    <div className="container" style={{ fontFamily: 'Roboto, sans-serif' }}>
+      <h2 className="text-center mt-4" style={{ fontSize: '2.5rem', fontWeight: 700, color: '#007bff' }}>
+        Study Online - For FREE
+      </h2>
+      <p className="text-center text-muted mb-4" style={{ fontSize: '1.1rem' }}>
         Free Video Lectures, Practice MCQs & Test Sessions
       </p>
+      
       <div className="row justify-content-center">
         {dropdownData.map((dropdown, index) => (
-          <div className="col-md-6 mb-3" key={index}>
+          <div className="col-md-6 mb-3" key={index} style={{ padding: '10px' }}>
             <div
-              className="p-3 border rounded"
-              style={{ cursor: 'pointer', backgroundColor: '#f8f9fa' }}
+              className="card shadow-sm"
+              style={{
+                cursor: 'pointer',
+                borderRadius: '8px',
+                backgroundColor: '#ffffff',
+                transition: 'box-shadow 0.3s ease',
+                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+              }}
               onClick={() => toggleDropdown(index)}
             >
-              <div className="d-flex justify-content-between align-items-center mt-2">
-                <h5>{dropdown.title}</h5>
-                {openDropdown === index ? <BsChevronUp /> : <BsChevronDown />}
-              </div>
-              <Collapse in={openDropdown === index}>
-                <div className="mt-2">
-                  {dropdown.content.map((category, categoryIndex) => (
-                    <div key={categoryIndex} className="mb-3">
-                      <div
-                        className="d-flex justify-content-between align-items-center"
-                        style={{ cursor: 'pointer' }}
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent the category click from toggling the main dropdown
-                          toggleCategory(index, categoryIndex);
-                        }}
-                      >
-                        <h6>{category.category}</h6>
-                        {openCategory[`${index}-${categoryIndex}`] ? (
-                          <BsChevronUp />
-                        ) : (
-                          <BsChevronDown />
-                        )}
-                      </div>
-                      <Collapse in={openCategory[`${index}-${categoryIndex}`]}>
-                        <ul className="list-unstyled mt-2 pl-4">
-                          {category.subCategories.map((subCategory, subIdx) => (
-                            <li key={subIdx} className="py-1">
-                              {/* Link to the Description component with the subCategory as a URL parameter */}
-                              <Link
-                                to={`/description/${subCategory.subCategory}`} // Adjust link to pass the correct subCategory name
-                                style={{ textDecoration: 'none', color: 'black' }}
-                              >
-                                {subCategory.subCategory}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </Collapse>
-                    </div>
-                  ))}
+              <div className="card-body">
+                <div className="d-flex justify-content-between align-items-center">
+                  <h5 style={{ fontSize: '1.5rem', fontWeight: '600' }}>{dropdown.title}</h5>
+                  {/* Show the arrow only if this dropdown is open */}
+                  {openDropdown === index ? <BsChevronUp /> : <BsChevronDown />}
                 </div>
-              </Collapse>
+                <Collapse in={openDropdown === index}>
+                  <div className="mt-3">
+                    {dropdown.content.map((category, categoryIndex) => (
+                      <div key={categoryIndex} className="mb-3">
+                        <div
+                          className="d-flex justify-content-between align-items-center"
+                          style={{ cursor: 'pointer', padding: '8px 0' }}
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent the category click from toggling the main dropdown
+                            toggleCategory(index, categoryIndex);
+                          }}
+                        >
+                          <h6 style={{ fontSize: '1.2rem', fontWeight: '500' }}>{category.category}</h6>
+                          {/* Show the arrow for category only if it is open */}
+                          {openCategory[`${index}-${categoryIndex}`] ? <BsChevronUp /> : <BsChevronDown />}
+                        </div>
+                        <Collapse in={openCategory[`${index}-${categoryIndex}`]}>
+                          <ul className="list-unstyled mt-2 pl-4">
+                            {category.subCategories.map((subCategory, subIdx) => (
+                              <li key={subIdx} className="py-1">
+                                <Link
+                                  to={`/description/${subCategory.subCategory}`}
+                                  style={{
+                                    textDecoration: 'none',
+                                    color: '#007bff',
+                                    fontSize: '1rem',
+                                    fontWeight: '400',
+                                    transition: 'color 0.2s ease',
+                                  }}
+                                >
+                                  {subCategory.subCategory}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </Collapse>
+                      </div>
+                    ))}
+                  </div>
+                </Collapse>
+              </div>
             </div>
           </div>
         ))}
