@@ -22,4 +22,27 @@
       max-width: 100%;  /* Remove any width restrictions for even smaller screens */
     }
   }
+  /* Full-screen loader styles */
+.loader-overlay {
   
+ 
+ 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+}
+
+.loader-spinner {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #000000;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
