@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Popconfirm, message, Modal, Form, Input, Select, DatePicker, Upload } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { collection, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, updateDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { fireStore } from '../../firebase/firebase';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import moment from 'moment';
@@ -12,9 +12,11 @@ const ManageProducts = () => {
   const [products, setProducts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [fileList, setFileList] = useState([]);
+  const [fileList, setFileList] = useState([]); // To store files selected for upload
   const [form] = Form.useForm();
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(''); // Store the description with HTML content
+  const [loading, setLoading] = useState(false); // Global loader state
+  const [deleting, setDeleting] = useState(false); // Loader for delete action
   const storage = getStorage();
 
   useEffect(() => {
@@ -23,12 +25,38 @@ const ManageProducts = () => {
 
   const fetchProducts = async () => {
     try {
-      const querySnapshot = await getDocs(collection(fireStore, 'topics'));
+      const q = query(collection(fireStore, 'topics'), orderBy('timestamp', 'desc'));
+      const querySnapshot = await getDocs(q);
       const productList = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      setProducts(productList);
+
+      // Check if fileURL exists and format them properly as an array of objects
+      const formattedProductList = productList.map(product => {
+        if (product.fileURL) {
+          // If it's a string, make it an array with an object structure { name, url }
+          if (typeof product.fileURL === 'string') {
+            return {
+              ...product,
+              fileURL: [{ name: 'file', url: product.fileURL }],
+            };
+          }
+          // If it's already an array of objects, leave it as is
+          else if (Array.isArray(product.fileURL)) {
+            return {
+              ...product,
+              fileURL: product.fileURL.map(file => ({
+                name: file.name || 'file',
+                url: file.url,
+              })),
+            };
+          }
+        }
+        return product;
+      });
+
+      setProducts(formattedProductList);
     } catch (error) {
       message.error('Failed to fetch products.');
       console.error(error);
@@ -36,6 +64,7 @@ const ManageProducts = () => {
   };
 
   const handleDelete = async (id) => {
+    setDeleting(true);
     try {
       await deleteDoc(doc(fireStore, 'topics', id));
       message.success('Product deleted successfully!');
@@ -43,22 +72,24 @@ const ManageProducts = () => {
     } catch (error) {
       message.error('Failed to delete product.');
       console.error(error);
+    } finally {
+      setDeleting(false);
     }
   };
 
   const handleEdit = (record) => {
     setEditingProduct(record);
-    setDescription(record.description || ''); // Load existing description with formatting
+    setDescription(record.description || ''); // Set description to HTML content
     form.setFieldsValue({
       topic: record.topic,
       class: record.class,
-      category: record.category,
       subCategory: record.subCategory,
-      date: moment(record.date),
       description: record.description || '',
+      date: record.date ? moment(record.date) : null,
     });
     setIsModalVisible(true);
-    setFileList([]);
+    // Set fileList to show in the modal
+    setFileList(record.fileURL || []);
   };
 
   const handleModalClose = () => {
@@ -66,115 +97,91 @@ const ManageProducts = () => {
     setDescription('');
     form.resetFields();
     setFileList([]);
+    setLoading(false);
   };
 
-  const uploadFile = async () => {
-    if (fileList.length > 0) {
-      const file = fileList[0];
-      const storageRef = ref(storage, `files/${file.name}`);
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
-      return downloadURL;
-    }
-    return null;
+  const uploadFile = async (file) => {
+    const storageRef = ref(storage, `files/${file.name}`);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
   };
 
   const handleUpdate = async (values) => {
+    setLoading(true);
     try {
-      const fileUrl = await uploadFile();
+      // Upload multiple files
+      const fileUrls = await Promise.all(fileList.map(file => uploadFile(file)));
 
-      // Create updatedValues without the fileURL field initially
       const updatedValues = {
         ...values,
         date: values.date ? values.date.format('YYYY-MM-DD HH:mm:ss') : '',
-        description: description, // Save rich-text HTML description
+        description: description, // Save the description with HTML formatting
+        timestamp: serverTimestamp(),
       };
 
-      // Only add the fileURL field if there's a new file or existing file
-      if (fileUrl) {
-        updatedValues.fileURL = fileUrl;
+      // If files were uploaded, add them to the update data
+      if (fileUrls.length > 0) {
+        updatedValues.fileURL = fileUrls.map((url, index) => ({
+          name: fileList[index].name,
+          url: url,
+        }));
       } else if (editingProduct.fileURL) {
         updatedValues.fileURL = editingProduct.fileURL;
       }
 
-      const productRef = doc(fireStore, 'topics', editingProduct.id);
-      await updateDoc(productRef, updatedValues);
+      await updateDoc(doc(fireStore, 'topics', editingProduct.id), updatedValues);
       message.success('Product updated successfully!');
       handleModalClose();
       fetchProducts();
     } catch (error) {
       message.error('Failed to update product.');
       console.error(error);
+      setLoading(false);
     }
   };
 
-  const renderDescription = (description) => {
-    if (!description) return 'No description available';
-    const words = description.split(' ');
-    const truncatedDescription = words.slice(0, 10).join(' ') + (words.length > 30 ? '...' : '');
-    return <span dangerouslySetInnerHTML={{ __html: truncatedDescription }} />;
-  };
-
   const columns = [
-    {
-      title: 'Topic',
-      dataIndex: 'topic',
-      key: 'topic',
-    },
-    {
-      title: 'Class',
-      dataIndex: 'class',
-      key: 'class',
-    },
-    {
-      title: 'Category',
-      dataIndex: 'category',
-      key: 'category',
-    },
-    {
-      title: 'SubCategory',
-      dataIndex: 'subCategory',
-      key: 'subCategory',
-    },
-    {
-      title: 'Description',
-      dataIndex: 'description',
-      key: 'description',
-      render: renderDescription,
-    },
-    {
-      title: 'Date',
-      dataIndex: 'date',
-      key: 'date',
-    },
+    { title: 'Topic', dataIndex: 'topic', key: 'topic' },
+    { title: 'Class', dataIndex: 'class', key: 'class' },
+    { title: 'SubCategory', dataIndex: 'subCategory', key: 'subCategory' },
+    { title: 'Date', dataIndex: 'date', key: 'date' },
     {
       title: 'File',
       dataIndex: 'fileURL',
       key: 'fileURL',
-      render: (text) => text ? (
-        <a href={text} target="_blank" rel="noopener noreferrer">
-          Download File
-        </a>
-      ) : 'No File',
+      render: (fileURL) => {
+        if (!fileURL || fileURL.length === 0) {
+          return 'No File'; // Show 'No File' when no files exist
+        }
+
+        const files = Array.isArray(fileURL) ? fileURL : [fileURL];
+        return files.map((file, index) => (
+          <div key={index}>
+            <a href={file.url} target="_blank" rel="noopener noreferrer">
+              {file.name || `File ${index + 1}`} 
+            </a>
+          </div>
+        ));
+      },
     },
     {
       title: 'Action',
       key: 'action',
-      render: (text, record) => (
+      render: (_, record) => (
         <>
           <Button
-            className='m-1'
             icon={<EditOutlined />}
-            style={{ marginRight: 8, color: 'green' }}
+            style={{ margin: 3, color: 'green' }}
             onClick={() => handleEdit(record)}
+            loading={loading}
           />
-          <Popconfirm
-            title="Are you sure to delete this product?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button className='m-1' style={{color: 'red'}} icon={<DeleteOutlined />} danger />
+          <Popconfirm title="Are you sure to delete this product?" onConfirm={() => handleDelete(record.id)} okText="Yes" cancelText="No">
+            <Button
+              style={{ color: 'red', margin: 3 }}
+              icon={<DeleteOutlined />}
+              danger
+              loading={deleting}
+            />
           </Popconfirm>
         </>
       ),
@@ -183,122 +190,68 @@ const ManageProducts = () => {
 
   return (
     <div className="container">
-      <div style={{ padding: '20px' }}>
-        <h2 className='text-center py-5'>Manage Products</h2>
-        <div className="table-responsive">
-          <Table 
-            dataSource={products}
-            columns={columns}
-            rowKey="id"
-            bordered
-          />
-        </div>
+      <h2 className="text-center py-5">Manage Products</h2>
+      <Table dataSource={products} columns={columns} rowKey="id" bordered />
+      <Modal
+        title="Edit Product"
+        visible={isModalVisible}
+        onCancel={handleModalClose}
+        footer={null}
+        width={1000}  
+        className="responsive-modal"
+      >
+        <Form form={form} layout="vertical" onFinish={handleUpdate} className="responsive-form">
+          <Form.Item label="Topic" name="topic">
+            <Input placeholder="Enter topic" />
+          </Form.Item>
 
-        <Modal
-          title="Edit Product"
-          visible={isModalVisible}
-          onCancel={handleModalClose}
-          footer={null}
-          width={1200}
-        >
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleUpdate}
-            initialValues={{ description: editingProduct?.description || '' }}
-          >
-            <Form.Item
-              label="Topic"
-              name="topic"
-              rules={[{ required: true, message: 'Please enter the topic!' }]}>
-              <Input placeholder="Enter topic" />
-            </Form.Item>
+          <Form.Item label="Class" name="class">
+            <Select placeholder="Select class">
+              <Select.Option value="10">10</Select.Option>
+            </Select>
+          </Form.Item>
 
-            <Form.Item
-              label="Class"
-              name="class"
-              rules={[{ required: true, message: 'Please select the class!' }]}>
-              <Select placeholder="Select class">
-                <Select.Option value="10">10</Select.Option>
-              </Select>
-            </Form.Item>
+          <Form.Item label="SubCategory" name="subCategory">
+            <Input placeholder="Enter subcategory" />
+          </Form.Item>
 
-            <Form.Item
-              label="Category"
-              name="category"
-              rules={[{ required: true, message: 'Please enter the category!' }]}>
-              <Input placeholder="Enter category" />
-            </Form.Item>
+          <Form.Item label="Date" name="date">
+            <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" placeholder="Select date and time" />
+          </Form.Item>
 
-            <Form.Item
-              label="SubCategory"
-              name="subCategory"
-              rules={[{ required: true, message: 'Please enter the subcategory!' }]}>
-              <Input placeholder="Enter subcategory" />
-            </Form.Item>
+          <Form.Item label="Description">
+            <ReactQuill
+              value={description}  // Pass the HTML content directly
+              onChange={setDescription}
+              theme="snow"
+              className="responsive-quill"
+            />
+          </Form.Item>
 
-            <Form.Item
-              label="Date"
-              name="date"
-              rules={[{ required: true, message: 'Please select the date!' }]}>
-              <DatePicker
-                showTime
-                format="YYYY-MM-DD HH:mm:ss"
-                placeholder="Select date and time"
-              />
-            </Form.Item>
+          <Form.Item label="Upload Files">
+            <Upload
+              fileList={fileList}
+              beforeUpload={(file) => {
+                setFileList((prev) => [...prev, file]);
+                return false; // Prevent auto-upload
+              }}
+              multiple
+              onRemove={(file) => {
+                setFileList((prev) => prev.filter((item) => item.uid !== file.uid));
+              }}
+              className="responsive-upload"
+            >
+              <Button>Select Files</Button>
+            </Upload>
+          </Form.Item>
 
-            <Form.Item label="Description">
-              <ReactQuill
-                value={description}
-                onChange={setDescription}
-                theme="snow"
-                modules={{
-                  toolbar: [
-                    [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
-                    [{ size: [] }],
-                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                    [{ 'color': [] }, { 'background': [] }], // dropdown with defaults from theme
-                    [{ 'align': [] }],
-                    ['link', 'image'],
-                    [{ 'direction': 'rtl' }], // Support for Right-to-Left languages
-                    [{ 'script': 'sub' }, { 'script': 'super' }], // Superscript/Subscript
-                    ['clean'] // Remove formatting button
-                  ],
-                }}
-                style={{ height: '200px', marginBottom: '50px' }}
-              />
-            </Form.Item>
-
-            <Form.Item 
-              label="File"
-              extra={editingProduct?.fileURL ? (
-                <a href={editingProduct.fileURL} target="_blank" rel="noopener noreferrer">
-                  Current File
-                </a>
-              ) : 'No file uploaded'}>
-              <Upload
-                fileList={fileList}
-                beforeUpload={(file) => {
-                  setFileList([file]);
-                  return false;
-                }}
-                maxCount={1}
-                onRemove={() => setFileList([])}
-              >
-                <Button>Select File</Button>
-              </Upload>
-            </Form.Item>
-
-            <Form.Item>
-              <Button type="primary" htmlType="submit" block>
-                Update
-              </Button>
-            </Form.Item>
-          </Form>
-        </Modal>
-      </div>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block loading={loading}>
+              Update
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

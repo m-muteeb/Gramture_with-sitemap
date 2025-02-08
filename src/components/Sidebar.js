@@ -33,28 +33,25 @@ const Sidebar = () => {
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
+        // Fetch all topics and order them by timestamp
         const q = query(collection(fireStore, 'topics'), orderBy('timestamp', 'asc'));
-
         const querySnapshot = await getDocs(q);
         const data = {};
 
         querySnapshot.forEach((doc) => {
-          const { class: className, category, subCategory, timestamp } = doc.data();
+          const { class: className, subCategory } = doc.data();
           if (!data[className]) {
-            data[className] = {};
+            data[className] = [];
           }
-          if (!data[className][category]) {
-            data[className][category] = new Set();
+          if (!data[className].includes(subCategory)) {
+            data[className].push(subCategory);
           }
-          data[className][category].add(subCategory);
         });
 
+        // Format the data into a new structure
         const formattedData = Object.keys(data).map((classKey) => ({
           title: classKey,
-          content: Object.keys(data[classKey]).map((categoryKey) => ({
-            category: categoryKey,
-            subCategories: Array.from(data[classKey][categoryKey]),
-          })),
+          subCategories: data[classKey],
         }));
 
         setDropdownData(formattedData);
@@ -119,35 +116,21 @@ const Sidebar = () => {
               </div>
               <Collapse in={openDropdown === index}>
                 <div className="mt-2">
-                  {dropdown.content.map((category, categoryIndex) => (
-                    <div key={categoryIndex} className="mb-3">
-                      <div
-                        className="d-flex justify-content-between align-items-center category-header"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleCategory(index, categoryIndex);
-                        }}
-                      >
-                        <h6 className="category-title">{category.category}</h6>
-                        {openCategory[`${index}-${categoryIndex}`] ? <BsChevronUp /> : <BsChevronDown />}
-                      </div>
-                      <Collapse in={openCategory[`${index}-${categoryIndex}`]}>
-                        <ul className="list-unstyled mt-2 pl-4">
-                          {category.subCategories.map((subCategory, subIdx) => (
-                            <li key={subIdx} className="py-1">
-                              <Link
-                                to={`/description/${subCategory}`}
-                                className="sub-category-link"
-                                onClick={handleLinkClick}
-                              >
-                                {subCategory}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </Collapse>
-                    </div>
-                  ))}
+                  <div className="mb-3">
+                    <ul className="list-unstyled mt-2 pl-4">
+                      {dropdown.subCategories.map((subCategory, subIdx) => (
+                        <li key={subIdx} className="py-1">
+                          <Link
+                            to={`/description/${subCategory}`}
+                            className="sub-category-link"
+                            onClick={handleLinkClick}
+                          >
+                            {subCategory}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </Collapse>
             </div>

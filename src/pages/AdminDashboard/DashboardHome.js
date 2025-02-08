@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, DatePicker, Upload, Button, Select, message, Card } from 'antd';
-import { UploadOutlined, LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+import { Form, Input, Upload, Button, Select, message, Card } from 'antd';
+import { UploadOutlined, LoadingOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import { storage, fireStore } from '../../firebase/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { collection, addDoc, getDocs } from 'firebase/firestore'; 
 import { useNavigate } from 'react-router-dom';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -18,29 +18,38 @@ const ResponsiveForm = () => {
   const [classes, setClasses] = useState([]);
   const [addingClass, setAddingClass] = useState(false);
   const [newClass, setNewClass] = useState('');
+  const [savingDraft, setSavingDraft] = useState(false);
+
+  const [form] = Form.useForm(); 
 
   useEffect(() => {
     const fetchClasses = async () => {
       const querySnapshot = await getDocs(collection(fireStore, 'classes'));
       const fetchedClasses = querySnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name }));
       setClasses(fetchedClasses);
+      
+      const draft = JSON.parse(localStorage.getItem('draft'));
+      if (draft) {
+        setDescription(draft.description || '');
+        form.setFieldsValue(draft);
+      }
     };
 
     fetchClasses();
-  }, []);
+  }, [form]);
 
   const onFinish = async (values) => {
-    const { topic, date, class: selectedClasses, category, subCategory, file } = values;
-
+    const { topic, class: selectedClasses, category, subCategory, file } = values;
+  
     setUploading(true);
     let fileURL = [];
-
+  
     if (file && file.length > 0) {
       for (const fileItem of file) {
         const uniqueFileName = `${Date.now()}-${fileItem.name}`;
         const storageRef = ref(storage, `uploads/${uniqueFileName}`);
         const uploadTask = uploadBytesResumable(storageRef, fileItem.originFileObj);
-
+  
         try {
           await new Promise((resolve, reject) => {
             uploadTask.on(
@@ -51,7 +60,7 @@ const ResponsiveForm = () => {
               },
               (error) => {
                 console.error('Upload failed:', error);
-                message.error('File upload failed.');
+                message.error('File upload failed.', 3);
                 reject(error);
               },
               async () => {
@@ -67,11 +76,10 @@ const ResponsiveForm = () => {
         }
       }
     }
-
+  
     try {
       await addDoc(collection(fireStore, 'topics'), {
         topic: topic || '',
-        date: date ? date.format('YYYY-MM-DD') : '',
         class: selectedClasses.join(', '),
         category: category || '',
         subCategory: subCategory || '',
@@ -79,16 +87,19 @@ const ResponsiveForm = () => {
         fileURL,
         timestamp: new Date(),
       });
-
-      message.success('Topic created successfully!');
+  
+      message.success('Topic created successfully!', 3);
+      form.resetFields();  // Clear the form after successful submission
+      localStorage.removeItem('draft');
+  
     } catch (e) {
       console.error('Error adding document:', e);
-      message.error('Failed to save topic.');
+      message.error('Failed to save topic.', 3);
     } finally {
       setUploading(false);
     }
   };
-
+  
   const handleAddClass = async () => {
     if (newClass && !classes.some(cls => cls.name === newClass)) {
       setAddingClass(true);
@@ -96,13 +107,26 @@ const ResponsiveForm = () => {
         const docRef = await addDoc(collection(fireStore, 'classes'), { name: newClass });
         setClasses([...classes, { id: docRef.id, name: newClass }]);
         setNewClass('');
-        message.success(`Class ${newClass} added successfully!`);
+        message.success(`Class ${newClass} added successfully!`, 3);
       } catch (e) {
         console.error('Error adding class:', e);
-        message.error('Failed to add class.');
+        message.error('Failed to add class.', 3);
       } finally {
         setAddingClass(false);
       }
+    }
+  };
+
+  const handleSaveDraft = async (values) => {
+    setSavingDraft(true);
+    try {
+      const draftData = { ...values, description };
+      localStorage.setItem('draft', JSON.stringify(draftData));
+      message.success('Product saved as draft successfully!', 3);
+    } catch (error) {
+      message.error('Error saving draft', 3);
+    } finally {
+      setSavingDraft(false);
     }
   };
 
@@ -117,7 +141,7 @@ const ResponsiveForm = () => {
       ['link', 'image'],
       [{ 'direction': 'rtl' }],
       [{ 'script': 'sub' }, { 'script': 'super' }],
-      ['clean']
+      ['clean'],
     ],
   };
 
@@ -128,21 +152,13 @@ const ResponsiveForm = () => {
         bordered={false}
         style={{
           margin: '20px auto',
-          boxShadow: '0 12px 22px rgba(0, 0, 0, 0.2)',
+          width: '100%',  
           borderRadius: '10px',
         }}
       >
-        <Form layout="vertical" onFinish={onFinish} autoComplete="off">
+        <Form layout="vertical" onFinish={onFinish} autoComplete="off" form={form}>
           <Form.Item label="Topic Name" name="topic">
             <Input placeholder="Enter topic name" />
-          </Form.Item>
-
-          <Form.Item label="Category" name="category">
-            <Input placeholder="Enter category" />
-          </Form.Item>
-
-          <Form.Item label="SubCategory" name="subCategory">
-            <Input placeholder="Enter subcategory" />
           </Form.Item>
 
           <Form.Item label="Class" name="class" rules={[{ required: true, message: 'Please select a class!' }]}>
@@ -179,8 +195,8 @@ const ResponsiveForm = () => {
             </Select>
           </Form.Item>
 
-          <Form.Item label="Date" name="date">
-            <DatePicker style={{ width: '100%' }} />
+          <Form.Item label="SubCategory" name="subCategory">
+            <Input placeholder="Enter subcategory" />
           </Form.Item>
 
           <Form.Item label="Description" name="description">
@@ -202,6 +218,19 @@ const ResponsiveForm = () => {
           <Form.Item>
             <Button type="default" block onClick={() => navigate('/ManageProducts')}>
               Manage Topics
+            </Button>
+          </Form.Item>
+
+          {/* Save Draft Button */}
+          <Form.Item>
+            <Button
+              type="default"
+              block
+              icon={<SaveOutlined />}
+              onClick={() => handleSaveDraft(form.getFieldsValue())}
+              loading={savingDraft}
+            >
+              {savingDraft ? 'Saving Draft...' : 'Save as Draft'}
             </Button>
           </Form.Item>
         </Form>

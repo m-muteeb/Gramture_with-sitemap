@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { message } from 'antd';
-import { getDocs, collection, addDoc, updateDoc, doc } from 'firebase/firestore';
-import { getDownloadURL, ref, listAll } from 'firebase/storage';
-import { fireStore, storage } from '../firebase/firebase';
-import { FaReply } from 'react-icons/fa'; 
-import  "../assets/css/description.css"; 
+import { getDocs, collection } from 'firebase/firestore';
+import { fireStore } from '../firebase/firebase';
+import { FaReply } from 'react-icons/fa';
+import "../assets/css/description.css"; 
+import { addDoc, doc, updateDoc } from 'firebase/firestore';
 
 export default function Description() {
   const { subCategory } = useParams(); 
   const [products, setProducts] = useState([]);
-  const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState({
@@ -23,7 +22,6 @@ export default function Description() {
 
   useEffect(() => {
     fetchProducts();
-    fetchFiles();
     fetchComments();
   }, [subCategory]);
 
@@ -37,23 +35,6 @@ export default function Description() {
       setLoading(false);
     } catch (error) {
       message.error('Failed to fetch products.');
-      console.error(error);
-    }
-  };
-
-  const fetchFiles = async () => {
-    try {
-      const fileRef = ref(storage, `files/${subCategory}`);
-      const fileList = await listAll(fileRef);
-      const fileUrls = await Promise.all(
-        fileList.items.map(async (item) => {
-          const url = await getDownloadURL(item);
-          return { name: item.name, url };
-        })
-      );
-      setFiles(fileUrls);
-    } catch (error) {
-      message.error('Failed to fetch files.');
       console.error(error);
     }
   };
@@ -109,83 +90,6 @@ export default function Description() {
     }
   };
 
-  const renderFile = (fileUrl) => {
-    if (fileUrl.includes('drive.google.com')) {
-      const fileId = fileUrl.split('/d/')[1].split('/')[0];
-      return (
-        <div style={{ width: '100%', height: 'auto', textAlign: 'center' }}>
-          <a
-            href={`https://drive.google.com/file/d/${fileId}/view`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'inline-block',
-              backgroundColor: '#0073e6',
-              padding: '10px 20px',
-              color: '#fff',
-              textDecoration: 'none',
-              borderRadius: '5px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-            }}
-          >
-            Open Google Drive File
-          </a>
-        </div>
-      );
-    }
-
-    if (fileUrl.includes('.pdf')) {
-      return (
-        <div style={{ width: '100%', textAlign: 'center' }}>
-          <a
-            href={fileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'inline-block',
-              backgroundColor: '#ff5722',
-              padding: '10px 20px',
-              color: '#fff',
-              textDecoration: 'none',
-              borderRadius: '5px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-            }}
-          >
-            Open PDF File
-          </a>
-        </div>
-      );
-    }
-
-    if (fileUrl.includes('.jpg') || fileUrl.includes('.jpeg') || fileUrl.includes('.png')) {
-      return (
-        <div style={{ width: '100%', textAlign: 'center' }}>
-          <img
-            src={fileUrl}
-            alt="File"
-            style={{
-              width: '70%',
-              height: '50%',
-              maxWidth: '70%',
-              border: '18px',
-              borderRadius: '5px',
-              objectFit: 'contain',
-              margin: '0 auto',
-            }}
-          />
-        </div>
-      );
-    }
-
-    return (
-      <p style={{ textAlign: 'center', color: '#888', fontSize: '1.2rem' }}>
-        No preview available for this file.
-      </p>
-    );
-  };
-
   const handleShare = () => {
     if (typeof window !== 'undefined' && window.location) {
       const url = window.location.href;
@@ -215,6 +119,32 @@ export default function Description() {
     });
   };
 
+  // Function to render the button to open the file URL
+  const renderFilePreview = (fileURL) => {
+    // Ensure the fileURL is defined before attempting to render the button
+    if (!fileURL) {
+      return <p>No file URL available</p>; // Display a fallback message if no URL exists
+    }
+
+    return (
+      <button
+        onClick={() => window.open(fileURL, '_blank')} // Open file URL in a new tab
+        style={{
+          padding: '10px 20px',
+          backgroundColor: '#0073e6',
+          color: '#fff',
+          border: 'none',
+          cursor: 'pointer',
+          borderRadius: '5px',
+          fontSize: '16px',
+          fontWeight: 'bold',
+        }}
+      >
+        Open File
+      </button>
+    );
+  };
+
   return (
     <div className="description-container" style={{ padding: '20px', marginTop: '45px' }}>
       {loading && (
@@ -233,7 +163,13 @@ export default function Description() {
               <div className="product-description" style={{ marginBottom: '20px' }}>
                 <div style={{ fontSize: '1.2rem', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: product.description }} />
               </div>
-              {product.fileURL && renderFile(product.fileURL)}
+
+              {/* Display file URLs with button to open */}
+              {product.fileURL && product.fileURL.length > 0 && product.fileURL.map((file, fileIndex) => (
+                <div key={fileIndex} style={{ marginBottom: '10px', textAlign: 'center' }}>
+                  {renderFilePreview(file)} {/* Pass file to renderFilePreview */}
+                </div>
+              ))}
             </article>
           ))}
 
