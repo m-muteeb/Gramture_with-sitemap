@@ -1,27 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Button, Popconfirm, message, Modal, Form, Input, Select, DatePicker, Upload } from 'antd';
+import React, { useState, useEffect, useRef } from 'react';
+import { Table, Button, Popconfirm, message, Modal, Form, Input, Select } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { collection, getDocs, deleteDoc, doc, updateDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { fireStore } from '../../firebase/firebase';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import moment from 'moment';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import JoditEditor from 'jodit-react';
+import { debounce } from 'lodash';
 
 const ManageProducts = () => {
   const [products, setProducts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [fileList, setFileList] = useState([]); // To store files selected for upload
   const [form] = Form.useForm();
   const [description, setDescription] = useState(''); // Store the description with HTML content
   const [loading, setLoading] = useState(false); // Global loader state
   const [deleting, setDeleting] = useState(false); // Loader for delete action
-  const storage = getStorage();
+  const [classes, setClasses] = useState([]); // To store classes
+  const editor = useRef(null);
+
+  // Debounced function to optimize the writing experience
+  const debouncedDescriptionChange = useRef(
+    debounce((newContent) => {
+      setDescription(newContent);
+    }, 3000000000000000000000) // Adjust delay time (in ms) for smoother state updates
+  );
 
   useEffect(() => {
     fetchProducts();
+    fetchClasses();
   }, []);
+
+  const fetchClasses = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(fireStore, 'classes')); // Assuming you have a 'classes' collection
+      const classList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setClasses(classList);
+    } catch (error) {
+      message.error('Failed to fetch classes.');
+      console.error(error);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -31,32 +51,7 @@ const ManageProducts = () => {
         id: doc.id,
         ...doc.data(),
       }));
-
-      // Check if fileURL exists and format them properly as an array of objects
-      const formattedProductList = productList.map(product => {
-        if (product.fileURL) {
-          // If it's a string, make it an array with an object structure { name, url }
-          if (typeof product.fileURL === 'string') {
-            return {
-              ...product,
-              fileURL: [{ name: 'file', url: product.fileURL }],
-            };
-          }
-          // If it's already an array of objects, leave it as is
-          else if (Array.isArray(product.fileURL)) {
-            return {
-              ...product,
-              fileURL: product.fileURL.map(file => ({
-                name: file.name || 'file',
-                url: file.url,
-              })),
-            };
-          }
-        }
-        return product;
-      });
-
-      setProducts(formattedProductList);
+      setProducts(productList);
     } catch (error) {
       message.error('Failed to fetch products.');
       console.error(error);
@@ -85,49 +80,25 @@ const ManageProducts = () => {
       class: record.class,
       subCategory: record.subCategory,
       description: record.description || '',
-      date: record.date ? moment(record.date) : null,
     });
     setIsModalVisible(true);
-    // Set fileList to show in the modal
-    setFileList(record.fileURL || []);
   };
 
   const handleModalClose = () => {
     setIsModalVisible(false);
     setDescription('');
     form.resetFields();
-    setFileList([]);
     setLoading(false);
-  };
-
-  const uploadFile = async (file) => {
-    const storageRef = ref(storage, `files/${file.name}`);
-    await uploadBytes(storageRef, file);
-    return await getDownloadURL(storageRef);
   };
 
   const handleUpdate = async (values) => {
     setLoading(true);
     try {
-      // Upload multiple files
-      const fileUrls = await Promise.all(fileList.map(file => uploadFile(file)));
-
       const updatedValues = {
         ...values,
-        date: values.date ? values.date.format('YYYY-MM-DD HH:mm:ss') : '',
-        description: description, // Save the description with HTML formatting
+        description, // Save the description with HTML formatting
         timestamp: serverTimestamp(),
       };
-
-      // If files were uploaded, add them to the update data
-      if (fileUrls.length > 0) {
-        updatedValues.fileURL = fileUrls.map((url, index) => ({
-          name: fileList[index].name,
-          url: url,
-        }));
-      } else if (editingProduct.fileURL) {
-        updatedValues.fileURL = editingProduct.fileURL;
-      }
 
       await updateDoc(doc(fireStore, 'topics', editingProduct.id), updatedValues);
       message.success('Product updated successfully!');
@@ -144,30 +115,7 @@ const ManageProducts = () => {
     { title: 'Topic', dataIndex: 'topic', key: 'topic' },
     { title: 'Class', dataIndex: 'class', key: 'class' },
     { title: 'SubCategory', dataIndex: 'subCategory', key: 'subCategory' },
-    { title: 'Date', dataIndex: 'date', key: 'date' },
-    {
-      title: 'File',
-      dataIndex: 'fileURL',
-      key: 'fileURL',
-      render: (fileURL) => {
-        if (!fileURL || fileURL.length === 0) {
-          return 'No File'; // Show 'No File' when no files exist
-        }
-
-        const files = Array.isArray(fileURL) ? fileURL : [fileURL];
-        return files.map((file, index) => (
-          <div key={index}>
-            <a href={file.url} target="_blank" rel="noopener noreferrer">
-              {file.name || `File ${index + 1}`} 
-            </a>
-          </div>
-        ));
-      },
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      render: (_, record) => (
+    { title: 'Action', key: 'action', render: (_, record) => (
         <>
           <Button
             icon={<EditOutlined />}
@@ -188,16 +136,43 @@ const ManageProducts = () => {
     },
   ];
 
+  const joditConfig = {
+    readonly: false,
+    height: 400,
+    caretColor: 'black', // Ensure the caret (cursor) is visible and styled
+    uploader: {
+      insertImageAsBase64URI: true,
+    },
+    buttons: [
+      'source', '|',
+      'bold', 'italic', 'underline', 'strikethrough', '|',
+      'superscript', 'subscript', '|',
+      'font', 'fontsize', 'brush', 'paragraph', '|',
+      'ul', 'ol', '|',
+      'outdent', 'indent', '|',
+      'align', '|',
+      'undo', 'redo', '|',
+      'cut', 'copy', 'paste', '|',
+      'link', 'image', 'video', 'table', '|',
+      'hr', 'symbol', 'fullsize', '|',
+      'print', 'about'
+    ],
+  };
+
+  const handleDescriptionChange = (newContent) => {
+    debouncedDescriptionChange.current(newContent); // Use debounced function to update the state
+  };
+
   return (
-    <div className="container">
-      <h2 className="text-center py-5">Manage Products</h2>
+    <div className="container" style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <h2 className="text-center py-5" style={{ textAlign: 'center', paddingBottom: '20px' }}>Manage Products</h2>
       <Table dataSource={products} columns={columns} rowKey="id" bordered />
       <Modal
         title="Edit Product"
         visible={isModalVisible}
         onCancel={handleModalClose}
         footer={null}
-        width={1000}  
+        width={1000}
         className="responsive-modal"
       >
         <Form form={form} layout="vertical" onFinish={handleUpdate} className="responsive-form">
@@ -207,7 +182,11 @@ const ManageProducts = () => {
 
           <Form.Item label="Class" name="class">
             <Select placeholder="Select class">
-              <Select.Option value="10">10</Select.Option>
+              {classes.map((classOption) => (
+                <Select.Option key={classOption.id} value={classOption.name}>
+                  {classOption.name}
+                </Select.Option>
+              ))}
             </Select>
           </Form.Item>
 
@@ -215,34 +194,24 @@ const ManageProducts = () => {
             <Input placeholder="Enter subcategory" />
           </Form.Item>
 
-          <Form.Item label="Date" name="date">
-            <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" placeholder="Select date and time" />
-          </Form.Item>
-
           <Form.Item label="Description">
-            <ReactQuill
-              value={description}  // Pass the HTML content directly
-              onChange={setDescription}
-              theme="snow"
-              className="responsive-quill"
+            <JoditEditor
+              ref={editor}
+              value={description}
+              config={joditConfig}
+              onBlur={(newContent) => setDescription(newContent)}
+              onChange={handleDescriptionChange} // Now using the debounced version
+              style={{
+                border: '1px solid #d9d9d9', 
+                borderRadius: '4px', 
+                padding: '10px',
+                fontFamily: 'Arial, sans-serif',
+                fontSize: '14px',
+                lineHeight: '1.5', // Ensure smooth text flow and cursor visibility
+                minHeight: '150px', // To ensure there is enough space for the cursor to appear
+                overflowY: 'auto', // Allow scrolling when the content overflows
+              }}
             />
-          </Form.Item>
-
-          <Form.Item label="Upload Files">
-            <Upload
-              fileList={fileList}
-              beforeUpload={(file) => {
-                setFileList((prev) => [...prev, file]);
-                return false; // Prevent auto-upload
-              }}
-              multiple
-              onRemove={(file) => {
-                setFileList((prev) => prev.filter((item) => item.uid !== file.uid));
-              }}
-              className="responsive-upload"
-            >
-              <Button>Select Files</Button>
-            </Upload>
           </Form.Item>
 
           <Form.Item>

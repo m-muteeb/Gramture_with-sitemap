@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Form, Input, Upload, Button, Select, message, Card } from 'antd';
 import { UploadOutlined, LoadingOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import { storage, fireStore } from '../../firebase/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, getDocs } from 'firebase/firestore'; 
 import { useNavigate } from 'react-router-dom';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import JoditEditor from 'jodit-react';
+//import 'jodit/build/jodit.min.css';
 import "../../assets/css/dashboardhome.css";
 
 const { Option } = Select;
 
 const ResponsiveForm = () => {
   const navigate = useNavigate();
+  const editor = useRef(null);
   const [description, setDescription] = useState('');
   const [uploading, setUploading] = useState(false);
   const [classes, setClasses] = useState([]);
@@ -42,16 +43,17 @@ const ResponsiveForm = () => {
     const { topic, class: selectedClasses, category, subCategory, file } = values;
   
     setUploading(true);
-    let fileURL = [];
+    let fileURLs = [];
   
     if (file && file.length > 0) {
-      for (const fileItem of file) {
-        const uniqueFileName = `${Date.now()}-${fileItem.name}`;
-        const storageRef = ref(storage, `uploads/${uniqueFileName}`);
-        const uploadTask = uploadBytesResumable(storageRef, fileItem.originFileObj);
+      try {
+        // Upload all files concurrently using Promise.all
+        const uploadPromises = file.map((fileItem) => {
+          const uniqueFileName = `${Date.now()}-${fileItem.name}`;
+          const storageRef = ref(storage, `uploads/${uniqueFileName}`);
+          const uploadTask = uploadBytesResumable(storageRef, fileItem.originFileObj);
   
-        try {
-          await new Promise((resolve, reject) => {
+          return new Promise((resolve, reject) => {
             uploadTask.on(
               'state_changed',
               (snapshot) => {
@@ -65,15 +67,18 @@ const ResponsiveForm = () => {
               },
               async () => {
                 const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                fileURL.push(downloadURL);
+                fileURLs.push(downloadURL);
                 resolve();
               }
             );
           });
-        } catch (error) {
-          setUploading(false);
-          return;
-        }
+        });
+
+        // Wait for all files to finish uploading
+        await Promise.all(uploadPromises);
+      } catch (error) {
+        setUploading(false);
+        return;
       }
     }
   
@@ -84,7 +89,7 @@ const ResponsiveForm = () => {
         category: category || '',
         subCategory: subCategory || '',
         description: description || '',
-        fileURL,
+        fileURLs,
         timestamp: new Date(),
       });
   
@@ -130,19 +135,9 @@ const ResponsiveForm = () => {
     }
   };
 
-  const quillModules = {
-    toolbar: [
-      [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
-      [{ size: [] }],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-      [{ 'color': [] }, { 'background': [] }],
-      [{ 'align': [] }],
-      ['link', 'image'],
-      [{ 'direction': 'rtl' }],
-      [{ 'script': 'sub' }, { 'script': 'super' }],
-      ['clean'],
-    ],
+  const joditConfig = {
+    readonly: false,
+    height: 400,
   };
 
   return (
@@ -200,14 +195,19 @@ const ResponsiveForm = () => {
           </Form.Item>
 
           <Form.Item label="Description" name="description">
-            <ReactQuill value={description} onChange={setDescription} theme="snow" placeholder="Enter the description" modules={quillModules} />
+            <JoditEditor
+              ref={editor}
+              value={description}
+              config={joditConfig}
+              onBlur={(newContent) => setDescription(newContent)}
+            />
           </Form.Item>
 
-          <Form.Item label="Upload File" name="file" valuePropName="fileList" getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}>
+          {/* <Form.Item label="Upload File" name="file" valuePropName="fileList" getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}>
             <Upload name="file" beforeUpload={() => false} accept=".jpg,.jpeg,.png,.pdf" multiple>
               <Button icon={<UploadOutlined />}>Click to Upload</Button>
             </Upload>
-          </Form.Item>
+          </Form.Item> */}
 
           <Form.Item>
             <Button type="primary" htmlType="submit" block disabled={uploading}>

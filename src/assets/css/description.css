@@ -1,48 +1,84 @@
-/* General image styling */
-.product-article img {
-    width: 50%;  /* The image takes up 100% of the container width */
-    height: auto;  /* Maintain the aspect ratio */
-    max-width: 90%;  /* Restrict the image to 90% of the container width */
-    border: none;
-    border-radius: 5px;
-    object-fit: contain;  /* Maintain the aspect ratio and avoid stretching */
-    margin: 0 auto;  /* Center the image */
-  }
-  
-  /* Media Query for smaller screens */
-  @media (max-width: 768px) {
-    .product-article img {
-      max-width: 50%;  /* Ensure the image fits the container on smaller screens */
-    }
-  }
-  
-  /* Media Query for very small screens (mobile devices) */
-  @media (max-width: 480px) {
-    .product-article img {
-      max-width: 100%;  /* Remove any width restrictions for even smaller screens */
-    }
-  }
-  /* Full-screen loader styles */
-.loader-overlay {
-  
- 
- 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  
+/* Mobile-first styles */
+.description-container {
+  padding: 20px;
 }
 
-.loader-spinner {
-  border: 8px solid #f3f3f3;
-  border-top: 8px solid #000000;
-  border-radius: 50%;
-  width: 80px;
-  height: 80px;
-  animation: spin 2s linear infinite;
+.page-title {
+  margin-bottom: 20px;
+  text-align: center;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.product-article {
+  margin-bottom: 30px;
+}
+
+.product-description {
+  margin-bottom: 20px;
+}
+
+.file-preview {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.comment-section {
+  margin-top: 40px;
+}
+
+.comment-form input,
+.comment-form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.submit-btn {
+  padding: 10px 20px;
+  background-color: #000;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.replies {
+  margin-top: 10px;
+  padding-left: 20px;
+  font-style: italic;
+  color: #555;
+}
+
+.reply-form {
+  margin-top: 10px;
+}
+
+.reply-textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.reply-text {
+  margin-left: 20px;
+  font-style: italic;
+  color: #555;
+}
+
+@media screen and (min-width: 768px) {
+  .description-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .page-title {
+    font-size: 3rem;
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .description-container {
+    padding: 40px;
+  }
 }

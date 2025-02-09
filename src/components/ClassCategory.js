@@ -28,16 +28,22 @@ const DropdownComponent = () => {
         const { class: className, subCategory, topic, timestamp } = doc.data();
         if (['Class 9', 'Class 10', 'Class 11', 'Class 12'].includes(className)) {
           if (!data[className]) {
-            data[className] = [];
+            data[className] = {};
           }
-          data[className].push({ subCategory, topic, timestamp });
+          if (!data[className][subCategory]) {
+            data[className][subCategory] = [];
+          }
+          data[className][subCategory].push({ topic, timestamp, id: doc.id });
         }
       });
 
-      // Format the data to match the desired structure
+      // Format the data to match the desired structure (grouped by subcategory)
       const formattedData = Object.keys(data).map((classKey) => ({
         title: classKey,
-        content: data[classKey].sort((a, b) => a.timestamp - b.timestamp),
+        content: Object.keys(data[classKey]).map((subCategory) => ({
+          subCategory,
+          topics: data[classKey][subCategory].sort((a, b) => a.timestamp - b.timestamp),
+        })),
       }));
 
       setDropdownData(formattedData);
@@ -91,8 +97,11 @@ const DropdownComponent = () => {
   }, []);
 
   // Scroll to the top when a link is clicked
-  const scrollToTop = () => {
-    window.scrollTo(0, 0);
+  const scrollToTopic = (topicId) => {
+    const element = document.getElementById(topicId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   // Loader component
@@ -140,39 +149,46 @@ const DropdownComponent = () => {
                     </div>
                     <Collapse in={openDropdown === index}>
                       <div className="mt-3">
-                        {dropdown.content.map((item, itemIndex) => (
-                          <div key={itemIndex} className="mb-3">
+                        {dropdown.content.map((category, categoryIndex) => (
+                          <div key={categoryIndex} className="mb-3">
                             <div
                               className="d-flex justify-content-between align-items-center"
                               style={{ cursor: 'pointer', padding: '8px 0' }}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                toggleCategory(index, itemIndex);
+                                toggleCategory(index, categoryIndex);
                               }}
                             >
                               <h6 style={{ fontSize: '1.2rem', fontWeight: '500' }}>
-                                {item.subCategory}
+                                {category.subCategory}
                               </h6>
-                              {openCategory[`${index}-${itemIndex}`] ? <BsChevronUp /> : <BsChevronDown />}
+                              {openCategory[`${index}-${categoryIndex}`] ? <BsChevronUp /> : <BsChevronDown />}
                             </div>
-                            <Collapse in={openCategory[`${index}-${itemIndex}`]}>
+                            <Collapse in={openCategory[`${index}-${categoryIndex}`]}>
                               <ul className="list-unstyled mt-2 pl-4">
-                                <li className="py-1">
-                                  <Link
-                                    to={`/description/${item.subCategory}`} // Corrected routing to subCategory
-                                    className="sub-category-link"
-                                    onClick={scrollToTop}
-                                    style={{
-                                      textDecoration: 'none',
-                                      color: '#007bff',
-                                      fontSize: '1rem',
-                                      fontWeight: '400',
-                                      transition: 'color 0.2s ease',
-                                    }}
-                                  >
-                                    {item.topic}
-                                  </Link>
-                                </li>
+                                {category.topics.map((topic, topicIndex) => {
+                                  const topicId = `${dropdown.title}-${category.subCategory}-${topic.topic}`;
+                                  return (
+                                    <li className="py-1" key={topicIndex}>
+                                      <Link
+                                        to={`/description/${category.subCategory}/${topic.id}`} // Navigate to specific topic using topic.id
+                                        className="sub-category-link"
+                                        onClick={() => {
+                                          scrollToTopic(topicId); // Scroll to the specific topic on click
+                                        }}
+                                        style={{
+                                          textDecoration: 'none',
+                                          color: '#007bff',
+                                          fontSize: '1rem',
+                                          fontWeight: '400',
+                                          transition: 'color 0.2s ease',
+                                        }}
+                                      >
+                                        {topic.topic}
+                                      </Link>
+                                    </li>
+                                  );
+                                })}
                               </ul>
                             </Collapse>
                           </div>
@@ -193,49 +209,51 @@ const DropdownComponent = () => {
             <div>
               <div className="list-group">
                 {recentPosts.length > 0 ? (
-                  recentPosts.map((post, index) => (
-                    <Link
-                      key={index}
-                      to={`/description/${post.subCategory}`} // Corrected routing to subCategory
-                      style={{
-                        textDecoration: 'none',
-                        color: 'inherit',
-                      }}
-                      onClick={scrollToTop} // Scroll to top on click
-                    >
-                      <div
-                        className="list-group-item list-group-item-action"
+                  recentPosts.map((post, index) => {
+                    return (
+                      <Link
+                        key={index}
+                        to={`/description/${post.subCategory}/${post.topicId}`} // Navigate to specific topic using topicId
                         style={{
-                          padding: '15px',
-                          borderRadius: '8px',
-                          marginBottom: '15px',
-                          boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-                          cursor: 'pointer',
+                          textDecoration: 'none',
+                          color: 'inherit',
                         }}
+                       
                       >
-                        <div className="d-flex justify-content-between align-items-center">
-                          <div>
-                            <h5 className="mb-0" style={{ fontSize: '1.2rem', fontWeight: '600', color: '#000' }}>
-                              {index + 1}. {post.topic}
-                            </h5>
-                            <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
-                              <strong>Class:</strong> {post.class} &nbsp; | &nbsp;
-                              <strong>SubCategory:</strong> {post.subCategory}
-                            </p>
+                        <div
+                          className="list-group-item list-group-item-action"
+                          style={{
+                            padding: '15px',
+                            borderRadius: '8px',
+                            marginBottom: '15px',
+                            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <div className="d-flex justify-content-between align-items-center">
+                            <div>
+                              <h5 className="mb-0" style={{ fontSize: '1.2rem', fontWeight: '600', color: '#000' }}>
+                                {index + 1}. {post.topic}
+                              </h5>
+                              <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
+                                <strong>Class:</strong> {post.class} &nbsp; | &nbsp;
+                                <strong>SubCategory:</strong> {post.subCategory}
+                              </p>
+                            </div>
+                          </div>
+                          {/* View Details Link */}
+                          <div className="mt-2 text-right">
+                            <Link
+                              to={`/description/${post.subCategory}/${post.topicId}`} // Navigate to specific topic
+                              style={{ fontSize: '0.9rem', fontWeight: '600', color: '#007bff' }}
+                            >
+                              View Details
+                            </Link>
                           </div>
                         </div>
-                        {/* View Details Link */}
-                        <div className="mt-2 text-right">
-                          <Link
-                            to={`/description/${post.subCategory}`} // Corrected routing to subCategory
-                            style={{ fontSize: '0.9rem', fontWeight: '600', color: '#007bff' }}
-                          >
-                            View Details
-                          </Link>
-                        </div>
-                      </div>
-                    </Link>
-                  ))
+                      </Link>
+                    );
+                  })
                 ) : (
                   <div className="col-12">
                     <p className="text-center text-muted">No recent posts available.</p>

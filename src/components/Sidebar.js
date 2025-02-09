@@ -3,12 +3,11 @@ import { Link } from 'react-router-dom';
 import { Collapse } from 'react-bootstrap';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import { BsChevronDown, BsChevronUp } from 'react-icons/bs';
-import { MdExpandMore, MdExpandLess } from 'react-icons/md';
+import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
+import { fireStore } from '../firebase/firebase';
 
 import '../assets/css/sidebar.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { fireStore } from '../firebase/firebase';
 
 const Sidebar = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,25 +32,29 @@ const Sidebar = () => {
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        // Fetch all topics and order them by timestamp
         const q = query(collection(fireStore, 'topics'), orderBy('timestamp', 'asc'));
         const querySnapshot = await getDocs(q);
         const data = {};
 
         querySnapshot.forEach((doc) => {
-          const { class: className, subCategory } = doc.data();
+          const { class: className, subCategory, topic } = doc.data();
           if (!data[className]) {
             data[className] = [];
           }
-          if (!data[className].includes(subCategory)) {
-            data[className].push(subCategory);
+          const subCategoryData = data[className].find((item) => item.subCategory === subCategory);
+          if (subCategoryData) {
+            subCategoryData.topics.push({ id: doc.id, topic });
+          } else {
+            data[className].push({
+              subCategory,
+              topics: [{ id: doc.id, topic }],
+            });
           }
         });
 
-        // Format the data into a new structure
         const formattedData = Object.keys(data).map((classKey) => ({
           title: classKey,
-          subCategories: data[classKey],
+          content: data[classKey],
         }));
 
         setDropdownData(formattedData);
@@ -73,11 +76,11 @@ const Sidebar = () => {
     setOpenDropdown(openDropdown === index ? null : index);
   };
 
-  const toggleCategory = (mainIndex, categoryIndex) => {
-    const key = `${mainIndex}-${categoryIndex}`;
-    setOpenCategory((prevState) => ({
-      ...prevState,
-      [key]: !prevState[key],
+  const toggleCategory = (index, categoryIndex) => {
+    const key = `${index}-${categoryIndex}`;
+    setOpenCategory((prev) => ({
+      ...prev,
+      [key]: !prev[key],
     }));
   };
 
@@ -100,37 +103,69 @@ const Sidebar = () => {
           placeholder="Search classes..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="form-control mb-3 search-bar"
+          className="form-control mb-2 search-bar"
         />
-
+        
         {/* Dropdown Content */}
         <div className="tags-list">
           {filteredClasses.map((dropdown, index) => (
-            <div key={index} className="class-item">
+            <div key={index} className="mb-1">
+              {/* Class Dropdown */}
               <div
                 className="d-flex justify-content-between align-items-center dropdown-header"
                 onClick={() => toggleDropdown(index)}
+                style={{
+                  padding: '8px', 
+                  cursor: 'pointer',
+                  borderRadius: '5px',
+                 
+                }}
               >
-                <h6 className="dropdown-title">{dropdown.title}</h6>
-                {openDropdown === index ? <MdExpandLess /> : <MdExpandMore />}
+                <h6 style={{ fontSize: '0.9rem', fontWeight: '600' }}>{dropdown.title}</h6>
+                {openDropdown === index ? <BsChevronUp /> : <BsChevronDown />}
               </div>
               <Collapse in={openDropdown === index}>
-                <div className="mt-2">
-                  <div className="mb-3">
-                    <ul className="list-unstyled mt-2 pl-4">
-                      {dropdown.subCategories.map((subCategory, subIdx) => (
-                        <li key={subIdx} className="py-1">
-                          <Link
-                            to={`/description/${subCategory}`}
-                            className="sub-category-link"
-                            onClick={handleLinkClick}
-                          >
-                            {subCategory}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                <div className="mt-1">
+                  {/* SubCategory Dropdowns */}
+                  <ul className="list-unstyled mt-1">
+                    {dropdown.content.map((category, categoryIndex) => (
+                      <li key={categoryIndex} className="py-0.5">
+                        <div
+                          className="d-flex justify-content-between align-items-center"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleCategory(index, categoryIndex);
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <h6 style={{ fontSize: '0.8rem', fontWeight: '500' }}>{category.subCategory}</h6>
+                          {openCategory[`${index}-${categoryIndex}`] ? <BsChevronUp /> : <BsChevronDown />}
+                        </div>
+                        <Collapse in={openCategory[`${index}-${categoryIndex}`]}>
+                          <ul className="list-unstyled mt-1 pl-3">
+                            {category.topics.map((topic, topicIndex) => (
+                              <li key={topicIndex} className="py-0.5">
+                                <Link
+                                  to={`/description/${category.subCategory}/${topic.id}`}
+                                  className="sub-category-link"
+                                  onClick={handleLinkClick}
+                                  style={{
+                                    textDecoration: 'none',
+                                    color: '#FF0000',
+                                    fontSize: '0.8rem',
+                                    fontWeight: '400',
+                                    transition: 'color 0.2s ease',
+                                  }}
+                                >
+                                  {topic.topic}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </Collapse>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </Collapse>
             </div>

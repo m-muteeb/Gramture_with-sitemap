@@ -1,36 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { message } from 'antd';
+import { useParams, Link } from 'react-router-dom';
+import { message, Spin } from 'antd';
 import { getDocs, collection } from 'firebase/firestore';
 import { fireStore } from '../firebase/firebase';
-import { FaReply } from 'react-icons/fa';
+import { FaReply, FaShareAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import "../assets/css/description.css"; 
 import { addDoc, doc, updateDoc } from 'firebase/firestore';
 
 export default function Description() {
-  const { subCategory } = useParams(); 
+  const { subCategory, topicId } = useParams(); 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState({
-    name: '',
-    email: '',
-    comment: '',
-  });
+  const [newComment, setNewComment] = useState({ name: '', email: '', comment: '' });
   const [newReply, setNewReply] = useState('');
   const [replyingToIndex, setReplyingToIndex] = useState(null);
+  const [allTopics, setAllTopics] = useState([]); // To store all topics of the subcategory
+  const [currentTopicIndex, setCurrentTopicIndex] = useState(null);
 
   useEffect(() => {
     fetchProducts();
     fetchComments();
-  }, [subCategory]);
+    fetchAllTopics();
+  }, [subCategory, topicId]); 
 
   const fetchProducts = async () => {
     try {
       const querySnapshot = await getDocs(collection(fireStore, 'topics'));
       const productList = querySnapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter((product) => product.subCategory === subCategory);
+        .filter((product) => product.subCategory === subCategory && product.id === topicId);
       setProducts(productList);
       setLoading(false);
     } catch (error) {
@@ -47,6 +46,24 @@ export default function Description() {
       setComments(commentsList);
     } catch (error) {
       message.error('Failed to fetch comments.');
+      console.error(error);
+    }
+  };
+
+  const fetchAllTopics = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(fireStore, 'topics'));
+      const topicsList = querySnapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((topic) => topic.subCategory === subCategory)
+        .sort((a, b) => a.timestamp - b.timestamp); // Assuming timestamp is used to order topics
+
+      setAllTopics(topicsList);
+
+      const currentTopicIdx = topicsList.findIndex((topic) => topic.id === topicId);
+      setCurrentTopicIndex(currentTopicIdx);
+    } catch (error) {
+      message.error('Failed to fetch topics.');
       console.error(error);
     }
   };
@@ -119,16 +136,16 @@ export default function Description() {
     });
   };
 
-  // Function to render the button to open the file URL
-  const renderFilePreview = (fileURL) => {
-    // Ensure the fileURL is defined before attempting to render the button
+  const renderFilePreview = (file) => {
+    const fileURL = file.url;
+  
     if (!fileURL) {
-      return <p>No file URL available</p>; // Display a fallback message if no URL exists
+      return <p>No file URL available</p>;
     }
-
+  
     return (
       <button
-        onClick={() => window.open(fileURL, '_blank')} // Open file URL in a new tab
+        onClick={() => window.open(fileURL, '_blank')} 
         style={{
           padding: '10px 20px',
           backgroundColor: '#0073e6',
@@ -145,60 +162,135 @@ export default function Description() {
     );
   };
 
+  const getNextTopic = () => {
+    if (currentTopicIndex === null || currentTopicIndex + 1 >= allTopics.length) return null;
+    return allTopics[currentTopicIndex + 1];
+  };
+
+  const getPrevTopic = () => {
+    if (currentTopicIndex === null || currentTopicIndex - 1 < 0) return null;
+    return allTopics[currentTopicIndex - 1];
+  };
+
   return (
-    <div className="description-container" style={{ padding: '20px', marginTop: '45px' }}>
+    <div className="description-container">
       {loading && (
         <div className="loader-overlay">
-          <div className="loader-spinner"></div>
+          <Spin size="large" />
         </div>
       )}
       {products.length > 0 && (
         <>
-          <h3 className="page-title" style={{ textAlign: 'center', marginBottom: '20px', fontSize: '2.5rem', fontWeight: 'bold', color: '#000' }}>
-            {products[0].topic}
+          <h3
+            className="page-title"
+            style={{
+              fontSize: '2.5rem',
+              fontWeight: 'bold',
+              color: '#FF0000',
+              padding: '10px 20px',
+              textAlign: 'center',
+            }}
+          >
+            {subCategory}
           </h3>
 
-          {products.map((product, index) => (
-            <article key={product.id} className="product-article" style={{ marginBottom: '30px' }}>
-              <div className="product-description" style={{ marginBottom: '20px' }}>
+          <h2 style={{ fontSize: '2rem', fontWeight: 'bold', marginLeft: '10px' }}>
+            {products[0].topic}
+          </h2>
+
+          {products.map((product) => (
+            <article key={product.id} className="product-article">
+              <div className="product-description">
                 <div style={{ fontSize: '1.2rem', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: product.description }} />
               </div>
 
-              {/* Display file URLs with button to open */}
               {product.fileURL && product.fileURL.length > 0 && product.fileURL.map((file, fileIndex) => (
-                <div key={fileIndex} style={{ marginBottom: '10px', textAlign: 'center' }}>
-                  {renderFilePreview(file)} {/* Pass file to renderFilePreview */}
+                <div key={fileIndex} className="file-preview">
+                  {renderFilePreview(file)}
                 </div>
               ))}
             </article>
           ))}
 
+          {/* Navigation Icons for Previous and Next Topic */}
+          <div className="topic-navigation">
+            {getPrevTopic() && (
+              <Link
+                to={`/description/${subCategory}/${getPrevTopic().id}`}
+                className="prev-button"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: '20px',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  textDecoration: 'none',
+                  color: '#0073e6',
+                }}
+              >
+                <FaChevronLeft style={{ marginRight: '10px', fontSize: '24px' }} />
+                Previous Topic: {getPrevTopic().topic}
+              </Link>
+            )}
+            {getNextTopic() && (
+              <Link
+                to={`/description/${subCategory}/${getNextTopic().id}`}
+                className="next-button"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: '20px',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  textDecoration: 'none',
+                  color: '#0073e6',
+                }}
+              >
+                Next Topic: {getNextTopic().topic}
+                <FaChevronRight style={{ marginLeft: '10px', fontSize: '24px' }} />
+              </Link>
+            )}
+          </div>
+
           <button
             onClick={handleShare}
             style={{
-              padding: '10px 20px',
+              padding: '10px 25px',
               backgroundColor: '#FF0000',
               color: '#fff',
               border: 'none',
               cursor: 'pointer',
-              borderRadius: '5px',
-              width: '100%',
+              borderRadius: '30px',
               fontSize: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 'auto',
+              margin: '0 auto',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+              transition: 'background-color 0.3s, transform 0.2s',
             }}
+            onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
           >
+            <FaShareAlt style={{ marginRight: '10px', fontSize: '18px' }} />
             Share this Article
           </button>
 
-          <div className="comment-section" style={{ marginTop: '40px' }}>
-            <h3 style={{ textAlign: 'center', fontSize: '2rem', fontWeight: 'bold', color: '#000' }}>Leave a Comment</h3>
-            <div className="comment-form" style={{ marginBottom: '30px' }}>
+          <div className="comment-section">
+            <h3 style={{ textAlign: 'center', fontSize: '2rem', fontWeight: 'bold', color: '#000' }}>
+              Leave a Comment
+            </h3>
+
+            <div className="comment-form">
               <input
                 type="text"
                 name="name"
                 value={newComment.name}
                 onChange={handleCommentChange}
                 placeholder="Your Name"
-                style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
+                className="comment-input"
               />
               <input
                 type="email"
@@ -206,7 +298,7 @@ export default function Description() {
                 value={newComment.email}
                 onChange={handleCommentChange}
                 placeholder="Your Email"
-                style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
+                className="comment-input"
               />
               <textarea
                 name="comment"
@@ -214,74 +306,51 @@ export default function Description() {
                 onChange={handleCommentChange}
                 placeholder="Your Comment"
                 rows="5"
-                style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
+                className="comment-textarea"
               />
               <button
                 onClick={handleSubmitComment}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#000',
-                  color: '#fff',
-                  border: 'none',
-                  cursor: 'pointer',
-                  borderRadius: '5px',
-                }}
+                className="submit-btn"
               >
-                Submit Comment
+                {loading ? <Spin size="small" /> : 'Submit Comment'}
               </button>
             </div>
 
             {comments.length > 0 ? (
               comments.map((comment, index) => (
-                <div key={index} className="comment-item" style={{ marginBottom: '20px' }}>
-                  <div className="comment-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div key={index} className="comment-item">
+                  <div className="comment-header">
                     <strong>{comment.name}</strong>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div>
                       <FaReply
                         onClick={() => setReplyingToIndex(index)}
                         style={{
                           cursor: 'pointer',
                           marginLeft: '10px',
-                          color: '#000',
                         }}
                       />
                     </div>
                   </div>
                   <p>{comment.comment}</p>
                   {comment.replies && comment.replies.length > 0 && (
-                    <div className="replies" style={{ marginTop: '10px' }}>
+                    <div className="replies">
                       {comment.replies.map((reply, idx) => (
-                        <p key={idx} style={{ marginLeft: '20px', fontStyle: 'italic', color: '#555' }}>
-                          {reply}
-                        </p>
+                        <p key={idx} className="reply-text">{reply}</p>
                       ))}
                     </div>
                   )}
                   {replyingToIndex === index && (
-                    <div className="reply-form" style={{ marginTop: '10px' }}>
+                    <div className="reply-form">
                       <textarea
                         value={newReply}
                         onChange={handleReplyChange}
                         placeholder="Write a reply..."
                         rows="3"
-                        style={{
-                          width: '100%',
-                          padding: '10px',
-                          marginBottom: '10px',
-                          border: '1px solid #ccc',
-                          borderRadius: '5px',
-                        }}
+                        className="reply-textarea"
                       />
                       <button
                         onClick={() => handleSubmitReply(index)}
-                        style={{
-                          padding: '10px 20px',
-                          backgroundColor: '#000',
-                          color: '#fff',
-                          border: 'none',
-                          cursor: 'pointer',
-                          borderRadius: '5px',
-                        }}
+                        className="submit-btn"
                       >
                         Reply
                       </button>
@@ -290,7 +359,7 @@ export default function Description() {
                 </div>
               ))
             ) : (
-              <p style={{ textAlign: 'center', color: '#888', fontSize: '1.2rem' }}>No comments yet.</p>
+              <p>No comments yet.</p>
             )}
           </div>
         </>

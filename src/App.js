@@ -60,7 +60,7 @@ const App = () => {
             />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/construction" element={<Construction />} />
-            <Route path="/description/:subCategory" element={<Description />} />
+            <Route path="/description/:subCategory/:topicId" element={<Description />} />
             <Route path="/login" element={<Login />} />
             <Route path="/about" element={<About />} />
             <Route path="/discussion_forum" element={<DiscusionFourm />} />
