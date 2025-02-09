@@ -227,6 +227,7 @@ export default function Description() {
                   textDecoration: 'none',
                   color: '#0073e6',
                 }}
+                onClick={() => window.scrollTo(0, 0)}
               >
                 <FaChevronLeft style={{ marginRight: '10px', fontSize: '24px' }} />
                 Previous Topic: {getPrevTopic().topic}
@@ -245,6 +246,7 @@ export default function Description() {
                   textDecoration: 'none',
                   color: '#0073e6',
                 }}
+                onClick={() => window.scrollTo(0, 0)}
               >
                 Next Topic: {getNextTopic().topic}
                 <FaChevronRight style={{ marginLeft: '10px', fontSize: '24px' }} />
@@ -321,17 +323,18 @@ export default function Description() {
                 <div key={index} className="comment-item">
                   <div className="comment-header">
                     <strong>{comment.name}</strong>
+                  
                     <div>
-                      <FaReply
+                    
+                    </div>
+                  </div>
+                  <p>{comment.comment}</p>  Reply:  <FaReply
                         onClick={() => setReplyingToIndex(index)}
                         style={{
                           cursor: 'pointer',
                           marginLeft: '10px',
                         }}
                       />
-                    </div>
-                  </div>
-                  <p>{comment.comment}</p>
                   {comment.replies && comment.replies.length > 0 && (
                     <div className="replies">
                       {comment.replies.map((reply, idx) => (
