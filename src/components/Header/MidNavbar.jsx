@@ -100,7 +100,7 @@ const Header = () => {
         <div className="col-4 text-right">
           <ElegantText>English Grammar & Structure</ElegantText>
           {/* New SubHeading added below the ElegantText */}
-          <SubHeading>Class Tests | Notes | Past Papers | Mcq's | Much More</SubHeading>
+          <SubHeading>Class Tests | Notes | Past Papers | MCQs | Much More</SubHeading>
         </div>
       </div>
 
@@ -114,7 +114,7 @@ const Header = () => {
         <div className="col-12 text-center">
           <ElegantText>English Grammar & Structure</ElegantText>
           {/* New SubHeading added below the ElegantText */}
-          <SubHeading>Class Tests | Notes | Past Papers | Mcq's | Much More</SubHeading>
+          <SubHeading>Class Tests | Notes | Past Papers | MCQs | Much More</SubHeading>
         </div>
       </div>
     </header>

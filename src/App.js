@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { Helmet } from 'react-helmet';
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Footer from "./components/Footer";
 import Sidebar from "./components/Sidebar";
@@ -28,7 +29,7 @@ import PrivateRoute from "./Routes/PrivateRoute";
 import { AuthProvider } from "../src/contexts/AuthContext";
 import DiscusionFourm from "../src/components/DiscussionFourm";
 import Results  from "../src/components/Results";
-import Disclaimer from "../src/components/Disclaimer";
+
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
@@ -65,7 +66,7 @@ const App = () => {
             <Route path="/about" element={<About />} />
             <Route path="/discussion_forum" element={<DiscusionFourm />} />
             <Route path="/results" element={<Results />} />
-            <Route path ="/disclaimer" element={<Disclaimer />} />
+           
             
             {/* <Route path="/register" element={<Register />} /> */}
 

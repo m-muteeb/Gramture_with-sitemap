@@ -1,175 +1,137 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { message, Spin } from 'antd';
-import { getDocs, collection } from 'firebase/firestore';
-import { fireStore } from '../firebase/firebase';
-import { FaReply, FaShareAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import "../assets/css/description.css"; 
-import { addDoc, doc, updateDoc } from 'firebase/firestore';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { message, Spin } from "antd";
+import { getDocs, collection } from "firebase/firestore";
+import { fireStore } from "../firebase/firebase";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import "../assets/css/description.css";
+import CommentSection from "./CommentSection";
+import ShareArticle from "./ShareArticle";
 
 export default function Description() {
-  const { subCategory, topicId } = useParams(); 
+  const { subCategory, topicId } = useParams();
+  const navigate = useNavigate();
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState({ name: '', email: '', comment: '' });
-  const [newReply, setNewReply] = useState('');
-  const [replyingToIndex, setReplyingToIndex] = useState(null);
-  const [allTopics, setAllTopics] = useState([]); // To store all topics of the subcategory
+  const [mcqs, setMcqs] = useState([]);
+  const [selectedAnswer, setSelectedAnswer] = useState({});
+  const [answerFeedback, setAnswerFeedback] = useState({});
+  const [currentMcqIndex, setCurrentMcqIndex] = useState(0);
+  const [completedMcqs, setCompletedMcqs] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  const [allTopics, setAllTopics] = useState([]);
   const [currentTopicIndex, setCurrentTopicIndex] = useState(null);
 
   useEffect(() => {
     fetchProducts();
-    fetchComments();
     fetchAllTopics();
-  }, [subCategory, topicId]); 
+  }, [subCategory, topicId]);
 
   const fetchProducts = async () => {
     try {
-      const querySnapshot = await getDocs(collection(fireStore, 'topics'));
+      const querySnapshot = await getDocs(collection(fireStore, "topics"));
       const productList = querySnapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter((product) => product.subCategory === subCategory && product.id === topicId);
+        .filter(
+          (product) =>
+            product.subCategory === subCategory && product.id === topicId
+        );
       setProducts(productList);
+      setMcqs(productList[0]?.mcqs || []);
       setLoading(false);
     } catch (error) {
-      message.error('Failed to fetch products.');
-      console.error(error);
-    }
-  };
-
-  const fetchComments = async () => {
-    try {
-      const commentsRef = collection(fireStore, 'comments', subCategory, 'topicComments');
-      const querySnapshot = await getDocs(commentsRef);
-      const commentsList = querySnapshot.docs.map((doc) => doc.data());
-      setComments(commentsList);
-    } catch (error) {
-      message.error('Failed to fetch comments.');
+      message.error("Failed to fetch products.");
       console.error(error);
     }
   };
 
   const fetchAllTopics = async () => {
     try {
-      const querySnapshot = await getDocs(collection(fireStore, 'topics'));
+      const querySnapshot = await getDocs(collection(fireStore, "topics"));
       const topicsList = querySnapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }))
         .filter((topic) => topic.subCategory === subCategory)
-        .sort((a, b) => a.timestamp - b.timestamp); // Assuming timestamp is used to order topics
+        .sort((a, b) => a.timestamp - b.timestamp);
 
       setAllTopics(topicsList);
 
-      const currentTopicIdx = topicsList.findIndex((topic) => topic.id === topicId);
+      const currentTopicIdx = topicsList.findIndex(
+        (topic) => topic.id === topicId
+      );
       setCurrentTopicIndex(currentTopicIdx);
     } catch (error) {
-      message.error('Failed to fetch topics.');
+      message.error("Failed to fetch topics.");
       console.error(error);
     }
   };
 
-  const handleCommentChange = (e) => {
-    setNewComment({
-      ...newComment,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmitComment = async () => {
-    try {
-      const docRef = await addDoc(collection(fireStore, 'comments', subCategory, 'topicComments'), newComment);
-      setComments([...comments, { id: docRef.id, ...newComment }]);
-      setNewComment({ name: '', email: '', comment: '' });
-      message.success('Comment added successfully!');
-    } catch (error) {
-      message.error('Failed to add comment.');
-      console.error(error);
-    }
-  };
-
-  const handleReplyChange = (e) => {
-    setNewReply(e.target.value);
-  };
-
-  const handleSubmitReply = async (commentIndex) => {
-    if (newReply.trim()) {
-      const updatedComments = [...comments];
-      const commentRef = doc(fireStore, 'comments', subCategory, 'topicComments', comments[commentIndex].id);
-      await updateDoc(commentRef, {
-        replies: [...(comments[commentIndex].replies || []), newReply],
-      });
-      updatedComments[commentIndex].replies = [...(updatedComments[commentIndex].replies || []), newReply];
-      setComments(updatedComments);
-      setNewReply('');
-      setReplyingToIndex(null);
-    } else {
-      message.warning('Please enter a reply.');
-    }
-  };
-
-  const handleShare = () => {
-    if (typeof window !== 'undefined' && window.location) {
-      const url = window.location.href;
-      if (navigator.share) {
-        navigator.share({
-          title: 'Check out this article!',
-          url,
-        }).catch((error) => {
-          console.error('Error sharing:', error);
-          copyLinkToClipboard(url);
-        });
-      } else {
-        copyLinkToClipboard(url);
+  const navigateToTopic = (direction) => {
+    if (currentTopicIndex !== null) {
+      const newTopicIndex = currentTopicIndex + direction;
+      if (newTopicIndex >= 0 && newTopicIndex < allTopics.length) {
+        const newTopicId = allTopics[newTopicIndex].id;
+        navigate(`/description/${subCategory}/${newTopicId}`);
+        
+        // Scroll to the top of the page after navigation
+        window.scrollTo(0, 0);
       }
-    } else {
-      message.error('Unable to get the current URL.');
-      console.error('window.location is not available.');
     }
   };
 
-  const copyLinkToClipboard = (url) => {
-    navigator.clipboard.writeText(url).then(() => {
-      message.success('Link copied to clipboard!');
-    }).catch((error) => {
-      message.error('Failed to copy the link.');
-      console.error(error);
+  const handleAnswerChange = (event) => {
+    const { value } = event.target;
+    setSelectedAnswer({
+      ...selectedAnswer,
+      [currentMcqIndex]: value,
     });
   };
 
-  const renderFilePreview = (file) => {
-    const fileURL = file.url;
-  
-    if (!fileURL) {
-      return <p>No file URL available</p>;
+  const handleNextQuestion = () => {
+    const currentMcq = mcqs[currentMcqIndex];
+    const selected = selectedAnswer[currentMcqIndex];
+
+    if (selected === undefined) {
+      message.error("Please select an answer before moving to the next question.");
+      return;
     }
-  
-    return (
-      <button
-        onClick={() => window.open(fileURL, '_blank')} 
-        style={{
-          padding: '10px 20px',
-          backgroundColor: '#0073e6',
-          color: '#fff',
-          border: 'none',
-          cursor: 'pointer',
-          borderRadius: '5px',
-          fontSize: '16px',
-          fontWeight: 'bold',
-        }}
-      >
-        Open File
-      </button>
-    );
+
+    // Check answer and give feedback
+    const feedback = selected === currentMcq.correctAnswer ? "Correct!" : "Incorrect.";
+    setAnswerFeedback({
+      ...answerFeedback,
+      [currentMcqIndex]: feedback,
+    });
+
+    // Move to the next question
+    if (currentMcqIndex + 1 < mcqs.length) {
+      setCurrentMcqIndex(currentMcqIndex + 1);
+    } else {
+      // Show results when all questions are answered
+      setShowResults(true);
+    }
   };
 
-  const getNextTopic = () => {
-    if (currentTopicIndex === null || currentTopicIndex + 1 >= allTopics.length) return null;
-    return allTopics[currentTopicIndex + 1];
+  const calculateResults = () => {
+    let correctAnswers = 0;
+    mcqs.forEach((mcq, index) => {
+      if (selectedAnswer[index] === mcq.correctAnswer) {
+        correctAnswers++;
+      }
+    });
+    return correctAnswers;
   };
 
-  const getPrevTopic = () => {
-    if (currentTopicIndex === null || currentTopicIndex - 1 < 0) return null;
-    return allTopics[currentTopicIndex - 1];
+  const handleReviewClick = (index) => {
+    setCurrentMcqIndex(index);
+  };
+
+  const handleRetakeTest = () => {
+    setSelectedAnswer({});
+    setAnswerFeedback({});
+    setCurrentMcqIndex(0);
+    setCompletedMcqs([]);
+    setShowResults(false);
   };
 
   return (
@@ -181,190 +143,119 @@ export default function Description() {
       )}
       {products.length > 0 && (
         <>
-          <h3
-            className="page-title"
-            style={{
-              fontSize: '2.5rem',
-              fontWeight: 'bold',
-              color: '#FF0000',
-              padding: '10px 20px',
-              textAlign: 'center',
-            }}
-          >
-            {subCategory}
-          </h3>
-
-          <h2 style={{ fontSize: '2rem', fontWeight: 'bold', marginLeft: '10px' }}>
-            {products[0].topic}
-          </h2>
-
+          <h3 className="page-title">{subCategory}</h3>
+          <h2>{products[0].topic}</h2>
           {products.map((product) => (
             <article key={product.id} className="product-article">
               <div className="product-description">
-                <div style={{ fontSize: '1.2rem', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: product.description }} />
+                <div
+                  dangerouslySetInnerHTML={{ __html: product.description }}
+                />
               </div>
-
-              {product.fileURL && product.fileURL.length > 0 && product.fileURL.map((file, fileIndex) => (
-                <div key={fileIndex} className="file-preview">
-                  {renderFilePreview(file)}
-                </div>
-              ))}
             </article>
           ))}
 
-          {/* Navigation Icons for Previous and Next Topic */}
-          <div className="topic-navigation">
-            {getPrevTopic() && (
-              <Link
-                to={`/description/${subCategory}/${getPrevTopic().id}`}
-                className="prev-button"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginBottom: '20px',
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  textDecoration: 'none',
-                  color: '#0073e6',
-                }}
-                onClick={() => window.scrollTo(0, 0)}
-              >
-                <FaChevronLeft style={{ marginRight: '10px', fontSize: '24px' }} />
-                Previous Topic: {getPrevTopic().topic}
-              </Link>
-            )}
-            {getNextTopic() && (
-              <Link
-                to={`/description/${subCategory}/${getNextTopic().id}`}
-                className="next-button"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginBottom: '20px',
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  textDecoration: 'none',
-                  color: '#0073e6',
-                }}
-                onClick={() => window.scrollTo(0, 0)}
-              >
-                Next Topic: {getNextTopic().topic}
-                <FaChevronRight style={{ marginLeft: '10px', fontSize: '24px' }} />
-              </Link>
-            )}
-          </div>
-
-          <button
-            onClick={handleShare}
-            style={{
-              padding: '10px 25px',
-              backgroundColor: '#FF0000',
-              color: '#fff',
-              border: 'none',
-              cursor: 'pointer',
-              borderRadius: '30px',
-              fontSize: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 'auto',
-              margin: '0 auto',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-              transition: 'background-color 0.3s, transform 0.2s',
-            }}
-            onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
-            onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
-          >
-            <FaShareAlt style={{ marginRight: '10px', fontSize: '18px' }} />
-            Share this Article
-          </button>
-
-          <div className="comment-section">
-            <h3 style={{ textAlign: 'center', fontSize: '2rem', fontWeight: 'bold', color: '#000' }}>
-              Leave a Comment
-            </h3>
-
-            <div className="comment-form">
-              <input
-                type="text"
-                name="name"
-                value={newComment.name}
-                onChange={handleCommentChange}
-                placeholder="Your Name"
-                className="comment-input"
-              />
-              <input
-                type="email"
-                name="email"
-                value={newComment.email}
-                onChange={handleCommentChange}
-                placeholder="Your Email"
-                className="comment-input"
-              />
-              <textarea
-                name="comment"
-                value={newComment.comment}
-                onChange={handleCommentChange}
-                placeholder="Your Comment"
-                rows="5"
-                className="comment-textarea"
-              />
-              <button
-                onClick={handleSubmitComment}
-                className="submit-btn"
-              >
-                {loading ? <Spin size="small" /> : 'Submit Comment'}
-              </button>
-            </div>
-
-            {comments.length > 0 ? (
-              comments.map((comment, index) => (
-                <div key={index} className="comment-item">
-                  <div className="comment-header">
-                    <strong>{comment.name}</strong>
-                  
-                    <div>
-                    
+          {/* MCQ Section (Only Show if MCQs Exist) */}
+          {mcqs.length > 0 && (
+            <div className="mcq-section">
+              {showResults ? (
+                <div className="result-summary">
+                  <h3>Your Results</h3>
+                  <p>{`You answered ${calculateResults()} out of ${mcqs.length} questions correctly.`}</p>
+                  <h4>Review Your Answers:</h4>
+                  {mcqs.map((mcq, index) => (
+                    <div
+                      key={index}
+                      className={`review-item ${
+                        selectedAnswer[index] === mcq.correctAnswer ? "correct" : "incorrect"
+                      }`}
+                    >
+                      <p>{mcq.question}</p>
+                      <p>Your answer: {selectedAnswer[index]}</p>
+                      <p>Correct answer: {mcq.correctAnswer}</p>
                     </div>
-                  </div>
-                  <p>{comment.comment}</p>  Reply:  <FaReply
-                        onClick={() => setReplyingToIndex(index)}
-                        style={{
-                          cursor: 'pointer',
-                          marginLeft: '10px',
-                        }}
-                      />
-                  {comment.replies && comment.replies.length > 0 && (
-                    <div className="replies">
-                      {comment.replies.map((reply, idx) => (
-                        <p key={idx} className="reply-text">{reply}</p>
+                  ))}
+                  <button
+                    onClick={handleRetakeTest}
+                    style={{
+                      padding: "10px 20px",
+                      fontSize: "16px",
+                      backgroundColor: "#FF9800",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "5px",
+                      cursor: "pointer",
+                      transition: "background-color 0.3s ease",
+                    }}
+                  >
+                    Retake Test
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <h4>Question {currentMcqIndex + 1} of {mcqs.length}</h4>
+                  <div className="mcq-item">
+                    <h4>{mcqs[currentMcqIndex]?.question}</h4>
+                    <div className="mcq-options">
+                      {mcqs[currentMcqIndex]?.options.map((option, index) => (
+                        <label key={index} className="mcq-option">
+                          <input
+                            type="radio"
+                            name={`mcq-${currentMcqIndex}`}
+                            value={option}
+                            checked={selectedAnswer[currentMcqIndex] === option}
+                            onChange={handleAnswerChange}
+                          />
+                          {option}
+                        </label>
                       ))}
                     </div>
-                  )}
-                  {replyingToIndex === index && (
-                    <div className="reply-form">
-                      <textarea
-                        value={newReply}
-                        onChange={handleReplyChange}
-                        placeholder="Write a reply..."
-                        rows="3"
-                        className="reply-textarea"
-                      />
-                      <button
-                        onClick={() => handleSubmitReply(index)}
-                        className="submit-btn"
-                      >
-                        Reply
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))
-            ) : (
-              <p>No comments yet.</p>
-            )}
+                    {answerFeedback[currentMcqIndex] && (
+                      <p className={answerFeedback[currentMcqIndex] === "Correct!" ? "correct" : "incorrect"}>
+                        {answerFeedback[currentMcqIndex]}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleNextQuestion}
+                    style={{
+                      padding: "10px 20px",
+                      fontSize: "16px",
+                      backgroundColor: "#4CAF50",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "5px",
+                      cursor: "pointer",
+                      transition: "background-color 0.3s ease",
+                    }}
+                  >
+                    {currentMcqIndex + 1 === mcqs.length ? "Finish" : "Next Question"}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+          <ShareArticle />
+          {/* Navigation for Next and Previous Topics */}
+          <div className="navigation">
+            <button
+              className="prev-button"
+              onClick={() => navigateToTopic(-1)}
+              disabled={currentTopicIndex === 0}
+            >
+              <FaArrowLeft /> Previous Topic
+            </button>
+            <button
+              className="next-button"
+              onClick={() => navigateToTopic(1)}
+              disabled={currentTopicIndex === allTopics.length - 1}
+            >
+              Next Topic <FaArrowRight />
+            </button>
           </div>
+
+          {/* Comment Section */}
+          <CommentSection subCategory={subCategory} topicId={topicId} />
         </>
       )}
     </div>

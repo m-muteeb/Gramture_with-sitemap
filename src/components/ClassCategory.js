@@ -115,9 +115,9 @@ const DropdownComponent = () => {
 
   return (
     <div className="container" style={{ fontFamily: 'Roboto, sans-serif' }}>
-      <h2 className="text-center mt-4" style={{ fontSize: '2.5rem', fontWeight: 700, color: '#000' }}>
-        Study Online - For FREE
-      </h2>
+      <h1 className="text-center mt-4" style={{ fontSize: '2.5rem', fontWeight: 700, color: '#000' }}>
+         Gramture Study - For FREE
+      </h1>
       <p className="text-center text-muted mb-4" style={{ fontSize: '1.1rem' }}>
         Free Video Lectures, Practice MCQs & Test Sessions
       </p>
