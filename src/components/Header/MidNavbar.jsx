@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../assets/css/navbar.css"; // Include your own styles here
-import logo from "../../assets/images/navbarlogo.png"; // Replace with the actual logo
+import logo from "../../assets/images/navbarlogo.webp"; // Replace with the actual logo
 import styled from "styled-components";
 
 // Styled component for the animated and elegant text

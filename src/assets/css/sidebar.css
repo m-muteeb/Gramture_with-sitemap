@@ -13,6 +13,10 @@
   justify-content: center;
   align-items: center;
 }
+.dropdown-icon {
+  font-size: 0.8rem; /* Adjust the size as needed */
+}
+
 
 /* Sidebar Styling */
 .sidebar {
@@ -96,59 +100,7 @@
   animation: fadeInRight 1.5s ease-in-out;
 }
 
-/* Keyframes for animations */
-@keyframes fadeInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInRight {
-  from {
-    opacity: 0;
-    transform: translateX(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 /* Responsive adjustments for screens <= 768px */
 @media (max-width: 768px) {

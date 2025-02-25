@@ -15,6 +15,14 @@ const Navbar = () => {
   const [isNavbarOpen, setIsNavbarOpen] = useState(false);
   const dropdownRef = useRef();
 
+  // Static classes to be treated as fixed
+  const staticClasses = [
+    "Moral Stories",
+    "Applications",
+    "Letters",
+    "Applied Grammar"
+  ];
+
   useEffect(() => {
     const handleResize = () => {
       setIsSmallScreen(window.innerWidth < 992);
@@ -45,15 +53,23 @@ const Navbar = () => {
         const querySnapshot = await getDocs(q);
         const data = {};
 
+        // Fetch topics for static classes dynamically
         querySnapshot.forEach((doc) => {
           const { class: className, subCategory, topic } = doc.data();
-          if (["Class 9", "Class 10", "Class 11", "Class 12"].includes(className)) {
-            return;
+          
+          // Only fetch content for static classes (Moral Stories, Applications, Letters, Applied Grammar)
+          if (staticClasses.includes(className)) {
+            if (!data[className]) {
+              data[className] = [];
+            }
+            data[className].push({ id: doc.id, subCategory, topic });
           }
-          if (!data[className]) {
+          
+          // Other classes (dynamic)
+          if (!staticClasses.includes(className) && !["Class 9", "Class 10", "Class 11", "Class 12"].includes(className) && !data[className]) {
             data[className] = [];
           }
-          data[className].push({ id: doc.id, subCategory, topic });
+          data[className]?.push({ id: doc.id, subCategory, topic });
         });
 
         const formattedData = Object.keys(data).map((classKey) => ({
@@ -74,10 +90,7 @@ const Navbar = () => {
     if (!isSmallScreen) {
       if (direction === "left" && visibleStartIndex > 0) {
         setVisibleStartIndex(visibleStartIndex - 1);
-      } else if (
-        direction === "right" &&
-        visibleStartIndex + 6 < classes.length
-      ) {
+      } else if (direction === "right" && visibleStartIndex + 6 < classes.length) {
         setVisibleStartIndex(visibleStartIndex + 1);
       }
     }
@@ -130,44 +143,39 @@ const Navbar = () => {
             className="navbar-nav d-flex justify-content-center w-100"
             ref={dropdownRef}
           >
-            {Array.isArray(classes) && classes.length > 0 ? (
-              classes
-                .slice(
-                  isSmallScreen ? 0 : visibleStartIndex,
-                  isSmallScreen ? classes.length : visibleStartIndex + 6
-                )
-                .map((classData, index) => (
-                  <li
-                    className="nav-item dropdown position-relative mx-2"
-                    key={index}
+            {/* Static Classes with Dynamic Content */}
+            {staticClasses.map((className, index) => (
+              <li key={index} className="nav-item dropdown position-relative mx-2">
+                <div
+                  className="nav-link dropdown-toggle"
+                  onClick={() =>
+                    setOpenDropdown(openDropdown === index ? null : index)
+                  }
+                  style={{
+                    cursor: "pointer",
+                    wordWrap: "break-word",
+                    whiteSpace: "normal",
+                  }}
+                >
+                  {className}
+                </div>
+                <Collapse in={openDropdown === index}>
+                  <div
+                    className="dropdown-menu mt-0 shadow p-3 bg-light border custom-dropdown-width"
+                    style={{
+                      maxHeight: "300px",
+                      overflowY: "auto",
+                    }}
                   >
-                    <div
-                      className="nav-link dropdown-toggle"
-                      onClick={() =>
-                        setOpenDropdown(openDropdown === index ? null : index)
-                      }
-                      style={{
-                        cursor: "pointer",
-                        wordWrap: "break-word",
-                        whiteSpace: "normal",
-                      }}
-                    >
-                      {classData.class}
-                    </div>
-                    <Collapse in={openDropdown === index}>
-                      <div
-                        className="dropdown-menu mt-0 shadow p-3 bg-light border"
-                        style={{
-                          maxHeight: "300px",
-                          overflowY: "auto",
-                        }}
-                      >
-                        <div className="mb-3">
-                          <ul className="list-unstyled ms-3 mt-2">
-                            {classData.topics.map((topic, topicIndex) => (
+                    <div className="mb-3">
+                      <ul className="list-unstyled ms-3 mt-2">
+                        {classes
+                          .filter((classData) => classData.class === className)
+                          .map((classData, classIndex) =>
+                            classData.topics.map((topic, topicIndex) => (
                               <li key={topicIndex} className="py-0.5">
                                 <Link
-                                  to={`/description/${topic.subCategory}/${topic.id}`} // Routing using subCategory and topic.id
+                                  to={`/description/${topic.subCategory}/${topic.id}`}
                                   className="sub-category-link"
                                   onClick={handleSubCategoryClick}
                                   style={{
@@ -181,16 +189,70 @@ const Navbar = () => {
                                   {`${topicIndex + 1}. ${topic.topic}`}
                                 </Link>
                               </li>
-                            ))}
-                          </ul>
-                        </div>
+                            ))
+                          )}
+                      </ul>
+                    </div>
+                  </div>
+                </Collapse>
+              </li>
+            ))}
+
+            {/* Dynamic Classes */}
+            {classes
+              .filter((classData) => !staticClasses.includes(classData.class))
+              .map((classData, index) => (
+                <li
+                  className="nav-item dropdown position-relative mx-2"
+                  key={index}
+                >
+                  <div
+                    className="nav-link dropdown-toggle"
+                    onClick={() =>
+                      setOpenDropdown(openDropdown === index ? null : index)
+                    }
+                    style={{
+                      cursor: "pointer",
+                      wordWrap: "break-word",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    {classData.class}
+                  </div>
+                  <Collapse in={openDropdown === index}>
+                    <div
+                      className="dropdown-menu mt-0 shadow p-3 bg-light border custom-dropdown-width"
+                      style={{
+                        maxHeight: "300px",
+                        overflowY: "auto",
+                      }}
+                    >
+                      <div className="mb-3">
+                        <ul className="list-unstyled ms-3 mt-2">
+                          {classData.topics.map((topic, topicIndex) => (
+                            <li key={topicIndex} className="py-0.5">
+                              <Link
+                                to={`/description/${topic.subCategory}/${topic.id}`}
+                                className="sub-category-link"
+                                onClick={handleSubCategoryClick}
+                                style={{
+                                  textDecoration: "none",
+                                  color: "#007bff",
+                                  fontSize: "0.8rem",
+                                  fontWeight: "400",
+                                  transition: "color 0.2s ease",
+                                }}
+                              >
+                                {`${topicIndex + 1}. ${topic.topic}`}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                    </Collapse>
-                  </li>
-                ))
-            ) : (
-              <li>Loading...</li>
-            )}
+                    </div>
+                  </Collapse>
+                </li>
+              ))}
           </ul>
         </div>
         {!isSmallScreen && (

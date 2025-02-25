@@ -7,7 +7,7 @@ import {
 } from "react-icons/fa";
 
 import "../assets/css/footer.css";
-import logo from "../assets/images/logo.png.png";
+import logo from "../assets/images/logo.webp";
 
 const Footer = () => {
   return (

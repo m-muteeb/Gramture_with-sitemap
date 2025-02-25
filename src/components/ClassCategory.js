@@ -3,17 +3,17 @@ import { Collapse } from 'react-bootstrap';
 import { BsChevronDown, BsChevronUp } from 'react-icons/bs';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { collection, getDocs, orderBy, query, limit } from 'firebase/firestore';
-import { fireStore } from '../firebase/firebase'; // Ensure this path points to your Firebase configuration
-import { Link } from 'react-router-dom'; // Import Link from react-router-dom
+import { fireStore } from '../firebase/firebase';
+import { Link } from 'react-router-dom';
+import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap';
 
 const DropdownComponent = () => {
-  const [openDropdown, setOpenDropdown] = useState(null); // Track which main dropdown is open
-  const [openCategory, setOpenCategory] = useState({}); // Track which category dropdown is open
-  const [dropdownData, setDropdownData] = useState([]); // Dynamic data
-  const [recentPosts, setRecentPosts] = useState([]); // Recent posts data
-  const [loading, setLoading] = useState(true); // Track loading state
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [openCategory, setOpenCategory] = useState({});
+  const [dropdownData, setDropdownData] = useState([]);
+  const [recentPosts, setRecentPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch dropdown data from Firestore
   const fetchDropdownData = useCallback(async () => {
     try {
       if (!fireStore) throw new Error('Firestore instance is not defined');
@@ -23,21 +23,21 @@ const DropdownComponent = () => {
       );
 
       const data = {};
-
       querySnapshot.forEach((doc) => {
         const { class: className, subCategory, topic, timestamp } = doc.data();
         if (['Class 9', 'Class 10', 'Class 11', 'Class 12'].includes(className)) {
           if (!data[className]) {
             data[className] = {};
           }
-          if (!data[className][subCategory]) {
-            data[className][subCategory] = [];
+          if (subCategory && topic) {
+            if (!data[className][subCategory]) {
+              data[className][subCategory] = [];
+            }
+            data[className][subCategory].push({ topic, timestamp, id: doc.id });
           }
-          data[className][subCategory].push({ topic, timestamp, id: doc.id });
         }
       });
 
-      // Format the data to match the desired structure (grouped by subcategory)
       const formattedData = Object.keys(data).map((classKey) => ({
         title: classKey,
         content: Object.keys(data[classKey]).map((subCategory) => ({
@@ -52,33 +52,31 @@ const DropdownComponent = () => {
     }
   }, []);
 
-  // Fetch recent posts from Firestore
   const fetchRecentPosts = useCallback(async () => {
     try {
       if (!fireStore) throw new Error('Firestore instance is not defined');
 
       const querySnapshot = await getDocs(
-        query(collection(fireStore, 'topics'), orderBy('timestamp', 'desc'), limit(5))
+        query(collection(fireStore, 'topics'), orderBy('timestamp', 'desc'), limit(9))
       );
 
       const posts = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         const timestamp = data.timestamp?.seconds ? new Date(data.timestamp.seconds * 1000) : null;
         if (data.topic) {
-          return { ...data, timestamp, topicId: doc.id }; // Only add posts that have a topic
+          return { ...data, timestamp, topicId: doc.id };
         }
         return null;
-      }).filter(post => post !== null); // Filter out null posts
+      }).filter(post => post !== null);
 
       setRecentPosts(posts);
     } catch (error) {
       console.error('Error fetching recent posts:', error);
     } finally {
-      setLoading(false); // Set loading to false once data is fetched
+      setLoading(false);
     }
   }, []);
 
-  // Initialize data fetching on mount
   useEffect(() => {
     fetchDropdownData();
     fetchRecentPosts();
@@ -96,7 +94,6 @@ const DropdownComponent = () => {
     }));
   }, []);
 
-  // Scroll to the top when a link is clicked
   const scrollToTopic = (topicId) => {
     const element = document.getElementById(topicId);
     if (element) {
@@ -104,47 +101,42 @@ const DropdownComponent = () => {
     }
   };
 
-  // Loader component
   const Loader = () => (
-    <div className="loader" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-      <div className="spinner-border" role="status" style={{ width: '3rem', height: '3rem', color: '#000' }}>
-        <span className="sr-only">Loading...</span>
-      </div>
+    <div className="d-flex justify-content-center align-items-center" style={{ height: '50vh' }}>
+      <Spinner animation="border" size="lg" variant="primary" />
     </div>
   );
 
   return (
-    <div className="container" style={{ fontFamily: 'Roboto, sans-serif' }}>
-      <h1 className="text-center mt-4" style={{ fontSize: '2.5rem', fontWeight: 700, color: '#000' }}>
-         Gramture Study - For FREE
-      </h1>
-      <p className="text-center text-muted mb-4" style={{ fontSize: '1.1rem' }}>
-        Free Video Lectures, Practice MCQs & Test Sessions
-      </p>
+    <Container className="my-5">
+      {/* Heading Section */}
+      <Row className="text-center mb-4">
+        <Col>
+          <h1 className="display-5 font-weight-bold text-dark">Gramture Study Platform</h1>
+          <p className="lead text-muted">Explore Free Video Lectures, Practice MCQs & Test Sessions to boost your knowledge.</p>
+          <p className="text-muted">
+            This is a comprehensive online education platform that empowers students to excel in their academic journey. Our platform offers free video lectures, interactive practice MCQs, and test sessions for language studies. Join thousands of learners who trust us for quality, up-to-date study resources designed to help you succeed in exams and enhance your learning experience. Whether you're preparing for school exams or exploring new topics, 
+          </p>
+        </Col>
+      </Row>
 
-      {/* Display Loader until data is loaded */}
+      {/* Loading State */}
       {loading ? (
         <Loader />
       ) : (
         <>
           {/* Dropdown for Classes */}
-          <div className="row justify-content-center">
+          <Row className="justify-content-center">
             {dropdownData.map((dropdown, index) => (
-              <div className="col-md-6 mb-3" key={index} style={{ padding: '10px' }}>
-                <div
-                  className="card shadow-sm"
-                  style={{
-                    cursor: 'pointer',
-                    borderRadius: '8px',
-                    backgroundColor: '#ffffff',
-                    transition: 'box-shadow 0.3s ease',
-                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-                  }}
+              <Col md={6} className="mb-3" key={index}>
+                <Card
+                  className="shadow-sm border-0 rounded-lg"
+                  style={{ cursor: 'pointer' }}
                   onClick={() => toggleDropdown(index)}
                 >
-                  <div className="card-body">
+                  <Card.Body>
                     <div className="d-flex justify-content-between align-items-center">
-                      <h5 style={{ fontSize: '1.5rem', fontWeight: '600' }}>{dropdown.title}</h5>
+                      <h5 className="h5 font-weight-semibold text-danger">{dropdown.title}</h5>
                       {openDropdown === index ? <BsChevronUp /> : <BsChevronDown />}
                     </div>
                     <Collapse in={openDropdown === index}>
@@ -159,9 +151,7 @@ const DropdownComponent = () => {
                                 toggleCategory(index, categoryIndex);
                               }}
                             >
-                              <h6 style={{ fontSize: '1.2rem', fontWeight: '500' }}>
-                                {category.subCategory}
-                              </h6>
+                              <h6 className="h6 font-weight-medium text-secondary">{category.subCategory}</h6>
                               {openCategory[`${index}-${categoryIndex}`] ? <BsChevronUp /> : <BsChevronDown />}
                             </div>
                             <Collapse in={openCategory[`${index}-${categoryIndex}`]}>
@@ -171,10 +161,10 @@ const DropdownComponent = () => {
                                   return (
                                     <li className="py-1" key={topicIndex}>
                                       <Link
-                                        to={`/description/${category.subCategory}/${topic.id}`} // Navigate to specific topic using topic.id
+                                        to={`/description/${category.subCategory}/${topic.id}`}
                                         className="sub-category-link"
                                         onClick={() => {
-                                          scrollToTopic(topicId); // Scroll to the specific topic on click
+                                          scrollToTopic(topicId);
                                         }}
                                         style={{
                                           textDecoration: 'none',
@@ -195,76 +185,73 @@ const DropdownComponent = () => {
                         ))}
                       </div>
                     </Collapse>
-                  </div>
-                </div>
-              </div>
+                  </Card.Body>
+                </Card>
+              </Col>
             ))}
-          </div>
+          </Row>
 
-          {/* Recent Posts Section */}
-          <div className="recent-posts-section" style={{ marginTop: '50px' }}>
-            <h3 className="text-center" style={{ fontSize: '2rem', fontWeight: '700', color: '#333' }}>
-              Recent Posts
-            </h3>
-            <div>
-              <div className="list-group">
-                {recentPosts.length > 0 ? (
-                  recentPosts.map((post, index) => {
-                    return (
-                      <Link
-                        key={index}
-                        to={`/description/${post.subCategory}/${post.topicId}`} // Navigate to specific topic using topicId
+          {/* Recent Posts Layout */}
+          <Row className="mt-5 text-center">
+            <Col>
+              <h3 className="display-5 font-weight-bold text-dark">Recent Posts</h3>
+            </Col>
+          </Row>
+
+          <Row className="justify-content-center mt-4">
+            {recentPosts.length > 0 ? (
+              <div className="row w-100">
+                {recentPosts.map((post, index) => (
+                  <Col xs={12} sm={6} md={4} lg={4} key={index} className="mb-4">
+                    <Link
+                      to={`/description/${post.subCategory}/${post.topicId}`}
+                      style={{
+                        textDecoration: 'none',
+                        color: 'inherit',
+                      }}
+                    >
+                      <Card
+                        className="shadow-sm border-0 rounded-lg h-100"
                         style={{
-                          textDecoration: 'none',
-                          color: 'inherit',
+                          transition: 'transform 0.2s ease, box-shadow 0.3s ease',
                         }}
-                       
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'scale(1.05)';
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
                       >
-                        <div
-                          className="list-group-item list-group-item-action"
-                          style={{
-                            padding: '15px',
-                            borderRadius: '8px',
-                            marginBottom: '15px',
-                            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <div className="d-flex justify-content-between align-items-center">
-                            <div>
-                              <h5 className="mb-0" style={{ fontSize: '1.2rem', fontWeight: '600', color: '#000' }}>
-                                {index + 1}. {post.topic}
-                              </h5>
-                              <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
-                                <strong>Class:</strong> {post.class} &nbsp; | &nbsp;
-                                <strong>SubCategory:</strong> {post.subCategory}
-                              </p>
-                            </div>
-                          </div>
-                          {/* View Details Link */}
-                          <div className="mt-2 text-right">
-                            <Link
-                              to={`/description/${post.subCategory}/${post.topicId}`} // Navigate to specific topic
-                              style={{ fontSize: '0.9rem', fontWeight: '600', color: '#007bff' }}
-                            >
-                              View Details
-                            </Link>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })
-                ) : (
-                  <div className="col-12">
-                    <p className="text-center text-muted">No recent posts available.</p>
-                  </div>
-                )}
+                        <Card.Body>
+                          <h5 className="text-primary">{post.topic}</h5>
+                          <p className="text-muted">{new Date(post.timestamp).toLocaleDateString()}</p>
+                        </Card.Body>
+                      </Card>
+                    </Link>
+                  </Col>
+                ))}
               </div>
-            </div>
-          </div>
+            ) : (
+              <Col xs={12} className="text-center">
+                <p className="text-muted">No recent posts available.</p>
+              </Col>
+            )}
+          </Row>
+
+          {/* SEO Optimized Paragraph */}
+          <Row className="mt-5 text-center">
+            <Col>
+              <h4 className=" font-weight-bold">Why Choose Us?</h4>
+              <p className="text-muted">
+                This is not just an online study platform, it is a complete learning solution for students of all levels. Offering a vast collection of video tutorials, notes, practice questions, and interactive study tools, We aims to revolutionize how students learn. With us, you can prepare for competitive exams, master new subjects, and boost your academic performance, all at your own pace and convenience.
+              </p>
+            </Col>
+          </Row>
         </>
       )}
-    </div>
+    </Container>
   );
 };
 

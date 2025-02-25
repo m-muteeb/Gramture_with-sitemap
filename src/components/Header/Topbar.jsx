@@ -4,7 +4,7 @@ import { Modal, Input, Badge, Dropdown, Menu } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import { fireStore } from '../../firebase/firebase'; // Assuming fireStore is properly initialized
-import img from '../../assets/images/new logo.png'; // Your logo image
+import img from '../../assets/images/new-logo.webp'; // Your logo image
 import { FaBell, FaRegBell, FaHome, FaInfoCircle, FaComments } from 'react-icons/fa'; // Import FontAwesome icons
 
 const Topbar = () => {

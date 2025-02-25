@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { message, Spin } from "antd";
+import { Button, message, Spin } from "antd";
 import { getDocs, collection } from "firebase/firestore";
 import { fireStore } from "../firebase/firebase";
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { Link } from "react-router-dom";
 import "../assets/css/description.css";
 import CommentSection from "./CommentSection";
 import ShareArticle from "./ShareArticle";
@@ -72,7 +73,7 @@ export default function Description() {
       if (newTopicIndex >= 0 && newTopicIndex < allTopics.length) {
         const newTopicId = allTopics[newTopicIndex].id;
         navigate(`/description/${subCategory}/${newTopicId}`);
-        
+
         // Scroll to the top of the page after navigation
         window.scrollTo(0, 0);
       }
@@ -134,6 +135,16 @@ export default function Description() {
     setShowResults(false);
   };
 
+  const getNextTopic = () => {
+    if (currentTopicIndex === null || currentTopicIndex + 1 >= allTopics.length) return null;
+    return allTopics[currentTopicIndex + 1];
+  };
+
+  const getPrevTopic = () => {
+    if (currentTopicIndex === null || currentTopicIndex - 1 < 0) return null;
+    return allTopics[currentTopicIndex - 1];
+  };
+
   return (
     <div className="description-container">
       {loading && (
@@ -143,17 +154,18 @@ export default function Description() {
       )}
       {products.length > 0 && (
         <>
-          <h3 className="page-title">{subCategory}</h3>
-          <h2>{products[0].topic}</h2>
+          <h1 style={{ fontSize: "2rem", fontWeight: "bold", marginLeft: "10px", textAlign: "center" }}>
+            {products[0].topic}
+          </h1>
           {products.map((product) => (
             <article key={product.id} className="product-article">
               <div className="product-description">
-                <div
-                  dangerouslySetInnerHTML={{ __html: product.description }}
-                />
+                <div dangerouslySetInnerHTML={{ __html: product.description }} />
               </div>
             </article>
           ))}
+
+         
 
           {/* MCQ Section (Only Show if MCQs Exist) */}
           {mcqs.length > 0 && (
@@ -235,27 +247,54 @@ export default function Description() {
               )}
             </div>
           )}
+
           <ShareArticle />
           {/* Navigation for Next and Previous Topics */}
-          <div className="navigation">
-            <button
-              className="prev-button"
-              onClick={() => navigateToTopic(-1)}
-              disabled={currentTopicIndex === 0}
-            >
-              <FaArrowLeft /> Previous Topic
-            </button>
-            <button
-              className="next-button"
-              onClick={() => navigateToTopic(1)}
-              disabled={currentTopicIndex === allTopics.length - 1}
-            >
-              Next Topic <FaArrowRight />
-            </button>
+          <div className="topic-navigation">
+            {getPrevTopic() && getPrevTopic().subCategory === subCategory && getPrevTopic().class === products[0].class && (
+              <Link
+                to={`/description/${subCategory}/${getPrevTopic().id}`}
+                className="prev-button"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: '20px',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  textDecoration: 'none',
+                  color: '#0073e6',
+                }}
+                onClick={() => window.scrollTo(0, 0)} // Ensure scroll to top
+              >
+                <FaChevronLeft className="nav-icon" /> Previous Topic: {getPrevTopic().topic}
+              </Link>
+            )}
+
+            {getNextTopic() && getNextTopic().subCategory === subCategory && getNextTopic().class === products[0].class && (
+              <Link
+                to={`/description/${subCategory}/${getNextTopic().id}`}
+                className="next-button"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: '20px',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  textDecoration: 'none',
+                  color: '#0073e6',
+                }}
+                onClick={() => window.scrollTo(0, 0)} // Ensure scroll to top
+              >
+                Next Topic: {getNextTopic().topic} <FaChevronRight className="nav-icon" />
+              </Link>
+            )}
           </div>
 
           {/* Comment Section */}
           <CommentSection subCategory={subCategory} topicId={topicId} />
+          <p style={{ fontSize: "1.1rem", marginLeft: "10px" }}>
+            Gramture is an Educational website that helps students in their 9th, 10th, 1st year, and 2nd year with their studies. It provides notes, essays, applications, letters, short stories, chapter summaries, and word meanings in easy wording. This website helps students prepare for exams and improve their English grammar. Gramture makes learning simple and helps students understand subjects better.
+          </p>
         </>
       )}
     </div>

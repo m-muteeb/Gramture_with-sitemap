@@ -1,10 +1,10 @@
 import React from 'react';
 import { Row, Col, Image } from 'antd';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import myImage from '../assets/images/owner.jpg';
+import myImage from '../assets/images/owner.webp';
 import { FaFacebook, FaTwitter, FaYoutube, FaInstagram, FaWhatsapp } from 'react-icons/fa';
 
-import img from '../assets/images/about.jpg'; // Your logo image
+import img from '../assets/images/about.webp'; // Your logo image
 
 const About = () => {
   return (

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Collapse } from 'react-bootstrap';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import { BsChevronDown, BsChevronUp } from 'react-icons/bs';
-import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { fireStore } from '../firebase/firebase';
 
 import '../assets/css/sidebar.css';
@@ -15,6 +15,17 @@ const Sidebar = () => {
   const [dropdownData, setDropdownData] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [openCategory, setOpenCategory] = useState({});
+  
+  // Static classes to be displayed in sidebar
+  const staticClasses = [
+    'Class 9',
+    'Class 11',
+    'Class 12',
+    'Moral Stories',
+    'Applications',
+    'Letters',
+    'Applied Grammar',
+  ];
 
   useEffect(() => {
     const handleResize = () => {
@@ -52,10 +63,19 @@ const Sidebar = () => {
           }
         });
 
-        const formattedData = Object.keys(data).map((classKey) => ({
-          title: classKey,
-          content: data[classKey],
-        }));
+        // Filter out categories that don't have topics or are empty
+        const formattedData = Object.keys(data)
+          .map((classKey) => ({
+            title: classKey,
+            content: data[classKey]
+              .filter((category) => category.topics && category.topics.length > 0) // Remove empty categories
+              .map((category) => ({
+                subCategory: category.subCategory,
+                topics: category.topics.filter((topic) => topic.topic.trim() !== ""), // Remove empty topics
+              }))
+              .filter((category) => category.topics.length > 0), // Remove categories without topics
+          }))
+          .filter((dropdown) => dropdown.content.length > 0); // Remove dropdowns with no valid categories
 
         setDropdownData(formattedData);
       } catch (error) {
@@ -84,7 +104,16 @@ const Sidebar = () => {
     }));
   };
 
-  const filteredClasses = dropdownData.filter((dropdown) =>
+  // Combine static classes with dynamic data
+  const combinedClasses = staticClasses.map((staticClass) => {
+    const dynamicClassData = dropdownData.find((dropdown) => dropdown.title === staticClass);
+    return {
+      title: staticClass,
+      content: dynamicClassData ? dynamicClassData.content : [],
+    };
+  });
+
+  const filteredClasses = combinedClasses.filter((dropdown) =>
     dropdown.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -118,7 +147,6 @@ const Sidebar = () => {
                   padding: '8px', 
                   cursor: 'pointer',
                   borderRadius: '5px',
-                 
                 }}
               >
                 <h6 style={{ fontSize: '0.9rem', fontWeight: '600' }}>{dropdown.title}</h6>

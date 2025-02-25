@@ -48,10 +48,32 @@ const CommentSection = ({ subCategory, topicId }) => {
     });
   };
 
-  const handleSubmitComment = async () => {
-    // Check if name, email, and comment are filled out
-    if (!newComment.name || !newComment.email || !newComment.comment) {
+  const validateCommentForm = () => {
+    const { name, email, comment } = newComment;
+
+    if (!name || !email || !comment) {
       message.warning("Please fill out all fields before submitting your comment.");
+      return false;
+    }
+
+    // Basic email validation (regex check)
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    if (!emailRegex.test(email)) {
+      message.warning("Please enter a valid email address.");
+      return false;
+    }
+
+    // Ensure comment isn't too short (you can adjust this as needed)
+    if (comment.trim().length < 5) {
+      message.warning("Comment must be at least 5 characters long.");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmitComment = async () => {
+    if (!validateCommentForm()) {
       return;
     }
 
@@ -77,10 +99,17 @@ const CommentSection = ({ subCategory, topicId }) => {
     setNewReply(e.target.value);
   };
 
+  const validateReply = () => {
+    if (!newReply.trim()) {
+      message.warning("Please enter a reply.");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmitReply = async (commentIndex) => {
     if (comments[commentIndex]) {
-      if (!newReply.trim()) {
-        message.warning("Please enter a reply.");
+      if (!validateReply()) {
         return;
       }
 
