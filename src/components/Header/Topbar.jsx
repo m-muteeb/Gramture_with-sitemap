@@ -129,7 +129,7 @@ const Topbar = () => {
         {/* Left: Logo */}
         <div className="topbar-logo">
           <Link to="/Add Grammar">
-            <img src={img} alt="Logo" />
+            <img src={img} alt="Logo" width={"200px"} />
           </Link>
         </div>
 

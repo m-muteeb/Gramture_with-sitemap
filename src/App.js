@@ -32,6 +32,7 @@ import Results  from "../src/components/Results";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import Disclaimer from "./components/disclaimer";
 
 const App = () => {
   const location = useLocation(); // Get the current location
@@ -66,6 +67,7 @@ const App = () => {
             <Route path="/about" element={<About />} />
             <Route path="/discussion_forum" element={<DiscusionFourm />} />
             <Route path="/results" element={<Results />} />
+            <Route path ="/disclaimer" element={<Disclaimer />} />
            
             
             {/* <Route path="/register" element={<Register />} /> */}
