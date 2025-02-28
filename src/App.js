@@ -1,6 +1,5 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
-import { Helmet } from 'react-helmet';
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Footer from "./components/Footer";
 import Sidebar from "./components/Sidebar";
@@ -24,7 +23,6 @@ import ClassCategory from "./components/ClassCategory";
 import Description from "./components/description";
 import Login from "./components/Auth/Login";
 import  About from "./components/AboutSection";
-import Register from "./components/Auth/Register";
 import PrivateRoute from "./Routes/PrivateRoute";
 import { AuthProvider } from "../src/contexts/AuthContext";
 import DiscusionFourm from "../src/components/DiscussionFourm";
@@ -32,7 +30,7 @@ import Results  from "../src/components/Results";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import Disclaimer from "./components/disclaimer";
+import Disclaimer from "./components/Disclaimer";
 
 const App = () => {
   const location = useLocation(); // Get the current location

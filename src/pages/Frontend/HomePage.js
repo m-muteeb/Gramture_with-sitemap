@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import "../../assets/css/homepage.css"; // Import the CSS file
 import img1 from "../../assets/images/home.webp";
 

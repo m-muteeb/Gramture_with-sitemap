@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import '../../assets/css/topbar.css';
-import { Modal, Input, Badge, Dropdown, Menu } from 'antd';
+import { Modal, Input } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
-import { collection, getDocs } from 'firebase/firestore';
-import { fireStore } from '../../firebase/firebase'; // Assuming fireStore is properly initialized
+
 import img from '../../assets/images/new-logo.webp'; // Your logo image
-import { FaBell, FaRegBell, FaHome, FaInfoCircle, FaComments } from 'react-icons/fa'; // Import FontAwesome icons
+import {  FaHome, FaInfoCircle, FaComments } from 'react-icons/fa'; // Import FontAwesome icons
 
 const Topbar = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [notifications, setNotifications] = useState([]); // Notifications state
-  const [notificationCount, setNotificationCount] = useState(0); // Notification count
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to check if dropdown is open
+ 
   const navigate = useNavigate();
 
   const searchKeywords = [
@@ -67,61 +64,12 @@ const Topbar = () => {
 
   // Fetch notifications from Firestore
   useEffect(() => {
-    const fetchNotifications = async () => {
-      const questionsRef = collection(fireStore, 'questions');
-      const querySnapshot = await getDocs(questionsRef);
-
-      if (!querySnapshot.empty) {
-        const questionsList = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          name: doc.data().name || "Unknown",
-          question: doc.data().question || "No question available",
-        }));
-
-        setNotifications(questionsList);
-        setNotificationCount(questionsList.length);
-      } else {
-        setNotifications([]);
-        setNotificationCount(0);
-      }
-    };
-
-    fetchNotifications();
+    // Notification dropdown menu
   }, []);
-
-  // Notification dropdown menu
-  const notificationMenu = (
-    <Menu>
-      {notifications.length > 0 ? (
-        notifications.map((notif, index) => (
-          <Menu.Item key={index} onClick={() => handleQuestionClick(notif)}>
-            <div>
-              <strong>{notif.name}</strong>: {notif.question}
-            </div>
-          </Menu.Item>
-        ))
-      ) : (
-        <Menu.Item>No notifications available</Menu.Item>
-      )}
-    </Menu>
-  );
+ 
 
   // Handle dropdown open
-  const handleDropdownOpen = () => {
-    setIsDropdownOpen(true);
-    setNotificationCount(0);  // Reset notification count when dropdown is opened
-  };
-
-  // Handle dropdown close
-  const handleDropdownClose = () => {
-    setIsDropdownOpen(false);
-  };
-
-  // Handle click on a notification (question)
-  const handleQuestionClick = (notif) => {
-    // Navigate to the discussion forum page
-    navigate('/discussion_forum', { state: { questionId: notif.id } });
-  };
+ 
 
   return (
     <div className="topbar" style={{ zIndex: 15000 }}>
@@ -151,26 +99,7 @@ const Topbar = () => {
 
         {/* Right: Search Icon and Notification Bell */}
         <div className="topbar-right">
-          {/* Notification Bell */}
-          <Badge 
-            count={notificationCount} 
-            overflowCount={99} 
-            style={{ display: isDropdownOpen ? 'none' : 'block' }} 
-          >
-            <Dropdown
-              overlay={notificationMenu}
-              trigger={['click']}
-              onOpen={handleDropdownOpen}
-              onClose={handleDropdownClose}
-            >
-              {/* Notification Bell Icon */}
-              {notificationCount > 0 ? (
-                <FaBell style={{ fontSize: '24px', cursor: 'pointer', color: '#000' }} />
-              ) : (
-                <FaRegBell style={{ fontSize: '24px', cursor: 'pointer', color: '#000' }} />
-              )}
-            </Dropdown>
-          </Badge>
+        
 
           {/* Search Icon */}
           <button className="search-icon" onClick={handleSearch}>
