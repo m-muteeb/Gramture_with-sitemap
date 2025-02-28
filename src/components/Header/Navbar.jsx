@@ -160,41 +160,42 @@ const Navbar = () => {
                   {className}
                 </div>
                 <Collapse in={openDropdown === index}>
-                  <div
-                    className="dropdown-menu mt-0 shadow p-3 bg-light border custom-dropdown-width"
-                    style={{
-                      maxHeight: "300px",
-                      overflowY: "auto",
-                    }}
-                  >
-                    <div className="mb-3">
-                      <ul className="list-unstyled ms-3 mt-2">
-                        {classes
-                          .filter((classData) => classData.class === className)
-                          .map((classData, classIndex) =>
-                            classData.topics.map((topic, topicIndex) => (
-                              <li key={topicIndex} className="py-0.5">
-                                <Link
-                                  to={`/description/${topic.subCategory}/${topic.id}`}
-                                  className="sub-category-link"
-                                  onClick={handleSubCategoryClick}
-                                  style={{
-                                    textDecoration: "none",
-                                    color: "#007bff",
-                                    fontSize: "0.8rem",
-                                    fontWeight: "400",
-                                    transition: "color 0.2s ease",
-                                  }}
-                                >
-                                  {`${topicIndex + 1}. ${topic.topic}`}
-                                </Link>
-                              </li>
-                            ))
-                          )}
-                      </ul>
-                    </div>
-                  </div>
-                </Collapse>
+  <div
+    className="dropdown-menu mt-0 shadow p-3 bg-light border custom-dropdown-width"
+    style={{
+      maxHeight: "300px",
+      overflowY: "auto",
+    }}
+  >
+    <div className="mb-3">
+      <ul className="list-unstyled ms-3 mt-2">
+        {classes
+          .filter((classData) => classData.class === className)
+          .map((classData, classIndex) =>
+            classData.topics.map((topic, topicIndex) => (
+              <li key={topicIndex} className="py-0.5">
+                <Link
+                  to={`/description/${topic.subCategory}/${topic.id}`}
+                  className="sub-category-link"
+                  onClick={handleSubCategoryClick}
+                  style={{
+                    textDecoration: "none",
+                    color: "#007bff",
+                    fontSize: "0.8rem",
+                    fontWeight: "400",
+                    transition: "color 0.2s ease",
+                  }}
+                >
+                  {`${topicIndex + 1}. ${topic.topic}`}
+                </Link>
+              </li>
+            ))
+          )}
+      </ul>
+    </div>
+  </div>
+</Collapse>
+
               </li>
             ))}
 
