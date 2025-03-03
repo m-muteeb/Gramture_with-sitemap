@@ -14,14 +14,17 @@ const Home = () => {
           <div className="col-md-6 mt-2">
             <h1>Welcome to Gramture</h1>
             <p>
-              Gramture is an educational website that provides study materials
-              for 9th, 10th, first-year, and second-year students.
+            Whenever curriculum wings update or publish new content, students face unavailability or a shortage of books in the market. Students also face difficulty in purchasing new books, which may affect their studies. To solve such situations and problems, we launch Gramture. The <b>Gramture</b> is just like an e-library for students as well as teachers.
             </p>
             <p>
+            <b>Gramture</b> is an educational website that provides study materials
+              for 9th, 10th, first-year, and second-year students.
+            </p>
+            {/* <p>
               The content is written in simple and easy-to-understand language,
               making it perfect for exam preparation and improving writing
               skills.
-            </p>
+            </p> */}
             <p>
               With free access to high-quality educational resources,
               Gramture is a valuable platform for students looking to learn

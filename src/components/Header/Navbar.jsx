@@ -107,7 +107,7 @@ const Navbar = () => {
     <nav
       className="navbar navbar-expand-lg custom-navbar navbar-offset"
       style={{
-        backgroundColor: "#fcf9f9",
+        backgroundColor: "#fffb1e",
         zIndex: isSmallScreen ? 1000 : "auto",
       }}
     >
