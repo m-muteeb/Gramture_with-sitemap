@@ -11,7 +11,8 @@
   display: flex;
   flex: 1;
   justify-content: center;
-  align-items: center;
+  align-items: center; 
+  
 }
 .dropdown-icon {
   font-size: 0.8rem; /* Adjust the size as needed */

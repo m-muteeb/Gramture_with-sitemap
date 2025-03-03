@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import "../assets/css/description.css";
 import CommentSection from "./CommentSection";
 import ShareArticle from "./ShareArticle";
+import { Helmet } from "react-helmet-async";
 
 export default function Description() {
   const { subCategory, topicId } = useParams();
@@ -25,9 +26,36 @@ export default function Description() {
   const [currentTopicIndex, setCurrentTopicIndex] = useState(null);
 
   useEffect(() => {
+    console.log("Fetching products...");
     fetchProducts();
     fetchAllTopics();
   }, [subCategory, topicId]);
+  
+  useEffect(() => {
+    if (products.length > 0) {
+      console.log("Meta description updated to:", 
+        extractTextFromHTML(products[0].description).substring(0, 150));
+    }
+  }, [products]);
+
+  useEffect(() => {
+    if (products.length > 0) {
+      const timer = setTimeout(() => {
+        console.log("Meta description updated after delay:", 
+          extractTextFromHTML(products[0].description).substring(0, 150));
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [products]);
+
+  // useEffect(() => {
+  //   console.log(products);
+  //   if (products.length > 0) {
+  //     document
+  //       .querySelector("meta[name='description']")
+  //       ?.setAttribute("content", products[0].description.substring(0, 150));
+  //   }
+  // }, [products]);
 
   const fetchProducts = async () => {
     try {
@@ -39,6 +67,7 @@ export default function Description() {
             product.subCategory === subCategory && product.id === topicId
         );
       setProducts(productList);
+      console.log(products, "products list");
       setMcqs(productList[0]?.mcqs || []);
       setLoading(false);
     } catch (error) {
@@ -93,12 +122,15 @@ export default function Description() {
     const selected = selectedAnswer[currentMcqIndex];
 
     if (selected === undefined) {
-      message.error("Please select an answer before moving to the next question.");
+      message.error(
+        "Please select an answer before moving to the next question."
+      );
       return;
     }
 
     // Check answer and give feedback
-    const feedback = selected === currentMcq.correctAnswer ? "Correct!" : "Incorrect.";
+    const feedback =
+      selected === currentMcq.correctAnswer ? "Correct!" : "Incorrect.";
     setAnswerFeedback({
       ...answerFeedback,
       [currentMcqIndex]: feedback,
@@ -136,7 +168,8 @@ export default function Description() {
   };
 
   const getNextTopic = () => {
-    if (currentTopicIndex === null || currentTopicIndex + 1 >= allTopics.length) return null;
+    if (currentTopicIndex === null || currentTopicIndex + 1 >= allTopics.length)
+      return null;
     return allTopics[currentTopicIndex + 1];
   };
 
@@ -144,9 +177,24 @@ export default function Description() {
     if (currentTopicIndex === null || currentTopicIndex - 1 < 0) return null;
     return allTopics[currentTopicIndex - 1];
   };
+  const extractTextFromHTML = (htmlString) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, "text/html");
+    return doc.body.textContent || "";
+  };
 
   return (
     <div className="description-container">
+      {!loading && products.length > 0 && (
+  <Helmet>
+    <title>{products[0].topic}</title>
+    <meta
+      name="description"
+      content={extractTextFromHTML(products[0].description).substring(0, 150)}
+    />
+  </Helmet>
+)}
+
       {loading && (
         <div className="loader-overlay">
           <Spin size="large" />
@@ -154,18 +202,25 @@ export default function Description() {
       )}
       {products.length > 0 && (
         <>
-          <h1 style={{ fontSize: "2rem", fontWeight: "bold", marginLeft: "10px", textAlign: "center" }}>
+          <h1
+            style={{
+              fontSize: "2rem",
+              fontWeight: "bold",
+              marginLeft: "10px",
+              textAlign: "center",
+            }}
+          >
             {products[0].topic}
           </h1>
           {products.map((product) => (
             <article key={product.id} className="product-article">
               <div className="product-description">
-                <div dangerouslySetInnerHTML={{ __html: product.description }} />
+                <div
+                  dangerouslySetInnerHTML={{ __html: product.description }}
+                />
               </div>
             </article>
           ))}
-
-         
 
           {/* MCQ Section (Only Show if MCQs Exist) */}
           {mcqs.length > 0 && (
@@ -173,13 +228,17 @@ export default function Description() {
               {showResults ? (
                 <div className="result-summary">
                   <h3>Your Results</h3>
-                  <p>{`You answered ${calculateResults()} out of ${mcqs.length} questions correctly.`}</p>
+                  <p>{`You answered ${calculateResults()} out of ${
+                    mcqs.length
+                  } questions correctly.`}</p>
                   <h4>Review Your Answers:</h4>
                   {mcqs.map((mcq, index) => (
                     <div
                       key={index}
                       className={`review-item ${
-                        selectedAnswer[index] === mcq.correctAnswer ? "correct" : "incorrect"
+                        selectedAnswer[index] === mcq.correctAnswer
+                          ? "correct"
+                          : "incorrect"
                       }`}
                     >
                       <p>{mcq.question}</p>
@@ -205,7 +264,9 @@ export default function Description() {
                 </div>
               ) : (
                 <>
-                  <h4>Question {currentMcqIndex + 1} of {mcqs.length}</h4>
+                  <h4>
+                    Question {currentMcqIndex + 1} of {mcqs.length}
+                  </h4>
                   <div className="mcq-item">
                     <h4>{mcqs[currentMcqIndex]?.question}</h4>
                     <div className="mcq-options">
@@ -223,7 +284,13 @@ export default function Description() {
                       ))}
                     </div>
                     {answerFeedback[currentMcqIndex] && (
-                      <p className={answerFeedback[currentMcqIndex] === "Correct!" ? "correct" : "incorrect"}>
+                      <p
+                        className={
+                          answerFeedback[currentMcqIndex] === "Correct!"
+                            ? "correct"
+                            : "incorrect"
+                        }
+                      >
                         {answerFeedback[currentMcqIndex]}
                       </p>
                     )}
@@ -241,7 +308,9 @@ export default function Description() {
                       transition: "background-color 0.3s ease",
                     }}
                   >
-                    {currentMcqIndex + 1 === mcqs.length ? "Finish" : "Next Question"}
+                    {currentMcqIndex + 1 === mcqs.length
+                      ? "Finish"
+                      : "Next Question"}
                   </button>
                 </>
               )}
@@ -251,49 +320,60 @@ export default function Description() {
           <ShareArticle />
           {/* Navigation for Next and Previous Topics */}
           <div className="topic-navigation">
-            {getPrevTopic() && getPrevTopic().subCategory === subCategory && getPrevTopic().class === products[0].class && (
-              <Link
-                to={`/description/${subCategory}/${getPrevTopic().id}`}
-                className="prev-button"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginBottom: '20px',
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  textDecoration: 'none',
-                  color: '#0073e6',
-                }}
-                onClick={() => window.scrollTo(0, 0)} // Ensure scroll to top
-              >
-                <FaChevronLeft className="nav-icon" /> Previous Topic: {getPrevTopic().topic}
-              </Link>
-            )}
+            {getPrevTopic() &&
+              getPrevTopic().subCategory === subCategory &&
+              getPrevTopic().class === products[0].class && (
+                <Link
+                  to={`/description/${subCategory}/${getPrevTopic().id}`}
+                  className="prev-button"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "20px",
+                    fontSize: "18px",
+                    fontWeight: "bold",
+                    textDecoration: "none",
+                    color: "#0073e6",
+                  }}
+                  onClick={() => window.scrollTo(0, 0)} // Ensure scroll to top
+                >
+                  <FaChevronLeft className="nav-icon" /> Previous Topic:{" "}
+                  {getPrevTopic().topic}
+                </Link>
+              )}
 
-            {getNextTopic() && getNextTopic().subCategory === subCategory && getNextTopic().class === products[0].class && (
-              <Link
-                to={`/description/${subCategory}/${getNextTopic().id}`}
-                className="next-button"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginBottom: '20px',
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  textDecoration: 'none',
-                  color: '#0073e6',
-                }}
-                onClick={() => window.scrollTo(0, 0)} // Ensure scroll to top
-              >
-                Next Topic: {getNextTopic().topic} <FaChevronRight className="nav-icon" />
-              </Link>
-            )}
+            {getNextTopic() &&
+              getNextTopic().subCategory === subCategory &&
+              getNextTopic().class === products[0].class && (
+                <Link
+                  to={`/description/${subCategory}/${getNextTopic().id}`}
+                  className="next-button"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "20px",
+                    fontSize: "18px",
+                    fontWeight: "bold",
+                    textDecoration: "none",
+                    color: "#0073e6",
+                  }}
+                  onClick={() => window.scrollTo(0, 0)} // Ensure scroll to top
+                >
+                  Next Topic: {getNextTopic().topic}{" "}
+                  <FaChevronRight className="nav-icon" />
+                </Link>
+              )}
           </div>
 
           {/* Comment Section */}
           <CommentSection subCategory={subCategory} topicId={topicId} />
           <p style={{ fontSize: "1.1rem", marginLeft: "10px" }}>
-            Gramture is an Educational website that helps students in their 9th, 10th, 1st year, and 2nd year with their studies. It provides notes, essays, applications, letters, short stories, chapter summaries, and word meanings in easy wording. This website helps students prepare for exams and improve their English grammar. Gramture makes learning simple and helps students understand subjects better.
+            Gramture is an Educational website that helps students in their 9th,
+            10th, 1st year, and 2nd year with their studies. It provides notes,
+            essays, applications, letters, short stories, chapter summaries, and
+            word meanings in easy wording. This website helps students prepare
+            for exams and improve their English grammar. Gramture makes learning
+            simple and helps students understand subjects better.
           </p>
         </>
       )}

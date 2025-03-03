@@ -33,7 +33,8 @@ const Home = () => {
               src={img1}
               alt="Gramture - Your Study Companion"
               className="img-fluid rounded"
-              loading="lazy"
+              // loading="lazy"
+              fetchpriority="high"
             />
           </div>
         </div>
