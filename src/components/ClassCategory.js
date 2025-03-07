@@ -29,7 +29,7 @@ const DropdownComponent = () => {
 
       querySnapshot.forEach((doc) => {
         const { class: className, subCategory, topic, timestamp } = doc.data();
-        
+
         if (data[className]) { // Only keep data for valid classes (9, 10, 11, 12)
           if (subCategory && topic) {
             if (!data[className][subCategory]) {
@@ -114,7 +114,7 @@ const DropdownComponent = () => {
         <Col>
           <h1 className="display-5 font-weight-bold text-dark">Gramture Study Platform</h1>
           <p className="lead text-muted">
-            Explore Free Video Lectures, Practice MCQs & Test Sessions to boost your knowledge.
+            Gramture is an online educational hub that aims to provide authentic and useful material in the form of comprehensive notes, lectures, videos, MCQs, Critical Thinking Activities, SAT (Self Assessment Tests) for internal, external, or board exams to score good results and take positions in exams. We provide research based on important study material from the exam point of view.
           </p>
           <p className="text-muted">
             This is a comprehensive online education platform that empowers students to excel in their academic journey...
@@ -225,9 +225,26 @@ const DropdownComponent = () => {
               </Col>
             )}
           </Row>
+        
+
         </>
+
       )}
-    </Container>
+ {/* Static Exam Preparation Section (Always Visible) */}
+ <Row className="mt-5">
+ <Col>
+   <h2 className="text-center text-dark">Why is Gramture Useful for Students?</h2>
+   <p className="text-center text-muted">Gramture is useful because it makes learning easy. Here are some reasons why students should use this platform:</p>
+   <ul className="list-group">
+     <li className="list-group-item"><b>Important Questions & Answers: </b>Finding the right study material can be difficult, but Gramture provides well-structured notes for different subjects. These notes help students understand difficult topics quickly. It elucidates key points with textual and real-life usage.</li>
+     <li className="list-group-item"><b>Easy-to-Understand Language: </b> The content on Gramture is written in simple wording so that every student can understand it without any difficulty.</li>
+     <li className="list-group-item"><b>Best for Exam Preparation: </b>During exams, students need quick revision notes. Gramture provides to-the-point summaries, short questions, exercises, MCQs, which help students prepare well for their exams.</li>
+     <li className="list-group-item"><b>Free Access to Study Materials: </b> One of the best things about Gramture is that students can access it for free. No need to buy expensive books or login access – just visit the website and find everything you need.</li>
+     <li className="list-group-item"><b>Helps in Improving Writing Skills: </b> By reading essays, stories, and letters on Gramture, students can improve their English writing skills and learn how to write effectively.</li>
+   </ul>
+ </Col>
+</Row>
+     </Container>
   );
 };
 
