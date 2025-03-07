@@ -43,6 +43,49 @@ const Navbar = () => {
     };
   }, []);
 
+  // useEffect(() => {
+  //   const fetchClassesAndTopics = async () => {
+  //     try {
+  //       const q = query(
+  //         collection(fireStore, "topics"),
+  //         orderBy("timestamp", "asc")
+  //       );
+  //       const querySnapshot = await getDocs(q);
+  //       const data = {};
+
+  //       // Fetch topics for static classes dynamically
+  //       querySnapshot.forEach((doc) => {
+  //         const { class: className, subCategory, topic } = doc.data();
+          
+  //         // Only fetch content for static classes (Moral Stories, Applications, Letters, Applied Grammar)
+  //         if (staticClasses.includes(className)) {
+  //           if (!data[className]) {
+  //             data[className] = [];
+  //           }
+  //           data[className].push({ id: doc.id, subCategory, topic });
+  //         }
+          
+  //         // Other classes (dynamic)
+  //         if (!staticClasses.includes(className) && !["Class 9", "Class 10", "Class 11", "Class 12"].includes(className) && !data[className]) {
+  //           data[className] = [];
+  //         }
+  //         data[className]?.push({ id: doc.id, subCategory, topic });
+  //       });
+
+  //       const formattedData = Object.keys(data).map((classKey) => ({
+  //         class: classKey,
+  //         topics: data[classKey],
+  //       }));
+
+  //       setClasses(formattedData);
+  //       console.log("Classes and topics fetched successfully:", formattedData);
+  //     } catch (error) {
+  //       console.error("Error fetching classes and topics:", error);
+  //     }
+  //   };
+
+  //   fetchClassesAndTopics();
+  // }, []);
   useEffect(() => {
     const fetchClassesAndTopics = async () => {
       try {
@@ -52,40 +95,43 @@ const Navbar = () => {
         );
         const querySnapshot = await getDocs(q);
         const data = {};
-
+  
+        // Define the static classes you want to display
+        const staticClasses = ["Moral Stories", "Applications", "Letters", "Applied Grammar"];
+  
         // Fetch topics for static classes dynamically
         querySnapshot.forEach((doc) => {
           const { class: className, subCategory, topic } = doc.data();
-          
-          // Only fetch content for static classes (Moral Stories, Applications, Letters, Applied Grammar)
+  
+          // Only store data for static classes
           if (staticClasses.includes(className)) {
             if (!data[className]) {
               data[className] = [];
             }
+  
             data[className].push({ id: doc.id, subCategory, topic });
           }
-          
-          // Other classes (dynamic)
-          if (!staticClasses.includes(className) && !["Class 9", "Class 10", "Class 11", "Class 12"].includes(className) && !data[className]) {
-            data[className] = [];
-          }
-          data[className]?.push({ id: doc.id, subCategory, topic });
         });
-
+  
+        // Remove duplicate topics in each class
         const formattedData = Object.keys(data).map((classKey) => ({
           class: classKey,
-          topics: data[classKey],
+          topics: Array.from(
+            new Map(data[classKey].map((item) => [item.topic, item])).values()
+          ),
         }));
-
+  
         setClasses(formattedData);
+        console.log("Filtered Classes and topics fetched successfully:", formattedData);
       } catch (error) {
         console.error("Error fetching classes and topics:", error);
       }
     };
-
+  
     fetchClassesAndTopics();
   }, []);
-
+  
+  
   const scrollNav = (direction) => {
     if (!isSmallScreen) {
       if (direction === "left" && visibleStartIndex > 0) {
