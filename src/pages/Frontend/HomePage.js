@@ -31,6 +31,8 @@ const Home = () => {
               effectively and perform well in their studies.
             </p>
           </div>
+
+          
           <div className="col-md-6">
             <img
               src={img1}

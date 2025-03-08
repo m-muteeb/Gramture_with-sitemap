@@ -187,7 +187,7 @@ export default function Description() {
     <div className="description-container">
       {!loading && products.length > 0 && (
   <Helmet>
-    <title>{products[0].topic}</title>
+    <title> Gramture-{products[0].topic}</title>
     <meta
       name="description"
       content={extractTextFromHTML(products[0].description).substring(0, 150)}

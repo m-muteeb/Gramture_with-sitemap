@@ -56,29 +56,7 @@ const About = () => {
               Gramture, mastering the building blocks of language becomes effortless, empowering
               learners to communicate with confidence and precision.
             </p> */}
-             <h2 className="font-bold text-xl mb-4">How Gramture Helps in Exam Preparation?</h2>
-            <p className="mb-0" style={{ fontSize: '16px' }}>
-        Exams can be stressful, but by studying the right study materials, students can prepare well. Gramture helps students in their exams in the following ways:
-      </p>
-      <div className="flex flex-col gap-2" style={{ fontSize: '16px' }}>
-        <div>
-          <span className="fw-bold" style={{color: '#333' }}>a) Important Questions & Answers:</span>
-          <p>Gramture provides chapterwise questions and answers to all the chapters of matric, intermediate or university books with Urdu translation which is helpful for students.</p>
-        </div>
-        <div>
-          <span className="fw-bold">b) Quick Revision Notes:</span>
-          <p>Before exams, students need quick revision. Gramture’s short notes and summaries make it easy to revise everything in a short time.</p>
-        </div>
-        <div>
-          <span className="fw-bold">c) Model Papers & Past Papers:</span>
-          <p>Practicing past papers is one of the best ways to prepare for exams. Gramture offers model papers and previous years’ papers to help students get an idea of exam patterns.</p>
-        </div>
-        <div>
-          <span className="fw-bold">d) Grammar & Writing Skills:</span>
-          <p>Grammar is the base of English, without understanding applied grammar we can’t write well, so Gramture teaches students essay writing, application, and formal letter writing according to the English rules.</p>
-        </div>
-      </div>
-
+           
 
 
 

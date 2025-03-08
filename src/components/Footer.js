@@ -20,7 +20,7 @@ const Footer = () => {
             <p className="mb-0">
               <small>
                 Developed by <strong>
-                  <a href="https://muteeb-portfolio1.firebaseapp.com/" 
+                  <a href="https://code-nexus-pk.netlify.app/" 
                      target="_blank" 
                      rel="noopener noreferrer"
                      className="text-light">

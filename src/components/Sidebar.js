@@ -19,6 +19,7 @@ const Sidebar = () => {
   // Static classes to be displayed in sidebar
   const staticClasses = [
     'Class 9',
+    'Class 10',
     'Class 11',
     'Class 12',
     'Moral Stories',
@@ -127,13 +128,7 @@ const Sidebar = () => {
         </div>
 
         {/* Search Bar */}
-        <input
-          type="text"
-          placeholder="Search classes..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="form-control mb-2 search-bar"
-        />
+       
         
         {/* Dropdown Content */}
         <div className="tags-list">

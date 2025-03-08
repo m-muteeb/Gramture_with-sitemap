@@ -233,7 +233,7 @@ const DropdownComponent = () => {
  {/* Static Exam Preparation Section (Always Visible) */}
  <Row className="mt-5">
  <Col>
-   <h2 className="text-center text-dark">Why is Gramture Useful for Students?</h2>
+   <h2 className="text-center text-dark mt-4">Why is Gramture Useful for Students?</h2>
    <p className="text-center text-muted">Gramture is useful because it makes learning easy. Here are some reasons why students should use this platform:</p>
    <ul className="list-group">
      <li className="list-group-item"><b>Important Questions & Answers: </b>Finding the right study material can be difficult, but Gramture provides well-structured notes for different subjects. These notes help students understand difficult topics quickly. It elucidates key points with textual and real-life usage.</li>
@@ -243,6 +243,29 @@ const DropdownComponent = () => {
      <li className="list-group-item"><b>Helps in Improving Writing Skills: </b> By reading essays, stories, and letters on Gramture, students can improve their English writing skills and learn how to write effectively.</li>
    </ul>
  </Col>
+ <h2 className="font-bold text-xl mb-4">How Gramture Helps in Exam Preparation?</h2>
+            <p className="mb-0" style={{ fontSize: '16px' }}>
+        Exams can be stressful, but by studying the right study materials, students can prepare well. Gramture helps students in their exams in the following ways:
+      </p>
+      <div className="flex flex-col gap-2" style={{ fontSize: '16px' }}>
+        <div>
+          <span className="fw-bold" style={{color: '#333' }}>a) Important Questions & Answers:</span>
+          <p>Gramture provides chapterwise questions and answers to all the chapters of matric, intermediate or university books with Urdu translation which is helpful for students.</p>
+        </div>
+        <div>
+          <span className="fw-bold">b) Quick Revision Notes:</span>
+          <p>Before exams, students need quick revision. Gramture’s short notes and summaries make it easy to revise everything in a short time.</p>
+        </div>
+        <div>
+          <span className="fw-bold">c) Model Papers & Past Papers:</span>
+          <p>Practicing past papers is one of the best ways to prepare for exams. Gramture offers model papers and previous years’ papers to help students get an idea of exam patterns.</p>
+        </div>
+        <div>
+          <span className="fw-bold">d) Grammar & Writing Skills:</span>
+          <p>Grammar is the base of English, without understanding applied grammar we can’t write well, so Gramture teaches students essay writing, application, and formal letter writing according to the English rules.</p>
+        </div>
+      </div>
+
 </Row>
      </Container>
   );
