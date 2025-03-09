@@ -15,6 +15,21 @@ const Navbar = () => {
   const [isNavbarOpen, setIsNavbarOpen] = useState(false);
   const dropdownRef = useRef();
 
+const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Static classes to be treated as fixed
   const staticClasses = [
     "Moral Stories",
@@ -151,11 +166,9 @@ const Navbar = () => {
 
   return (
     <nav
-      className="navbar navbar-expand-lg custom-navbar navbar-offset"
-      style={{
-        backgroundColor: "#fcf9f9",
-        zIndex: isSmallScreen ? 1000 : "auto",
-      }}
+      className={`navbar navbar-expand-lg custom-navbar ${
+        isScrolled ? "scrolled" : ""
+      }`}
     >
       <div className="container-fluid">
         <button

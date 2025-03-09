@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Footer from "./components/Footer";
-import Sidebar from "./components/Sidebar";
+// import Sidebar from "./components/Sidebar";
 import "./assets/css/homepage.css";
 import HomePage from "./pages/Frontend/HomePage";
 import Index from "./components/Header";
@@ -31,6 +31,7 @@ import Results  from "../src/components/Results";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Disclaimer from "./components/Disclaimer";
+import "./"
 
 const App = () => {
   const location = useLocation(); // Get the current location
@@ -44,7 +45,7 @@ const App = () => {
       <Index />
       <div className="main-content-wrapper">
         {/* Conditionally render Sidebar */}
-        {shouldShowHeaderAndSidebar && <Sidebar />}
+        {/* {shouldShowHeaderAndSidebar && <Sidebar />} */}
         <div className="main-content">
           <Routes>
             {/* Public Routes */}

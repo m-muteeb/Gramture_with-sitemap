@@ -1,11 +1,11 @@
 /* General Topbar Styles */
 .topbar {
-  background-color: #fffb1e; /* Yellow theme */
-  position: fixed;
+  background-color: #fffb1e; 
+  position: sticky;
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 1000;
+  /* z-index: 1000; */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 10px 20px;
 }
