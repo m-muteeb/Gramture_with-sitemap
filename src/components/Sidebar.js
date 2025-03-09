@@ -16,17 +16,17 @@
 //   const [openDropdown, setOpenDropdown] = useState(null);
 //   const [openCategory, setOpenCategory] = useState({});
   
-  // Static classes to be displayed in sidebar
-  // const staticClasses = [
-  //   'Class 9',
-  //   'Class 10',
-  //   'Class 11',
-  //   'Class 12',
-  //   'Moral Stories',
-  //   'Applications',
-  //   'Letters',
-  //   'Applied Grammar',
-  // ];
+//   // Static classes to be displayed in sidebar
+//   const staticClasses = [
+//     'Class 9',
+//     'Class 10',
+//     'Class 11',
+//     'Class 12',
+//     'Moral Stories',
+//     'Applications',
+//     'Letters',
+//     'Applied Grammar',
+//   ];
 
 //   useEffect(() => {
 //     const handleResize = () => {
@@ -127,7 +127,7 @@
 //           {isSidebarOpen ? <FaTimes className="icon" /> : <FaBars className="icon" />}
 //         </div>
 
-        {/* Search Bar */}
+//         {/* Search Bar */}
        
         
 //         {/* Dropdown Content */}
