@@ -121,6 +121,9 @@
     flex-direction: row; /* Display links in a row */
     justify-content: center; /* Center the links */
     width: 100%;
+    margin-right: 65px;
+    margin-left: 8px;
+
   }
 
   .topbar-link {
@@ -147,6 +150,9 @@
   .topbar-link:nth-child(n+3) {
     display: none;
   }
+  .search-icon {
+    margin-right: 10px !important;
+  }
 }
 
 
@@ -159,6 +165,7 @@
 
   .topbar-logo img {
     height: 30px; /* Make the logo smaller on small screens */
+    width: 155px !important;
   }
 
   .topbar-right {
@@ -184,4 +191,11 @@
   .search-icon {
     margin-right: 150px;
   }
+}
+@media screen and (max-width: 420px) {
+  .topbar-links {
+   margin-right: 60px;  
+}
+
+  
 }

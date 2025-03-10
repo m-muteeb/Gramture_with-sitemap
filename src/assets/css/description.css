@@ -24,6 +24,7 @@ body {
   max-width: 1200px; /* Increased for better large-screen layout */
   margin: 0 auto;
   padding: 20px;
+  min-height: 100vh !important;
 }
 
 /* === Title === */
@@ -169,6 +170,16 @@ body {
     width: auto !important;
     height: auto !important;
     text-align: left !important;
+  }
+
+  
+}
+
+/* === Smaller Screens (Mobile) === */
+@media screen and (max-width: 480px) {
+  .description-container {
+    padding: 10px;
+    min-height: 100vh !important;
   }
 
   
