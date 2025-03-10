@@ -3,14 +3,16 @@ import '../../assets/css/topbar.css';
 import { Modal, Input } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 
-import img from '../../assets/images/new-logo.webp'; // Your logo image
-import {  FaHome, FaInfoCircle, FaComments } from 'react-icons/fa'; // Import FontAwesome icons
+import img from '../../assets/images/navbarlogo.webp'; // Your logo image
+import { FaHome, FaInfoCircle, FaComments } from 'react-icons/fa'; // Import FontAwesome icons
 
 const Topbar = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
- 
+  const [isVisible, setIsVisible] = useState(true); // State to track visibility
+  const [prevScrollY, setPrevScrollY] = useState(0); // To track the previous scroll position
+  
   const navigate = useNavigate();
 
   const searchKeywords = [
@@ -62,22 +64,38 @@ const Topbar = () => {
     setIsModalVisible(false);
   };
 
-  // Fetch notifications from Firestore
-  useEffect(() => {
-    // Notification dropdown menu
-  }, []);
- 
+  // Scroll handling
+  const handleScroll = () => {
+    const currentScrollY = window.scrollY;
+    if (currentScrollY > prevScrollY) {
+      // Scroll down: hide the topbar
+      setIsVisible(false);
+    } else {
+      // Scroll up: show the topbar
+      setIsVisible(true);
+    }
+    setPrevScrollY(currentScrollY);
+  };
 
-  // Handle dropdown open
- 
+  // Set up scroll event listener
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [prevScrollY]);
 
   return (
-    <div className="topbar" style={{ zIndex: 15000 }}>
+    <div
+      className={`topbar ${isVisible ? "visible" : "hidden"}`}
+      style={{ zIndex: 15000, transition: "top 0.3s ease" }}
+    >
       <div className="topbar-content">
         {/* Left: Logo */}
         <div className="topbar-logo">
           <Link to="/Add Grammar">
-            <img src={img} alt="Logo" width={"200px"} height ={"100px"} />
+            <img src={img} alt="Logo" width={"200px"} height={"100px"} />
           </Link>
         </div>
 
@@ -99,8 +117,6 @@ const Topbar = () => {
 
         {/* Right: Search Icon and Notification Bell */}
         <div className="topbar-right">
-        
-
           {/* Search Icon */}
           <button className="search-icon" onClick={handleSearch}>
             <i className="fas fa-search"></i>

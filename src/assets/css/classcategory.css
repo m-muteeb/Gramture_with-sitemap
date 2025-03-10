@@ -61,6 +61,37 @@
     display: flex;
     flex-wrap: wrap;
   }
+  /* Card background color */
+.card-custom {
+  background-color: #e8f5e9; /* Light green background */
+}
+
+/* Light Green Text for Titles and Subcategories */
+
+
+/* Bold all text */
+h1{
+  font-weight: bold;
+}
+
+
+
+
+/* Styling for the Card */
+.card-custom {
+  background-color: #e8f5e9; /* Light greenish background */
+  border: 1px solid #c8e6c9; /* Light border to match the theme */
+ 
+}
+
+/* Chevron icon color */
+
+
+/* Card title color */
+
+
+/* Optional: Hover effect for cards */
+
   
   .col-6 {
     padding: 10px;

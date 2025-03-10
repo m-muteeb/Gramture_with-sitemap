@@ -3,8 +3,13 @@ body {
   margin: 0;
   font-family: "Arial", sans-serif;
   line-height: 1.6;
-  background-image: url("../images/homepage\ background.jpg");
+ 
+  background-image: url("../images/homepage background.jpg");
+  background-size: cover; /* Ensures the image covers the whole screen */
+  background-position: center; /* Centers the background image */
+  background-attachment: fixed; /* Makes the background image fixed when scrolling */
 }
+
 
 a {
   color: #2e8bff;
@@ -17,9 +22,23 @@ a:hover {
   color: #1a5fcc;
 }
 
-/* Header Section */
+/* Make the Previous and Next buttons black */
+.custom-carousel-button {
+  background-color: black;  /* Black background */
+  border: none;             /* Remove any borders */
+  padding: 10px;            /* Adjust padding for size */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-/* Content Section */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-color: rgb(0, 0, 0); /* Keep the arrows white to make them visible on the black button */
+  width: 20px;
+  height: 20px;
+}
+
 
 
 

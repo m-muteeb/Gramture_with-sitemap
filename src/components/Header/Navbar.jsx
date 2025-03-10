@@ -167,6 +167,13 @@ const [isScrolled, setIsScrolled] = useState(false);
     }
     setOpenDropdown(null);
   };
+  const handleMouseEnter = (index) => {
+    setOpenDropdown(index);
+  };
+
+  const handleMouseLeave = () => {
+    setOpenDropdown(null);
+  };
 
   return (
     <nav
@@ -188,6 +195,7 @@ const [isScrolled, setIsScrolled] = useState(false);
         <Link to="/" className="navbar-brand order-2 ms-2">
           {/* Your Logo or Brand Name */}
         </Link>
+
         {!isSmallScreen && (
           <FaAngleLeft
             className={`nav-arrow left-arrow order-3 ${
@@ -196,6 +204,7 @@ const [isScrolled, setIsScrolled] = useState(false);
             onClick={() => scrollNav("left")}
           />
         )}
+
         <div
           className={`collapse navbar-collapse justify-content-center order-4 ${
             isNavbarOpen ? "show" : ""
@@ -208,12 +217,14 @@ const [isScrolled, setIsScrolled] = useState(false);
           >
             {/* Static Classes with Dynamic Content */}
             {staticClasses.map((className, index) => (
-              <li key={index} className="nav-item dropdown position-relative mx-2">
+              <li
+                key={index}
+                className="nav-item dropdown position-relative mx-2"
+                onMouseEnter={() => handleMouseEnter(index)}
+                onMouseLeave={handleMouseLeave}
+              >
                 <div
                   className="nav-link dropdown-toggle"
-                  onClick={() =>
-                    setOpenDropdown(openDropdown === index ? null : index)
-                  }
                   style={{
                     cursor: "pointer",
                     wordWrap: "break-word",
@@ -223,42 +234,41 @@ const [isScrolled, setIsScrolled] = useState(false);
                   {className}
                 </div>
                 <Collapse in={openDropdown === index}>
-  <div
-    className="dropdown-menu mt-0 shadow p-3 bg-light border custom-dropdown-width"
-    style={{
-      maxHeight: "300px",
-      overflowY: "auto",
-    }}
-  >
-    <div className="mb-3">
-      <ul className="list-unstyled ms-3 mt-2">
-        {classes
-          .filter((classData) => classData.class === className)
-          .map((classData, classIndex) =>
-            classData.topics.map((topic, topicIndex) => (
-              <li key={topicIndex} className="py-0.5">
-                <Link
-                  to={`/description/${topic.subCategory}/${topic.id}`}
-                  className="sub-category-link"
-                  onClick={handleSubCategoryClick}
-                  style={{
-                    textDecoration: "none",
-                    color: "#007bff",
-                    fontSize: "0.8rem",
-                    fontWeight: "400",
-                    transition: "color 0.2s ease",
-                  }}
-                >
-                  {`${topicIndex + 1}. ${topic.topic}`}
-                </Link>
-              </li>
-            ))
-          )}
-      </ul>
-    </div>
-  </div>
-</Collapse>
-
+                  <div
+                    className="dropdown-menu mt-0 shadow p-3 bg-light border custom-dropdown-width"
+                    style={{
+                      maxHeight: "300px",
+                      overflowY: "auto",
+                    }}
+                  >
+                    <div className="mb-3">
+                      <ul className="list-unstyled ms-3 mt-2">
+                        {classes
+                          .filter((classData) => classData.class === className)
+                          .map((classData, classIndex) =>
+                            classData.topics.map((topic, topicIndex) => (
+                              <li key={topicIndex} className="py-0.5">
+                                <Link
+                                  to={`/description/${topic.subCategory}/${topic.id}`}
+                                  className="sub-category-link"
+                                  onClick={handleSubCategoryClick}
+                                  style={{
+                                    textDecoration: "none",
+                                    color: "#dc3545",
+                                    fontSize: "0.9rem",
+                                    fontWeight: "400",
+                                    transition: "color 0.2s ease",
+                                  }}
+                                >
+                                  {`${topicIndex + 1}. ${topic.topic}`}
+                                </Link>
+                              </li>
+                            ))
+                          )}
+                      </ul>
+                    </div>
+                  </div>
+                </Collapse>
               </li>
             ))}
 
@@ -269,12 +279,11 @@ const [isScrolled, setIsScrolled] = useState(false);
                 <li
                   className="nav-item dropdown position-relative mx-2"
                   key={index}
+                  onMouseEnter={() => handleMouseEnter(index)}
+                  onMouseLeave={handleMouseLeave}
                 >
                   <div
                     className="nav-link dropdown-toggle"
-                    onClick={() =>
-                      setOpenDropdown(openDropdown === index ? null : index)
-                    }
                     style={{
                       cursor: "pointer",
                       wordWrap: "break-word",
@@ -319,6 +328,7 @@ const [isScrolled, setIsScrolled] = useState(false);
               ))}
           </ul>
         </div>
+
         {!isSmallScreen && (
           <FaAngleRight
             className={`nav-arrow right-arrow order-5 ${
