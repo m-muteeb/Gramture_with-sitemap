@@ -35,7 +35,11 @@ const [isScrolled, setIsScrolled] = useState(false);
     "Moral Stories",
     "Applications",
     "Letters",
-    "Applied Grammar"
+    "Applied Grammar",
+    "Past Papers",
+    "Translation",
+    
+
   ];
 
   useEffect(() => {

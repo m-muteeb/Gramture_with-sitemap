@@ -6,6 +6,7 @@ import { collection, getDocs, orderBy, query, limit } from 'firebase/firestore';
 import { fireStore } from '../firebase/firebase';
 import { Link } from 'react-router-dom';
 import { Container, Row, Col, Card, Spinner } from 'react-bootstrap';
+ import "../assets/css/classcategory.css";
 
 const DropdownComponent = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -232,17 +233,69 @@ const DropdownComponent = () => {
       )}
  {/* Static Exam Preparation Section (Always Visible) */}
  <Row className="mt-5">
- <Col>
-   <h2 className="text-center text-dark mt-4">Why is Gramture Useful for Students?</h2>
-   <p className="text-center text-muted">Gramture is useful because it makes learning easy. Here are some reasons why students should use this platform:</p>
-   <ul className="list-group">
-     <li className="list-group-item"><b>Important Questions & Answers: </b>Finding the right study material can be difficult, but Gramture provides well-structured notes for different subjects. These notes help students understand difficult topics quickly. It elucidates key points with textual and real-life usage.</li>
-     <li className="list-group-item"><b>Easy-to-Understand Language: </b> The content on Gramture is written in simple wording so that every student can understand it without any difficulty.</li>
-     <li className="list-group-item"><b>Best for Exam Preparation: </b>During exams, students need quick revision notes. Gramture provides to-the-point summaries, short questions, exercises, MCQs, which help students prepare well for their exams.</li>
-     <li className="list-group-item"><b>Free Access to Study Materials: </b> One of the best things about Gramture is that students can access it for free. No need to buy expensive books or login access – just visit the website and find everything you need.</li>
-     <li className="list-group-item"><b>Helps in Improving Writing Skills: </b> By reading essays, stories, and letters on Gramture, students can improve their English writing skills and learn how to write effectively.</li>
-   </ul>
- </Col>
+ {/* Card 1 */}
+ <Col xs={12} sm={6} md={6} lg={6}>
+        <Card className="card-elegant">
+          <div className="card-img-container">
+            <Card.Img variant="top" src="your-image-path-1.jpg" alt="Image 1" />
+            <div className="img-overlay"></div>
+          </div>
+          <Card.Body>
+            <Card.Title>Important Questions & Answers</Card.Title>
+            <Card.Text>
+              Finding the right study material can be difficult, but Gramture provides well-structured notes for different subjects. These notes help students understand difficult topics quickly. It elucidates key points with textual and real-life usage.
+            </Card.Text>
+          </Card.Body>
+        </Card>
+      </Col>
+
+      {/* Card 2 */}
+      <Col xs={12} sm={6} md={6} lg={6}>
+        <Card className="card-elegant">
+          <div className="card-img-container">
+            <Card.Img variant="top" src="your-image-path-2.jpg" alt="Image 2" />
+            <div className="img-overlay"></div>
+          </div>
+          <Card.Body>
+            <Card.Title>Easy-to-Understand Language</Card.Title>
+            <Card.Text>
+              The content on Gramture is written in simple wording so that every student can understand it without any difficulty.
+            </Card.Text>
+          </Card.Body>
+        </Card>
+      </Col>
+
+      {/* Card 3 */}
+      <Col xs={12} sm={6} md={6} lg={6}>
+        <Card className="card-elegant">
+          <div className="card-img-container">
+            <Card.Img variant="top" src="your-image-path-3.jpg" alt="Image 3" />
+            <div className="img-overlay"></div>
+          </div>
+          <Card.Body>
+            <Card.Title>Best for Exam Preparation</Card.Title>
+            <Card.Text>
+              During exams, students need quick revision notes. Gramture provides to-the-point summaries, short questions, exercises, MCQs, which help students prepare well for their exams.
+            </Card.Text>
+          </Card.Body>
+        </Card>
+      </Col>
+
+      {/* Card 4 */}
+      <Col xs={12} sm={6} md={6} lg={6}>
+        <Card className="card-elegant">
+          <div className="card-img-container">
+            <Card.Img variant="top" src="your-image-path-4.jpg" alt="Image 4" />
+            <div className="img-overlay"></div>
+          </div>
+          <Card.Body>
+            <Card.Title>Free Access to Study Materials</Card.Title>
+            <Card.Text>
+              One of the best things about Gramture is that students can access it for free. No need to buy expensive books or login access – just visit the website and find everything you need.
+            </Card.Text>
+          </Card.Body>
+        </Card>
+      </Col>
  <h2 className="font-bold text-xl mb-4">How Gramture Helps in Exam Preparation?</h2>
             <p className="mb-0" style={{ fontSize: '16px' }}>
         Exams can be stressful, but by studying the right study materials, students can prepare well. Gramture helps students in their exams in the following ways:

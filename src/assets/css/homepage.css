@@ -3,6 +3,7 @@ body {
   margin: 0;
   font-family: "Arial", sans-serif;
   line-height: 1.6;
+  background-image: url("../images/homepage\ background.jpg");
 }
 
 a {
@@ -19,9 +20,8 @@ a:hover {
 /* Header Section */
 
 /* Content Section */
-.content-section {
-  background-color: #fff;
-}
+
+
 
 .content-section h2 {
   font-size: 36px;
@@ -35,7 +35,7 @@ a:hover {
 }
 
 .img-fluid {
-  max-width: 100%;
+  max-width: 200%;
   height: auto;
 }
 
