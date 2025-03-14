@@ -9,6 +9,7 @@ import "../assets/css/description.css";
 import CommentSection from "./CommentSection";
 import ShareArticle from "./ShareArticle";
 import { Helmet } from "react-helmet-async";
+import CertificateGenerator from "./CertificateGenerator";
 
 export default function Description() {
   const { subCategory, topicId } = useParams();
@@ -25,37 +26,14 @@ export default function Description() {
   const [allTopics, setAllTopics] = useState([]);
   const [currentTopicIndex, setCurrentTopicIndex] = useState(null);
 
+  // Add state for the username
+  const [userName, setUserName] = useState(""); // State for username
+
   useEffect(() => {
     console.log("Fetching products...");
     fetchProducts();
     fetchAllTopics();
   }, [subCategory, topicId]);
-  
-  useEffect(() => {
-    if (products.length > 0) {
-      console.log("Meta description updated to:", 
-        extractTextFromHTML(products[0].description).substring(0, 150));
-    }
-  }, [products]);
-
-  useEffect(() => {
-    if (products.length > 0) {
-      const timer = setTimeout(() => {
-        console.log("Meta description updated after delay:", 
-          extractTextFromHTML(products[0].description).substring(0, 150));
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [products]);
-
-  // useEffect(() => {
-  //   console.log(products);
-  //   if (products.length > 0) {
-  //     document
-  //       .querySelector("meta[name='description']")
-  //       ?.setAttribute("content", products[0].description.substring(0, 150));
-  //   }
-  // }, [products]);
 
   const fetchProducts = async () => {
     try {
@@ -67,7 +45,6 @@ export default function Description() {
             product.subCategory === subCategory && product.id === topicId
         );
       setProducts(productList);
-      console.log(products, "products list");
       setMcqs(productList[0]?.mcqs || []);
       setLoading(false);
     } catch (error) {
@@ -102,9 +79,7 @@ export default function Description() {
       if (newTopicIndex >= 0 && newTopicIndex < allTopics.length) {
         const newTopicId = allTopics[newTopicIndex].id;
         navigate(`/description/${subCategory}/${newTopicId}`);
-
-        // Scroll to the top of the page after navigation
-        window.scrollTo(0, 0);
+        window.scrollTo(0, 0); // Ensure scroll to top
       }
     }
   };
@@ -122,15 +97,12 @@ export default function Description() {
     const selected = selectedAnswer[currentMcqIndex];
 
     if (selected === undefined) {
-      message.error(
-        "Please select an answer before moving to the next question."
-      );
+      message.error("Please select an answer before moving to the next question.");
       return;
     }
 
     // Check answer and give feedback
-    const feedback =
-      selected === currentMcq.correctAnswer ? "Correct!" : "Incorrect.";
+    const feedback = selected === currentMcq.correctAnswer ? "Correct!" : "Incorrect.";
     setAnswerFeedback({
       ...answerFeedback,
       [currentMcqIndex]: feedback,
@@ -140,7 +112,11 @@ export default function Description() {
     if (currentMcqIndex + 1 < mcqs.length) {
       setCurrentMcqIndex(currentMcqIndex + 1);
     } else {
-      // Show results when all questions are answered
+      // Once the test is finished, ask for the username and show results
+      if (!userName) {
+        const name = prompt("Please enter your name: ");
+        setUserName(name || "Guest"); // Default to "Guest" if no name provided
+      }
       setShowResults(true);
     }
   };
@@ -153,10 +129,6 @@ export default function Description() {
       }
     });
     return correctAnswers;
-  };
-
-  const handleReviewClick = (index) => {
-    setCurrentMcqIndex(index);
   };
 
   const handleRetakeTest = () => {
@@ -177,6 +149,7 @@ export default function Description() {
     if (currentTopicIndex === null || currentTopicIndex - 1 < 0) return null;
     return allTopics[currentTopicIndex - 1];
   };
+
   const extractTextFromHTML = (htmlString) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, "text/html");
@@ -186,20 +159,21 @@ export default function Description() {
   return (
     <div className="description-container">
       {!loading && products.length > 0 && (
-  <Helmet>
-    <title> Gramture-{products[0].topic}</title>
-    <meta
-      name="description"
-      content={extractTextFromHTML(products[0].description).substring(0, 150)}
-    />
-  </Helmet>
-)}
+        <Helmet>
+          <title>Gramture - {products[0].topic}</title>
+          <meta
+            name="description"
+            content={extractTextFromHTML(products[0].description).substring(0, 150)}
+          />
+        </Helmet>
+      )}
 
       {loading && (
         <div className="loader-overlay">
           <Spin size="large" />
         </div>
       )}
+
       {products.length > 0 && (
         <>
           <h1
@@ -227,25 +201,6 @@ export default function Description() {
             <div className="mcq-section">
               {showResults ? (
                 <div className="result-summary">
-                  <h3>Your Results</h3>
-                  <p>{`You answered ${calculateResults()} out of ${
-                    mcqs.length
-                  } questions correctly.`}</p>
-                  <h4>Review Your Answers:</h4>
-                  {mcqs.map((mcq, index) => (
-                    <div
-                      key={index}
-                      className={`review-item ${
-                        selectedAnswer[index] === mcq.correctAnswer
-                          ? "correct"
-                          : "incorrect"
-                      }`}
-                    >
-                      <p>{mcq.question}</p>
-                      <p>Your answer: {selectedAnswer[index]}</p>
-                      <p>Correct answer: {mcq.correctAnswer}</p>
-                    </div>
-                  ))}
                   <button
                     onClick={handleRetakeTest}
                     style={{
@@ -317,63 +272,72 @@ export default function Description() {
             </div>
           )}
 
+          {/* Show the Generate Certificate Button Only After Test is Completed */}
+          {mcqs.length > 0 && showResults && (
+            <div style={{ textAlign: "center", marginTop: "20px" }}>
+              
+            </div>
+          )}
+
+          <CertificateGenerator
+            mcqs={mcqs}
+            selectedAnswer={selectedAnswer}
+            userName={userName} // Pass the userName here
+            calculateResults={calculateResults}
+            handleRetakeTest={handleRetakeTest}
+            topicName={products[0]?.topic}
+          />
+
           <ShareArticle />
+
           {/* Navigation for Next and Previous Topics */}
           <div className="topic-navigation">
-            {getPrevTopic() &&
-              getPrevTopic().subCategory === subCategory &&
-              getPrevTopic().class === products[0].class && (
-                <Link
-                  to={`/description/${subCategory}/${getPrevTopic().id}`}
-                  className="prev-button"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginBottom: "20px",
-                    fontSize: "18px",
-                    fontWeight: "bold",
-                    textDecoration: "none",
-                    color: "#0073e6",
-                  }}
-                  onClick={() => window.scrollTo(0, 0)} // Ensure scroll to top
-                >
-                  <FaChevronLeft className="nav-icon" /> Previous Topic:{" "}
-                  {getPrevTopic().topic}
-                </Link>
-              )}
+            {getPrevTopic() && getPrevTopic().subCategory === subCategory && getPrevTopic().class === products[0].class && (
+              <Link
+                to={`/description/${subCategory}/${getPrevTopic().id}`}
+                className="prev-button"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "20px",
+                  fontSize: "18px",
+                  fontWeight: "bold",
+                  textDecoration: "none",
+                  color: "#0073e6",
+                }}
+                onClick={() => window.scrollTo(0, 0)} // Ensure scroll to top
+              >
+                <FaChevronLeft className="nav-icon" /> Previous Topic:{" "}
+                {getPrevTopic().topic}
+              </Link>
+            )}
 
-            {getNextTopic() &&
-              getNextTopic().subCategory === subCategory &&
-              getNextTopic().class === products[0].class && (
-                <Link
-                  to={`/description/${subCategory}/${getNextTopic().id}`}
-                  className="next-button"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginBottom: "20px",
-                    fontSize: "18px",
-                    fontWeight: "bold",
-                    textDecoration: "none",
-                    color: "#0073e6",
-                  }}
-                  onClick={() => window.scrollTo(0, 0)} // Ensure scroll to top
-                >
-                  Next Topic: {getNextTopic().topic}{" "}
-                  <FaChevronRight className="nav-icon" />
-                </Link>
-              )}
+            {getNextTopic() && getNextTopic().subCategory === subCategory && getNextTopic().class === products[0].class && (
+              <Link
+                to={`/description/${subCategory}/${getNextTopic().id}`}
+                className="next-button"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "20px",
+                  fontSize: "18px",
+                  fontWeight: "bold",
+                  textDecoration: "none",
+                  color: "#0073e6",
+                }}
+                onClick={() => window.scrollTo(0, 0)} // Ensure scroll to top
+              >
+                Next Topic: {getNextTopic().topic}{" "}
+                <FaChevronRight className="nav-icon" />
+              </Link>
+            )}
           </div>
 
           {/* Comment Section */}
           <CommentSection subCategory={subCategory} topicId={topicId} />
           <p style={{ fontSize: "1.1rem", marginLeft: "10px" }}>
             Gramture is an Educational website that helps students in their 9th,
-            10th, 1st year, and 2nd year with their studies. It provides notes,
-            essays, applications, letters, short stories, chapter summaries, and
-            word meanings in easy wording. This website helps students prepare
-            for exams and improve their English grammar. Gramture makes learning
-            simple and helps students understand subjects better.
+            10th, 1st year, and 2nd-year studies.
           </p>
         </>
       )}

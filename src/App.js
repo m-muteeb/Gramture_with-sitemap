@@ -26,7 +26,7 @@ import  About from "./components/AboutSection";
 import PrivateRoute from "./Routes/PrivateRoute";
 import { AuthProvider } from "../src/contexts/AuthContext";
 import DiscusionFourm from "../src/components/DiscussionFourm";
-import Results  from "../src/components/Results";
+
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -65,7 +65,7 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/about" element={<About />} />
             <Route path="/discussion_forum" element={<DiscusionFourm />} />
-            <Route path="/results" element={<Results />} />
+           
             <Route path ="/disclaimer" element={<Disclaimer />} />
            
             

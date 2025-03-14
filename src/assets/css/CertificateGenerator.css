@@ -1,0 +1,158 @@
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+}
+
+/* Certificate Styles */
+.certificate {
+  position: relative;
+  width: 90%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+ 
+  border-radius: 15px;
+ 
+  text-align: center;
+  overflow: hidden;
+}
+
+.certificate:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('../images/Blue\ and\ Yellow\ Minimalist\ Employee\ of\ the\ Month\ Certificate.png'); /* Background image */
+  background-size: cover;
+  background-position: center;
+  opacity: 0.7; /* Reduced opacity */
+  z-index: -1; /* Place the background behind the content */
+}
+
+.certificate-header {
+  margin-bottom: 30px;
+}
+
+.certificate-logo {
+  width: 100px;
+  margin-bottom: 15px;
+}
+
+.certificate-header h2 {
+  font-size: 28px;
+  color: #2c3e50;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.New-heading {
+  font-size: 40px; /* Increased font size */
+  color: #000000; /* Vibrant color (red) for high contrast */
+  font-weight: 700; /* Bold for more prominence */
+  
+  margin-bottom: 20px; /* Space between topic and other content */
+}
+
+.certificate-body h3 {
+  font-size: 20px;
+  color: #34495e;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.certificate-body h1 {
+  font-size: 36px;
+  color: #16a085;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.certificate-body p {
+  font-size: 18px;
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.certificate-body strong {
+  font-weight: bold;
+  color: #e74c3c;
+}
+
+.certificate-footer {
+  margin-top: 30px;
+}
+
+.certificate-footer button {
+  background-color: #2ecc71;
+  border: none;
+  color: white;
+  padding: 12px 25px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.certificate-footer button:hover {
+  background-color: #27ae60;
+}
+
+.certificate-footer button:focus {
+  outline: none;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .certificate {
+    padding: 15px;
+  }
+
+  .certificate-header h2 {
+    font-size: 24px;
+  }
+
+  .certificate-body h1 {
+    font-size: 32px;
+  }
+
+  .certificate-body p {
+    font-size: 16px;
+  }
+
+  .certificate-footer button {
+    padding: 10px 20px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .certificate {
+    padding: 10px;
+  }
+
+  .certificate-header h2 {
+    font-size: 20px;
+  }
+
+  .certificate-body h1 {
+    font-size: 28px;
+  }
+
+  .certificate-body p {
+    font-size: 14px;
+  }
+
+  .certificate-footer button {
+    padding: 8px 15px;
+    font-size: 14px;
+  }
+}

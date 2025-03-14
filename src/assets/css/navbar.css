@@ -4,8 +4,8 @@
     position: sticky;
     top: 0px; /* Adjust for top bar height */
     z-index: 1050;
-    background-color: #85FFBD;
-background-image: linear-gradient(45deg, #85FFBD 0%, #85FFBD 100%);
+    
+background-image: linear-gradient(45deg, #dad4d463 0%, #e9e9e9 100%);
     width: 100%;
     height: 70px; /* Default height */ 
     transition: all 0.3s ease-in-out;

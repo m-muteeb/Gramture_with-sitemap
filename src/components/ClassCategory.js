@@ -113,7 +113,7 @@ const DropdownComponent = () => {
     <Container className="my-5">
       <Row className="text-center mb-4">
         <Col>
-          <h1 className="display-5 font-weight-bold text-dark">Gramture Study Platform</h1>
+          <h1 className="text-xl mb-4 text-center mt-4">Gramture Study Platform</h1>
           <p className="lead text-muted">
             Gramture is an online educational hub that aims to provide authentic and useful material in the form of comprehensive notes, lectures, videos, MCQs, Critical Thinking Activities, SAT (Self Assessment Tests) for internal, external, or board exams to score good results and take positions in exams. We provide research based on important study material from the exam point of view.
           </p>
@@ -206,7 +206,7 @@ const DropdownComponent = () => {
           {/* Recent Posts Section */}
           <Row className="mt-5 text-center">
             <Col>
-              <h3 className="display-5 font-weight-bold text-dark">Recent Posts</h3>
+              <h1 className="text-xl mb-4 text-center mt-4">Recent Posts</h1>
             </Col>
           </Row>
 
@@ -241,7 +241,7 @@ const DropdownComponent = () => {
         </>
 
       )}
-      <h1 className="font-bold text-xl mb-4 text-center mt-4">Why Grmature?</h1>
+      <h1 className=" text-xl mb-4 text-center mt-4">Why Grmature?</h1>
  {/* Static Exam Preparation Section (Always Visible) */}
  <Row className="mt-5">
  {/* Card 1 */}
@@ -309,7 +309,7 @@ const DropdownComponent = () => {
           </Card.Body>
         </Card>
       </Col>
-<h2 className="font-bold text-3xl mb-6 text-center text-dark">How Gramture Helps in Exam Preparation?</h2>
+<h1 className=" text-xl mb-4 text-center mt-4">How Gramture Helps in Exam Preparation?</h1>
 
 <p className="text-center text-gray-700 mb-8" style={{ fontSize: '1.1rem' }}>
   Exams can be stressful, but by studying the right study materials, students can prepare well. Gramture helps students in their exams in the following ways:

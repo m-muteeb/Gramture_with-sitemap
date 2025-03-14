@@ -3,16 +3,18 @@ import '../../assets/css/topbar.css';
 import { Modal, Input } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 
-import img from '../../assets/images/navbarlogo.webp'; // Your logo image
+import img from '../../assets/images/new-logo.webp'; // Your logo image
 import { FaHome, FaInfoCircle, FaComments } from 'react-icons/fa'; // Import FontAwesome icons
 
 const Topbar = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [isVisible, setIsVisible] = useState(true); // State to track visibility
-  const [prevScrollY, setPrevScrollY] = useState(0); // To track the previous scroll position
-  
+  const [isVisible, setIsVisible] = useState(true);
+  const [prevScrollY, setPrevScrollY] = useState(0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Sidebar open/close state
+  const [overlayVisible, setOverlayVisible] = useState(false); // Dark overlay visibility
+
   const navigate = useNavigate();
 
   const searchKeywords = [
@@ -26,22 +28,18 @@ const Topbar = () => {
     { label: "Bsc", link: "/bsc" },
   ];
 
-  // Handle search icon click
   const handleSearch = () => {
     setIsModalVisible(true);
   };
 
-  // Handle search modal close
   const handleModalOk = () => {
     setIsModalVisible(false);
   };
 
-  // Handle search modal cancel
   const handleModalCancel = () => {
     setIsModalVisible(false);
   };
 
-  // Handle input change for search
   const handleSearchQuery = (e) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
@@ -58,26 +56,21 @@ const Topbar = () => {
     setSearchResults(results);
   };
 
-  // Handle navigation from search results
   const handleNavigate = (link) => {
     navigate(link);
     setIsModalVisible(false);
   };
 
-  // Scroll handling
   const handleScroll = () => {
     const currentScrollY = window.scrollY;
     if (currentScrollY > prevScrollY) {
-      // Scroll down: hide the topbar
       setIsVisible(false);
     } else {
-      // Scroll up: show the topbar
       setIsVisible(true);
     }
     setPrevScrollY(currentScrollY);
   };
 
-  // Set up scroll event listener
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
 
@@ -86,16 +79,48 @@ const Topbar = () => {
     };
   }, [prevScrollY]);
 
+  // Toggle Sidebar
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+    setOverlayVisible(!isSidebarOpen);
+  };
+
+  // Close sidebar when overlay is clicked
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+    setOverlayVisible(false);
+  };
+
   return (
     <div
       className={`topbar ${isVisible ? "visible" : "hidden"}`}
       style={{ zIndex: 15000, transition: "top 0.3s ease" }}
     >
       <div className="topbar-content">
+        {/* Left: Hamburger Menu Button */}
+        <div className="topbar-hamburger" onClick={toggleSidebar}>
+        <i 
+
+  
+  className="fas fa-bars" 
+  style={{ 
+    color: 'black', 
+    fontSize: '25px', 
+    border: '2px solid lightgray',  // Light grey outline
+    borderRadius: '5px',            // Rounded corners for a softer look
+    padding: '5px',                 // Space between the icon and the border
+    cursor: 'pointer',              // Pointer cursor to indicate clickability
+  }}
+></i>
+
+
+
+        </div>
+
         {/* Left: Logo */}
         <div className="topbar-logo">
-          <Link to="/Add Grammar">
-            <img src={img} alt="Logo" width={"200px"} height={"100px"} />
+          <Link to="/">
+            <img src={img} alt="Logo" />
           </Link>
         </div>
 
@@ -105,7 +130,7 @@ const Topbar = () => {
             <FaHome style={{ marginRight: '8px' }} />
             Home
           </Link>
-          <Link to="/about" className="topbar-link">
+          <Link to="/about" className="topbar-link about-link">
             <FaInfoCircle style={{ marginRight: '8px' }} />
             About Us
           </Link>
@@ -115,9 +140,8 @@ const Topbar = () => {
           </Link>
         </div>
 
-        {/* Right: Search Icon and Notification Bell */}
+        {/* Right: Search Icon */}
         <div className="topbar-right">
-          {/* Search Icon */}
           <button className="search-icon" onClick={handleSearch}>
             <i className="fas fa-search"></i>
           </button>
@@ -135,29 +159,47 @@ const Topbar = () => {
         className="search-modal"
       >
         <Input
-          placeholder="Search..."
-          size="large"
+          placeholder="Search for a topic"
           value={searchQuery}
           onChange={handleSearchQuery}
         />
-        <div className="search-results mt-3">
-          {searchResults.length > 0 ? (
-            <ul>
-              {searchResults.map((result, index) => (
-                <li
-                  key={index}
-                  onClick={() => handleNavigate(result.link)}
-                  style={{ cursor: "pointer" }}
-                >
-                  {result.label}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No results found.</p>
-          )}
+        <div className="search-results">
+          <ul>
+            {searchResults.map((result, index) => (
+              <li key={index} onClick={() => handleNavigate(result.link)}>
+                {result.label}
+              </li>
+            ))}
+          </ul>
         </div>
       </Modal>
+
+      {/* Sidebar Overlay */}
+      <div
+        className={`sidebar-overlay ${overlayVisible ? 'active' : ''}`}
+        onClick={closeSidebar}
+      ></div>
+
+      {/* Sidebar */}
+      <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
+        <button
+          className="sidebar-close-btn"
+          onClick={closeSidebar}
+        >
+          &times;
+        </button>
+        <ul>
+          <li>
+            <Link to="/" className="sidebar-link">Home</Link>
+          </li>
+          <li>
+            <Link to="/about" className="sidebar-link">About Us</Link>
+          </li>
+          <li>
+            <Link to="/discussion_forum" className="sidebar-link">Discussion Forum</Link>
+          </li>
+        </ul>
+      </div>
     </div>
   );
 };

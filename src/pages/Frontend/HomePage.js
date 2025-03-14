@@ -1,8 +1,8 @@
 import React from "react";
 import "../../assets/css/homepage.css"; // Import the CSS file
-import img1 from "../../assets/images/OBJECTS.jpg";
-import img2 from "../../assets/images/carousel img2.jpg";
-import img3 from "../../assets/images/carousel img3.jpg";
+import img1 from "../../assets/images/OBJECTS.webp";
+import img2 from "../../assets/images/carousel img2.webp";
+import img3 from "../../assets/images/carousel img3.webp";
 import { Helmet } from "react-helmet-async";
 
 const Home = () => {
@@ -27,16 +27,17 @@ const Home = () => {
   <div className="row">
     {/* Left Column with Content */}
     <div className="col-md-6 mt-2">
-      <h1 className="mb-3">Welcome to Gramture</h1>
+      <h1 className="text-xl mb-4 text-center mt-4">Welcome to Gramture</h1>
       <p>
-        Whenever curriculum wings update or publish new content, students face unavailability or a shortage of books in the market. Students also face difficulty in purchasing new books, which may affect their studies. To solve such situations and problems, we launch Gramture. The <b>Gramture</b> is just like an e-library for students as well as teachers.
-      </p>
-      <p>
-        <b>Gramture</b> is an educational website that provides study materials for 9th, 10th, first-year, and second-year students.
-      </p>
-      <p>
-        With free access to high-quality educational resources, Gramture is a valuable platform for students looking to learn effectively and perform well in their studies.
-      </p>
+  Whenever curriculum wings update or publish new content, students face unavailability or a shortage of books in the market, leading to difficulties in purchasing new books. This situation can affect their studies. To solve such problems, we introduce <b>Gramture</b>, an innovative solution designed to help students and teachers.
+</p>
+<p>
+  <b>Gramture</b> is an educational website that offers study materials for 9th, 10th, first-year, and second-year students, ensuring that students have easy access to necessary learning resources.
+</p>
+<p>
+  With free access to high-quality educational resources, <b>Gramture</b> is a valuable platform for students looking to learn effectively and achieve academic success.
+</p>
+
     </div>
 
     {/* Right Column with Carousel */}
