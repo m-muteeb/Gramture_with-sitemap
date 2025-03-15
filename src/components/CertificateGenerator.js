@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import html2canvas from "html2canvas";
 import "../assets/css/CertificateGenerator.css";
-import img from "../assets/images/navbarlogo.webp"; // Logo image
+import img from "../assets/images/new-logo.webp"; // Logo image
 
 const CertificateGenerator = ({
   mcqs,
@@ -64,18 +64,17 @@ const CertificateGenerator = ({
         <div className="certificate">
           <div className="certificate-header">
             <img src={img} alt="Logo" className="certificate-logo" />
-            <h2>Certificate of Completion</h2>
+            <h2>Achievement Certificate</h2>
           </div>
           <div className="certificate-body">
-            <h3>This Certifies That</h3>
             <h1>{certificateData.userName}</h1>
-            <p>Has successfully completed the course</p>
+            <p>Has successfully completed the course of</p>
             <h3 className="New-heading" style={{ color: '#16a085', fontWeight: 700 , fontSize: 36 }}>{certificateData.topic}</h3>
 
             {/* Modified topic text */}
             <p>with a score of <strong>{certificateData.score}</strong> out of {mcqs.length}</p>
             <p>Evaluation: <strong>{certificateData.complement}</strong></p>
-            <p>Issued on: <strong>{new Date().toLocaleDateString()}</strong></p>
+            <p style={{marginTop:'20px'}}>Issued on: <strong>{new Date().toLocaleDateString()}</strong></p>
           </div>
           <div className="certificate-footer">
             {!isDownloaded && ( // Only show download button if not downloaded

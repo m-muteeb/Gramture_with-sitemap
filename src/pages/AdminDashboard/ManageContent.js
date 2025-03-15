@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Table, Button, Popconfirm, message, Modal, Form, Input, Select } from 'antd';
+import { Table, Button, Popconfirm, message, Modal, Form, Input, Select, Row, Col } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { collection, getDocs, deleteDoc, doc, updateDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { fireStore } from '../../firebase/firebase';
@@ -11,17 +11,18 @@ const ManageProducts = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [form] = Form.useForm();
-  const [description, setDescription] = useState(''); // Store the description with HTML content
-  const [loading, setLoading] = useState(false); // Global loader state
-  const [deleting, setDeleting] = useState(false); // Loader for delete action
-  const [classes, setClasses] = useState([]); // To store classes
+  const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [classes, setClasses] = useState([]);
+  const [mcqs, setMcqs] = useState([]); // To store the MCQs of the product
   const editor = useRef(null);
 
   // Debounced function to optimize the writing experience
   const debouncedDescriptionChange = useRef(
     debounce((newContent) => {
       setDescription(newContent);
-    }, 3000000000000000000000) // Adjust delay time (in ms) for smoother state updates
+    }, 300)
   );
 
   useEffect(() => {
@@ -31,7 +32,7 @@ const ManageProducts = () => {
 
   const fetchClasses = async () => {
     try {
-      const querySnapshot = await getDocs(collection(fireStore, 'classes')); // Assuming you have a 'classes' collection
+      const querySnapshot = await getDocs(collection(fireStore, 'classes'));
       const classList = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -74,7 +75,8 @@ const ManageProducts = () => {
 
   const handleEdit = (record) => {
     setEditingProduct(record);
-    setDescription(record.description || ''); // Set description to HTML content
+    setDescription(record.description || '');
+    setMcqs(record.mcqs || []); // Set the MCQs for the product
     form.setFieldsValue({
       topic: record.topic,
       class: record.class,
@@ -87,6 +89,7 @@ const ManageProducts = () => {
   const handleModalClose = () => {
     setIsModalVisible(false);
     setDescription('');
+    setMcqs([]); // Clear MCQs when closing the modal
     form.resetFields();
     setLoading(false);
   };
@@ -97,6 +100,7 @@ const ManageProducts = () => {
       const updatedValues = {
         ...values,
         description, // Save the description with HTML formatting
+        mcqs, // Save the updated MCQs
         timestamp: serverTimestamp(),
       };
 
@@ -109,6 +113,24 @@ const ManageProducts = () => {
       console.error(error);
       setLoading(false);
     }
+  };
+
+  const handleMCQChange = (index, field, value) => {
+    const updatedMcqs = [...mcqs];
+    updatedMcqs[index][field] = value;
+    setMcqs(updatedMcqs);
+  };
+
+  const handleAddMCQ = () => {
+    setMcqs([
+      ...mcqs,
+      { question: '', options: ['', '', '', ''], correctAnswer: '' },
+    ]);
+  };
+
+  const handleDeleteMCQ = (index) => {
+    const updatedMcqs = mcqs.filter((_, idx) => idx !== index);
+    setMcqs(updatedMcqs);
   };
 
   const columns = [
@@ -139,7 +161,7 @@ const ManageProducts = () => {
   const joditConfig = {
     readonly: false,
     height: 400,
-    caretColor: 'black', // Ensure the caret (cursor) is visible and styled
+    caretColor: 'black',
     uploader: {
       insertImageAsBase64URI: true,
     },
@@ -160,7 +182,7 @@ const ManageProducts = () => {
   };
 
   const handleDescriptionChange = (newContent) => {
-    debouncedDescriptionChange.current(newContent); // Use debounced function to update the state
+    debouncedDescriptionChange.current(newContent);
   };
 
   return (
@@ -200,18 +222,58 @@ const ManageProducts = () => {
               value={description}
               config={joditConfig}
               onBlur={(newContent) => setDescription(newContent)}
-              onChange={handleDescriptionChange} // Now using the debounced version
+              onChange={handleDescriptionChange}
               style={{
-                border: '1px solid #d9d9d9', 
-                borderRadius: '4px', 
+                border: '1px solid #d9d9d9',
+                borderRadius: '4px',
                 padding: '10px',
                 fontFamily: 'Arial, sans-serif',
                 fontSize: '14px',
-                lineHeight: '1.5', // Ensure smooth text flow and cursor visibility
-                minHeight: '150px', // To ensure there is enough space for the cursor to appear
-                overflowY: 'auto', // Allow scrolling when the content overflows
+                lineHeight: '1.5',
+                minHeight: '150px',
+                overflowY: 'auto',
               }}
             />
+          </Form.Item>
+
+          <Form.Item label="MCQs">
+            {mcqs.map((mcq, index) => (
+              <Row key={index} gutter={[16, 16]} style={{ marginBottom: '16px' }}>
+                <Col span={24}>
+                  <Input
+                    placeholder={`Question ${index + 1}`}
+                    value={mcq.question}
+                    onChange={(e) => handleMCQChange(index, 'question', e.target.value)}
+                  />
+                </Col>
+                {mcq.options.map((option, optIndex) => (
+                  <Col span={12} key={optIndex}>
+                    <Input
+                      placeholder={`Option ${optIndex + 1}`}
+                      value={option}
+                      onChange={(e) => {
+                        const updatedOptions = [...mcq.options];
+                        updatedOptions[optIndex] = e.target.value;
+                        handleMCQChange(index, 'options', updatedOptions);
+                      }}
+                    />
+                  </Col>
+                ))}
+                <Col span={12}>
+                  <Input
+                    placeholder="Correct Answer"
+                    value={mcq.correctAnswer}
+                    onChange={(e) => handleMCQChange(index, 'correctAnswer', e.target.value)}
+                  />
+                </Col>
+                <Col span={24}>
+                  <Button danger onClick={() => handleDeleteMCQ(index)}>
+                    Delete MCQ
+                  </Button>
+                </Col>
+              </Row>
+            ))}
+            <Button onClick={handleAddMCQ}>Add MCQ</Button>
           </Form.Item>
 
           <Form.Item>
