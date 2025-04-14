@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, message, Spin } from "antd";
-import { getDocs, collection } from "firebase/firestore";
+import { Button, message, Skeleton } from "antd";
+import { getDocs, collection, query, where, orderBy } from "firebase/firestore";
 import { fireStore } from "../firebase/firebase";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -23,55 +23,69 @@ export default function Description() {
   const [currentMcqIndex, setCurrentMcqIndex] = useState(0);
   const [completedMcqs, setCompletedMcqs] = useState([]);
   const [showResults, setShowResults] = useState(false);
+  const [showReviewSection, setShowReviewSection] = useState(false); // ✅ New state
   const [allTopics, setAllTopics] = useState([]);
   const [currentTopicIndex, setCurrentTopicIndex] = useState(null);
-
-  // Add state for the username
-  const [userName, setUserName] = useState(""); // State for username
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
-    console.log("Fetching products...");
-    fetchProducts();
-    fetchAllTopics();
-  }, [subCategory, topicId]);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Firestore collections reference
+        const topicsRef = collection(fireStore, "topics");
 
-  const fetchProducts = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(fireStore, "topics"));
-      const productList = querySnapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter(
-          (product) =>
-            product.subCategory === subCategory && product.id === topicId
+        // Firestore query for product based on subCategory and topicId
+        const productQuery = query(
+          topicsRef,
+          where("subCategory", "==", subCategory),
+          where("id", "==", topicId)
         );
-      setProducts(productList);
-      setMcqs(productList[0]?.mcqs || []);
-      setLoading(false);
-    } catch (error) {
-      message.error("Failed to fetch products.");
-      console.error(error);
-    }
-  };
 
-  const fetchAllTopics = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(fireStore, "topics"));
-      const topicsList = querySnapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter((topic) => topic.subCategory === subCategory)
-        .sort((a, b) => a.timestamp - b.timestamp);
+        // Firestore query for all topics based on subCategory with ordering by timestamp
+        const allTopicsQuery = query(
+          topicsRef,
+          where("subCategory", "==", subCategory),
+          orderBy("timestamp") // Ensure this field is indexed
+        );
 
-      setAllTopics(topicsList);
+        // Fetch products and topics in parallel
+        const [productSnapshot, allTopicsSnapshot] = await Promise.all([
+          getDocs(productQuery),
+          getDocs(allTopicsQuery),
+        ]);
 
-      const currentTopicIdx = topicsList.findIndex(
-        (topic) => topic.id === topicId
-      );
-      setCurrentTopicIndex(currentTopicIdx);
-    } catch (error) {
-      message.error("Failed to fetch topics.");
-      console.error(error);
-    }
-  };
+        // Map the data from snapshots
+        const productList = productSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        const topicsList = allTopicsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // Set the state with the fetched data
+        setProducts(productList);
+        setMcqs(productList[0]?.mcqs || []);
+        setAllTopics(topicsList);
+
+        // Determine the current topic index
+        const currentTopicIdx = topicsList.findIndex(
+          (topic) => topic.id === topicId
+        );
+        setCurrentTopicIndex(currentTopicIdx);
+      } catch (error) {
+        message.error("Error fetching data");
+        console.error("Firebase fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [subCategory, topicId]);
 
   const navigateToTopic = (direction) => {
     if (currentTopicIndex !== null) {
@@ -79,7 +93,7 @@ export default function Description() {
       if (newTopicIndex >= 0 && newTopicIndex < allTopics.length) {
         const newTopicId = allTopics[newTopicIndex].id;
         navigate(`/description/${subCategory}/${newTopicId}`);
-        window.scrollTo(0, 0); // Ensure scroll to top
+        window.scrollTo(0, 0);
       }
     }
   };
@@ -101,21 +115,18 @@ export default function Description() {
       return;
     }
 
-    // Check answer and give feedback
     const feedback = selected === currentMcq.correctAnswer ? "Correct!" : "Incorrect.";
     setAnswerFeedback({
       ...answerFeedback,
       [currentMcqIndex]: feedback,
     });
 
-    // Move to the next question
     if (currentMcqIndex + 1 < mcqs.length) {
       setCurrentMcqIndex(currentMcqIndex + 1);
     } else {
-      // Once the test is finished, ask for the username and show results
       if (!userName) {
         const name = prompt("Please enter your name: ");
-        setUserName(name || "Guest"); // Default to "Guest" if no name provided
+        setUserName(name || "Guest");
       }
       setShowResults(true);
     }
@@ -137,6 +148,7 @@ export default function Description() {
     setCurrentMcqIndex(0);
     setCompletedMcqs([]);
     setShowResults(false);
+    setShowReviewSection(false); // Reset review visibility
   };
 
   const getNextTopic = () => {
@@ -168,177 +180,165 @@ export default function Description() {
         </Helmet>
       )}
 
-      {loading && (
+      {loading ? (
         <div className="loader-overlay">
-          <Spin size="large" />
+          <Skeleton active paragraph={{ rows: 5 }} />
         </div>
-      )}
-
-      {products.length > 0 && (
+      ) : (
         <>
-          <h1
-            style={{
-              fontSize: "2rem",
-              fontWeight: "bold",
-              marginLeft: "10px",
-              textAlign: "center",
-            }}
-          >
-            {products[0].topic}
-          </h1>
-          {products.map((product) => (
-            <article key={product.id} className="product-article">
-              <div className="product-description">
-                <div
-                  dangerouslySetInnerHTML={{ __html: product.description }}
-                />
-              </div>
-            </article>
-          ))}
+          {products.length > 0 && (
+            <>
+              <h1
+                style={{
+                  fontSize: "2rem",
+                  fontWeight: "bold",
+                  marginLeft: "10px",
+                  textAlign: "center",
+                }}
+              >
+                {products[0].topic}
+              </h1>
 
-          {/* MCQ Section (Only Show if MCQs Exist) */}
-          {mcqs.length > 0 && (
-            <div className="mcq-section">
-              {showResults ? (
-                <div className="result-summary">
-                  <button
-                    onClick={handleRetakeTest}
-                    style={{
-                      padding: "10px 20px",
-                      fontSize: "16px",
-                      backgroundColor: "#FF9800",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                      transition: "background-color 0.3s ease",
-                    }}
-                  >
-                    Retake Test
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <h4>
-                    Question {currentMcqIndex + 1} of {mcqs.length}
-                  </h4>
-                  <div className="mcq-item">
-                    <h4>{mcqs[currentMcqIndex]?.question}</h4>
-                    <div className="mcq-options">
-                      {mcqs[currentMcqIndex]?.options.map((option, index) => (
-                        <label key={index} className="mcq-option">
-                          <input
-                            type="radio"
-                            name={`mcq-${currentMcqIndex}`}
-                            value={option}
-                            checked={selectedAnswer[currentMcqIndex] === option}
-                            onChange={handleAnswerChange}
-                          />
-                          {option}
-                        </label>
-                      ))}
-                    </div>
-                    {answerFeedback[currentMcqIndex] && (
-                      <p
-                        className={
-                          answerFeedback[currentMcqIndex] === "Correct!"
-                            ? "correct"
-                            : "incorrect"
-                        }
-                      >
-                        {answerFeedback[currentMcqIndex]}
-                      </p>
-                    )}
+              {products.map((product) => (
+                <article key={product.id} className="product-article">
+                  <div className="product-description">
+                    <div dangerouslySetInnerHTML={{ __html: product.description }} />
                   </div>
-                  <button
-                    onClick={handleNextQuestion}
-                    style={{
-                      padding: "10px 20px",
-                      fontSize: "16px",
-                      backgroundColor: "#4CAF50",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                      transition: "background-color 0.3s ease",
-                    }}
-                  >
-                    {currentMcqIndex + 1 === mcqs.length
-                      ? "Finish"
-                      : "Next Question"}
-                  </button>
-                </>
+                </article>
+              ))}
+
+              {mcqs.length > 0 && (
+                <div className="mcq-section">
+                  {showResults ? (
+                    <div className="result-summary">
+                      <button
+                        onClick={handleRetakeTest}
+                        style={{
+                          padding: "10px 20px",
+                          fontSize: "16px",
+                          backgroundColor: "#FF9800",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "5px",
+                          cursor: "pointer",
+                          marginRight: "10px",
+                        }}
+                      >
+                        Retake Test
+                      </button>
+
+                      {!showReviewSection ? (
+                        <button
+                          onClick={() => setShowReviewSection(true)}
+                          style={{
+                            padding: "10px 20px",
+                            fontSize: "16px",
+                            backgroundColor: "#2196F3",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Review Your Answers
+                        </button>
+                      ) : (
+                        <div className="review-section" style={{ marginTop: "30px", marginBottom: "30px" }}>
+                          <h2 style={{ textAlign: "center" }}>Review Your Answers</h2>
+                          {mcqs.map((mcq, index) => {
+                            const userAnswer = selectedAnswer[index];
+                            const isCorrect = userAnswer === mcq.correctAnswer;
+
+                            return (
+                              <div
+                                key={index}
+                                className="review-question"
+                                style={{
+                                  marginBottom: "20px",
+                                  padding: "15px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "8px",
+                                  backgroundColor: isCorrect ? "#e6ffed" : "#ffe6e6",
+                                }}
+                              >
+                                <h4>{index + 1}. {mcq.question}</h4>
+                                <p>
+                                  <strong>Your Answer:</strong>{" "}
+                                  <span style={{ color: isCorrect ? "green" : "red" }}>
+                                    {userAnswer || "Not Answered"}
+                                  </span>
+                                </p>
+                                {!isCorrect && (
+                                  <p>
+                                    <strong>Correct Answer:</strong>{" "}
+                                    <span style={{ color: "green" }}>{mcq.correctAnswer}</span>
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="mcq">
+                        <p>
+                          Question {currentMcqIndex + 1}: {mcqs[currentMcqIndex]?.question}
+                        </p>
+                        {mcqs[currentMcqIndex]?.options.map((option, idx) => (
+                          <div key={idx}>
+                            <input
+                              type="radio"
+                              name={`question-${currentMcqIndex}`}
+                              value={option}
+                              onChange={handleAnswerChange}
+                            />
+                            {option}
+                          </div>
+                        ))}
+                      </div>
+
+                      <button onClick={handleNextQuestion}>Next Question</button>
+                    </>
+                  )}
+                </div>
               )}
-            </div>
+            </>
           )}
 
-          {/* Show the Generate Certificate Button Only After Test is Completed */}
-          {mcqs.length > 0 && showResults && (
-            <div style={{ textAlign: "center", marginTop: "20px" }}>
-              
-            </div>
-          )}
-
-          <CertificateGenerator
-            mcqs={mcqs}
-            selectedAnswer={selectedAnswer}
-            userName={userName} // Pass the userName here
-            calculateResults={calculateResults}
-            handleRetakeTest={handleRetakeTest}
-            topicName={products[0]?.topic}
-          />
-
-          <ShareArticle />
-
-          {/* Navigation for Next and Previous Topics */}
           <div className="topic-navigation">
-            {getPrevTopic() && getPrevTopic().subCategory === subCategory && getPrevTopic().class === products[0].class && (
-              <Link
-                to={`/description/${subCategory}/${getPrevTopic().id}`}
-                className="prev-button"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: "20px",
-                  fontSize: "18px",
-                  fontWeight: "bold",
-                  textDecoration: "none",
-                  color: "#0073e6",
-                }}
-                onClick={() => window.scrollTo(0, 0)} // Ensure scroll to top
-              >
-                <FaChevronLeft className="nav-icon" /> Previous Topic:{" "}
-                {getPrevTopic().topic}
-              </Link>
-            )}
+            <button
+              disabled={!getPrevTopic()}
+              onClick={() => navigateToTopic(-1)}
+              style={{
+                padding: "10px 20px",
+                fontSize: "16px",
+                marginTop: "20px",
+                marginRight: "10px",
+              }}
+            >
+              <FaChevronLeft />
+              Previous Topic
+            </button>
 
-            {getNextTopic() && getNextTopic().subCategory === subCategory && getNextTopic().class === products[0].class && (
-              <Link
-                to={`/description/${subCategory}/${getNextTopic().id}`}
-                className="next-button"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: "20px",
-                  fontSize: "18px",
-                  fontWeight: "bold",
-                  textDecoration: "none",
-                  color: "#0073e6",
-                }}
-                onClick={() => window.scrollTo(0, 0)} // Ensure scroll to top
-              >
-                Next Topic: {getNextTopic().topic}{" "}
-                <FaChevronRight className="nav-icon" />
-              </Link>
-            )}
+            <button
+              disabled={!getNextTopic()}
+              onClick={() => navigateToTopic(1)}
+              style={{
+                padding: "10px 20px",
+                fontSize: "16px",
+                marginTop: "20px",
+              }}
+            >
+              Next Topic
+              <FaChevronRight />
+            </button>
           </div>
 
-          {/* Comment Section */}
-          <CommentSection subCategory={subCategory} topicId={topicId} />
-          <p style={{ fontSize: "1.1rem", marginLeft: "10px" }}>
-            Gramture is an Educational website that helps students in their 9th,
-            10th, 1st year, and 2nd-year studies.
-          </p>
+          <CommentSection />
+          <ShareArticle />
+          <CertificateGenerator />
         </>
       )}
     </div>

@@ -1,149 +1,126 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Row, Col, Image } from 'antd';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import myImage from '../assets/images/owner.webp';
+import { Link } from 'react-router-dom'; // Using React Router for navigation
 import { FaFacebook, FaTwitter, FaYoutube, FaInstagram, FaWhatsapp } from 'react-icons/fa';
-
-import img from '../assets/images/about.webp'; // Your logo image
+import myImage from '../assets/images/owner.webp';
+import aboutImg from '../assets/images/about.webp';
+import "../assets/css/about.css";
 
 const About = () => {
+  
+
+
   return (
     <div className='container about-section' id='about'>
-      {/* Top Banner Section */}
-      <div className="top-banner mb-4">
-        <Image
-          width="100%"
-          height="auto"  // Set height to auto for a natural image ratio
-          src={img} // Use your desired banner image URL here
-          alt="Top Banner"
-          className="img-fluid"
-          style={{ objectFit: 'cover', height: '400px' }} // Make image cover the entire width and maintain aspect ratio
-        />
-      </div>
-
-      {/* About Grammar Section */}
-      <Row>
-        <Col xs={24} md={24} className='about-grammar-section'>
-          <div className="about-grammar-content mt-4 text-center">
-            <div className="heading mt-2 mb-2">
-              <b style={{ fontSize: '30px', fontWeight: '700' }}>Welcome to the Gramture platform!</b>
-            </div>
-            <p style={{ fontSize: '18px', color: '#333' }}>
-              Gramture is a Novelty brand name. Gramture helps you understand the{' '}
-              <span style={{ color: '#e74c3c', fontWeight: 'bold' }}>
-                grammatical concepts and structure
-              </span> in a simple way.
+      {/* About Section */}
+      <Row className="align-items-center my-5">
+        <Col xs={24} md={16}>
+          <div className="about-grammar-content pe-md-4">
+            <h2 className="text-center fw-bold mb-4">Welcome to the Gramture Platform!</h2>
+            <p>
+              Gramture is a revolutionary platform designed to make learning grammar and language structures simpler and more approachable. Whether you're a student, teacher, or lifelong learner, our platform offers a wide range of resources that aim to enhance your understanding of grammar in an easy-to-understand way.
             </p>
-            <p style={{ fontSize: '18px', color: '#333' }}>
-              Gramture <b>[gram-cher]</b> is a blend of two words,{' '}
-              <span style={{ color: '#e74c3c', fontWeight: 'bold' }}>
-                grammar and structure
-              </span>, as smog is coined by blending smoke and fog, or motel, from motor
-              and hotel. In linguistics, Gramture is considered a clipped compound.
-              The new word combines both the sounds and meanings of the originals.
+            <p>
+              Gramture, a blend of the words <span className="highlight">Grammar</span> and <span className="highlight">Structure</span>, symbolizes a modern approach to education. Our platform provides an enriching experience that simplifies grammar concepts and structures, enabling better communication skills for writing, speaking, and overall literacy.
             </p>
-            <p style={{ fontSize: '18px', color: '#333' }}>
-              To form Gramture, the first segment of the{' '}
-              <span style={{ color: '#e74c3c', fontWeight: 'bold' }}>‘grammar’ (gram)</span>
-              word is attached to the final segment of{' '}
-              <span style={{ color: '#e74c3c', fontWeight: 'bold' }}>‘structure’ (ture)</span>.
-              Gramture is a single naming word for the two terms grammar and structure.
+            <p>
+              At Gramture, we offer comprehensive study materials, practice exercises, and engaging tools to make learning grammar both educational and enjoyable. Our mission is to help learners of all levels gain confidence and proficiency in language.
             </p>
-            {/* <p style={{ fontSize: '18px', color: '#333' }}>
-              Gramture is more than just a name; it’s a vision. By seamlessly blending{' '}
-              <span style={{ color: '#e74c3c', fontWeight: 'bold' }}>grammar and structure</span>,
-              it embodies simplicity, clarity, and innovation in understanding language. With
-              Gramture, mastering the building blocks of language becomes effortless, empowering
-              learners to communicate with confidence and precision.
-            </p> */}
-           
-
-
-
-
           </div>
+        </Col>
+        <Col xs={24} md={8} className='text-center'>
+          <Image
+            src={aboutImg}
+            alt="About"
+            width={400}
+            height={400}
+            className="rounded-2"  
+            style={{ borderRadius: '8px' }} 
+          />
         </Col>
       </Row>
 
-      {/* About Us Section */}
-      <Row gutter={[16, 16]}>
-        <Col xs={24} md={8} className='about-left'>
-          <div className="profile-img mb-4 text-center">
-            <Image
-              width={230}
-              height={230}
-              src={myImage}
-              alt='profile-pic'
-              className='rounded-circle'
-            />
-          </div>
-          <div className="profile-info mb-4 text-center">
-            <h4 style={{ fontSize: '24px', fontWeight: '700', color: '#333' }}>Habib Ahmad Khan</h4>
-            <p>
-              <b>Email</b>: <a href='mailto:gramture@gmail.com'>gramture@gmail.com</a>
-            </p>
-            <p>
-              <b>Phone/WhatsApp No</b>: +92 3036660025
-            </p>
-            {/* Social Media Icons */}
-            <div className="social-icons text-center">
-              <a
-                 href="https://www.facebook.com/Gramture"
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 className="social-icon facebook"
-               >
-                 <FaFacebook size={24} />
-               </a>
-               <a
-                 href="https://twitter.com/Gramture"
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 className="social-icon twitter"
-               >
-                 <FaTwitter size={24} />
-               </a>
-               <a
-                 href="https://www.instagram.com/gramture/"
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 className="social-icon instagram"
-               >
-                 <FaInstagram size={24} />
-               </a>
-               
-               <a
-                 href="https://www.youtube.com/@gramture"
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 className="social-icon youtube"
-               >
-                 <FaYoutube size={24} />
-               </a>
-               <a
-                 href="https://wa.me/+923036660025"
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 className="social-icon youtube"
-                 style={{color: '#25d366' }}
-               >
-                 <FaWhatsapp size={24} />
-               </a>
-              
-               
-             </div>
-          </div>
-        </Col>
-
-        <Col xs={24} md={16} className="right-section text-center">
-          <p className="about-description" style={{ fontSize: '30px', fontWeight: '400', marginTop: '20px' }}>
-            The word ‘Gramture’ was introduced in this sense by{' '}
-            <b>Habib Ahmad Khan</b> on the web domain{' '}
-            <a href="https://gramture.com" target="_blank" rel="noopener noreferrer">gramture.com</a>,{' '}
-            <a href="https://gramture.com" target="_blank" rel="noopener noreferrer">gramture</a> and in the books, Gramture Publications, and also on social media.
+      {/* CEO Section */}
+      <Row gutter={[16, 16]} className="my-5 align-items-center">
+        <Col xs={24} md={8} className="text-center">
+          <Image
+            width={230}
+            height={230}
+            src={myImage}
+            alt='Habib Ahmad Khan'
+            className="rounded-2"  
+            style={{ borderRadius: '8px' }} 
+          />
+          <h4 className="fw-bold">Habib Ahmad Khan</h4>
+          <p className="mb-1">Founder & CEO of Gramture</p>
+          <p className="small mb-2">
+            At Gramture, we're redefining how grammar is taught, providing top-notch resources that revolutionize grammar education.
           </p>
+          <div className="social-icons d-flex justify-content-center gap-3">
+            <a href="https://www.facebook.com/Gramture" target="_blank" rel="noreferrer" className="facebook"><FaFacebook /></a>
+            <a href="https://twitter.com/Gramture" target="_blank" rel="noreferrer" className="twitter"><FaTwitter /></a>
+            <a href="https://www.instagram.com/gramture/" target="_blank" rel="noreferrer" className="instagram"><FaInstagram /></a>
+            <a href="https://www.youtube.com/@gramture" target="_blank" rel="noreferrer" className="youtube"><FaYoutube /></a>
+            <a href="https://wa.me/+923036660025" target="_blank" rel="noreferrer" className="whatsapp"><FaWhatsapp /></a>
+          </div>
+        </Col>
+
+        <Col xs={24} md={16}>
+          <div className="ceo-message">
+            <h3 className="fw-bold mb-3">A Message from Our CEO</h3>
+            <p>
+              We’re not just another platform; Gramture is a movement. Our mission is to empower every learner with the tools they need to master grammar, develop communication skills, and build their confidence in using language effectively.
+            </p>
+            <p>
+              Through innovative learning methods, personalized study paths, and high-quality content, we are changing the way grammar is perceived and learned. We invite you to be part of this exciting journey.
+            </p>
+          </div>
         </Col>
       </Row>
+
+      {/* Zig-Zag Style Card Section */}
+      <div className="my-5 py-4">
+        <h2 className="text-center fw-bold mb-4">Explore Our Exclusive Features</h2>
+        
+        <Row gutter={[24, 24]} justify="center">
+          {/* First Zig-Zag Card (Left) */}
+          <Col xs={24} sm={12} md={6}>
+            <div className="feature-card-left text-center p-4">
+              <h5 className="fw-bold mb-2">🌟 Topper Choice Notes</h5>
+              <p className="text-muted">Gain access to expertly curated notes used by top scorers to ensure you ace your exams with ease!</p>
+              <Link to="/" className="btn btn-primary">Explore Now</Link>
+            </div>
+          </Col>
+
+          {/* Second Zig-Zag Card (Right) */}
+          <Col xs={24} sm={12} md={6}>
+            <div className="feature-card-right text-center p-4">
+              <h5 className="fw-bold mb-2">📝 Board Pattern Tests with Certification</h5>
+              <p className="text-muted">Take board-patterned tests, get certified, and boost your readiness for upcoming exams!</p>
+              <Link to="/s" className="btn btn-primary">Explore Now</Link>
+            </div>
+          </Col>
+
+          {/* Third Zig-Zag Card (Left) */}
+          <Col xs={24} sm={12} md={6}>
+            <div className="feature-card-left text-center p-4">
+              <h5 className="fw-bold mb-2">💬 Discussion Forum with Expert Faculty</h5>
+              <p className="text-muted">Join our interactive forum and engage with expert faculty to clear all your grammar-related doubts!</p>
+              <Link to="/discussion_forum" className="btn btn-primary">Join Now</Link>
+            </div>
+          </Col>
+
+          {/* Fourth Zig-Zag Card (Right) - New Card */}
+          <Col xs={24} sm={12} md={6}>
+            <div className="feature-card-right text-center p-4">
+              <h5 className="fw-bold mb-2">🎓 Expert Tips for Achieving the Highest Marks</h5>
+              <p className="text-muted">Learn time-tested strategies to secure the highest marks across all subjects and exams.</p>
+              <Link to="/" className="btn btn-primary">Explore Now</Link>
+            </div>
+          </Col>
+        </Row>
+      </div>
     </div>
   );
 };

@@ -1,37 +1,83 @@
-.about-section {
-  font-family: 'Arial', sans-serif;
-}
-
-.top-banner {
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.social-icons a:hover {
+.highlight {
   color: #e74c3c;
+  font-weight: 600;
+}
+
+.ceo-message p {
+  font-size: 16px;
+  color: #333;
+  line-height: 1.7;
+}
+
+.social-icons a {
+  font-size: 22px;
+  color: #333; /* Default color */
   transition: color 0.3s ease;
 }
 
-.social-icon {
-  color: #2c3e50;
+.social-icons a.facebook { color: #3b5998; }
+.social-icons a.twitter { color: #1da1f2; }
+.social-icons a.instagram { color: #e1306c; }
+.social-icons a.youtube { color: #ff0000; }
+.social-icons a.whatsapp { color: #25d366; }
+
+.social-icons a:hover {
+  color: inherit; /* Keep the original color on hover */
 }
 
-.social-icon.facebook {
-  color: #3b5998;
+.feature-card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  height: 100%;
 }
 
-.social-icon.twitter {
-  color: #00acee;
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+/* Zig-Zag Card Layout */
+.feature-card-left, .feature-card-right {
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: transform 0.3s ease;
 }
 
-.social-icon.instagram {
-  color: #c32aa3;
+.feature-card-left:hover, .feature-card-right:hover {
+  transform: translateY(-10px);
 }
 
-.social-icon.youtube {
-  color: #ff0000;
+.feature-card-left h5, .feature-card-right h5 {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
 }
 
-.social-icon.whatsapp {
-  color: #25d366;
+.feature-card-left p, .feature-card-right p {
+  font-size: 1rem;
+  color: #555;
+}
+
+.feature-card-left .btn, .feature-card-right .btn {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+}
+
+.feature-card-left .btn:hover, .feature-card-right .btn:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .feature-card-left, .feature-card-right {
+    margin-bottom: 20px;
+  }
+  .feature-card-left h5, .feature-card-right h5 {
+    font-size: 1.1rem;
+  }
 }

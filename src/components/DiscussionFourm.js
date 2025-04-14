@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { FaImage, FaReply } from 'react-icons/fa'; // Import React Icons
-import { message, Modal, Input, Button, Spin } from 'antd'; // Import Modal and Ant Design components
-import { app, fireStore, storage } from '../firebase/firebase'; // Import Firebase config
-import { collection, addDoc, getDocs, updateDoc, doc } from 'firebase/firestore'; 
+import { FaImage, FaReply, FaRegCommentDots, FaGavel, FaUsers } from 'react-icons/fa';
+import { message, Modal, Input, Button, Spin, Tooltip } from 'antd';
+import { collection, addDoc, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { fireStore } from '../firebase/firebase';
 import '../assets/css/discussion-forum.css';
 
 const DiscussionForum = () => {
   const [question, setQuestion] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [topic, setTopic] = useState('');
   const [image, setImage] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [replyText, setReplyText] = useState('');
-  const [currentQuestionId, setCurrentQuestionId] = useState(null); // Store the current question ID for replying
-  const [loading, setLoading] = useState(false); // For button loaders
-  const [loadingReply, setLoadingReply] = useState(false); // For reply button loader
+  const [currentQuestionId, setCurrentQuestionId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingReply, setLoadingReply] = useState(false);
 
-  // Fetch all questions and replies on page load
   useEffect(() => {
     const fetchQuestions = async () => {
-      const querySnapshot = await getDocs(collection(fireStore, "questions"));
+      const querySnapshot = await getDocs(collection(fireStore, 'questions'));
       const questionsData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -31,27 +31,27 @@ const DiscussionForum = () => {
     fetchQuestions();
   }, []);
 
-  // Submit a new question to Firebase Firestore
   const submitQuestion = async () => {
-    if (question && name && email) {
+    if (question && name && email && topic) {
       setLoading(true);
       try {
         const newQuestion = {
           question,
           name,
           email,
+          topic,
           replies: [],
           image: image || null,
         };
 
-        // Add new question to Firestore
-        const docRef = await addDoc(collection(fireStore, "questions"), newQuestion);
+        const docRef = await addDoc(collection(fireStore, 'questions'), newQuestion);
         setQuestions([...questions, { id: docRef.id, ...newQuestion }]);
         setQuestion('');
         setName('');
         setEmail('');
+        setTopic('');
         setImage(null);
-        message.success('Your question has been posted successfully!');
+        message.success('Your question has been posted!');
       } catch (e) {
         message.error('Error posting question');
         console.error(e);
@@ -59,11 +59,10 @@ const DiscussionForum = () => {
         setLoading(false);
       }
     } else {
-      message.error('Please fill in all fields.');
+      message.error('Please fill in all fields');
     }
   };
 
-  // Submit a reply to a question in Firestore
   const submitReply = async () => {
     if (!replyText || !name || !email) {
       message.error('Please fill in all fields before submitting.');
@@ -80,23 +79,25 @@ const DiscussionForum = () => {
         image: image || null,
       };
 
-      // Find the question and update it with the new reply
-      const questionRef = doc(fireStore, "questions", currentQuestionId);
+      const questionRef = doc(fireStore, 'questions', currentQuestionId);
       await updateDoc(questionRef, {
-        replies: [...questions.find(q => q.id === currentQuestionId).replies, newReply]
+        replies: [
+          ...questions.find((q) => q.id === currentQuestionId).replies,
+          newReply,
+        ],
       });
 
-      // Update the local state for immediate reflection
-      setQuestions(questions.map((item) =>
-        item.id === currentQuestionId ? {
-          ...item,
-          replies: [...item.replies, newReply]
-        } : item
-      ));
+      setQuestions(
+        questions.map((item) =>
+          item.id === currentQuestionId
+            ? { ...item, replies: [...item.replies, newReply] }
+            : item
+        )
+      );
 
-      setModalVisible(false); // Close the modal
-      setReplyText(''); // Reset the reply input
-      message.success('Reply posted successfully!');
+      setModalVisible(false);
+      setReplyText('');
+      message.success('Reply posted!');
     } catch (e) {
       message.error('Error posting reply');
       console.error(e);
@@ -105,11 +106,10 @@ const DiscussionForum = () => {
     }
   };
 
-  // Handle image upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5000000) {  // Limit file size to 5MB
+      if (file.size > 5000000) {
         message.error('File size must be less than 5MB');
       } else {
         const reader = new FileReader();
@@ -121,7 +121,6 @@ const DiscussionForum = () => {
     }
   };
 
-  // Open the reply modal
   const openReplyModal = (questionId) => {
     setCurrentQuestionId(questionId);
     setModalVisible(true);
@@ -129,100 +128,127 @@ const DiscussionForum = () => {
 
   return (
     <div className="discussion-forum">
-      <h1 className="forum-title">Discussion Forum</h1>
 
-      {/* Ask Question Section */}
-      <div className="ask-section">
-        <input
-          type="text"
-          className="input"
-          placeholder="Your Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          type="email"
-          className="input"
-          placeholder="Your Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <textarea
-          className="input question-input"
-          placeholder="Ask your question here..."
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-        />
+      {/* Header */}
+      <div className="forum-header">
+        <h1 className="forum-title">📢 Gramture Discussion Forum</h1>
+        <p className="forum-description">
+          Ask questions, share knowledge, and grow together! 🌱
+        </p>
+      </div>
 
-        <div className="image-picker">
-          <label htmlFor="question-image">
-            <FaImage size={24} color="gray" />
-            {image ? (
-              <span>Image selected</span>
-            ) : (
-              <span>Upload Image</span>
-            )}
-          </label>
-          <input
-            type="file"
-            id="question-image"
-            accept="image/*"
-            onChange={handleImageUpload}
-            style={{ display: 'none' }}
+      {/* Ask a Question */}
+      <div className="ask-question">
+        <h2>📝 Ask a New Question</h2>
+        <div className="form-container">
+          <Input
+            placeholder="Your Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="form-input"
           />
-        </div>
-
-        <button className="submit-btn" onClick={submitQuestion} disabled={loading}>
-          {loading ? <Spin size="small" /> : 'Post Question'}
-        </button>
-      </div>
-
-      {/* Questions & Replies Section */}
-      <div className="questions-list">
-        {questions.map((item) => (
-          <div key={item.id} className="question-card">
-            <h2>{item.name} asks:</h2>
-            <p>{item.question}</p>
-            {item.image && (
-              <div className="image-preview">
-                <img src={item.image} alt="question" className="uploaded-image" />
-              </div>
-            )}
-
-            <div className="replies-container">
-              <h3>Replies:</h3>
-              {item.replies.map((reply, index) => (
-                <div key={index} className="reply-card">
-                  <p>{reply.reply}</p>
-                  <p><strong>{reply.name}</strong> (Email: {reply.email})</p>
-                  {reply.image && (
-                    <div className="image-preview">
-                      <img
-                        src={reply.image}
-                        alt="reply"
-                        className="uploaded-image"
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              <button
-                className="reply-btn"
-                onClick={() => openReplyModal(item.id)}
-                disabled={loadingReply}
-              >
-                {loadingReply ? <Spin size="small" /> : <><FaReply size={20} /> Reply</>}
-              </button>
-            </div>
+          <Input
+            placeholder="Your Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="form-input"
+          />
+          <Input
+            placeholder="Topic (e.g. Tenses, Articles)"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            className="form-input"
+          />
+          <textarea
+            placeholder="Write your question..."
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            className="form-textarea"
+          />
+          <div className="file-upload">
+            <label htmlFor="question-image">
+              <FaImage size={20} /> Upload Image
+            </label>
+            <input
+              type="file"
+              id="question-image"
+              accept="image/*"
+              onChange={handleImageUpload}
+              style={{ display: 'none' }}
+            />
+            {image && <span>Image Selected</span>}
           </div>
-        ))}
+          <Button
+            type="primary"
+            onClick={submitQuestion}
+            loading={loading}
+            className="submit-button"
+          >
+            Submit Question
+          </Button>
+        </div>
       </div>
 
-      {/* Modal for replying */}
+      {/* Questions List */}
+      <div className="questions-list">
+        <h2 className="section-title">📚 Community Questions</h2>
+        {questions.length === 0 ? (
+          <p>No questions yet. Be the first to ask!</p>
+        ) : (
+          questions.map((item) => (
+            <div key={item.id} className="question-card">
+              <div className="question-header">
+                <h3>{item.name} asks:</h3>
+                {item.topic && (
+                  <span className="topic-tag">{item.topic}</span>
+                )}
+              </div>
+              <p className="question-text">{item.question}</p>
+              {item.image && (
+                <div className="image-preview">
+                  <img src={item.image} alt="question" />
+                </div>
+              )}
+
+              <div className="replies-section">
+                <h4><FaRegCommentDots /> Replies</h4>
+                {item.replies.length === 0 ? (
+                  <p>No replies yet. Be the first to answer!</p>
+                ) : (
+                  item.replies.map((reply, index) => (
+                    <div key={index} className="reply-card">
+                      <p>{reply.reply}</p>
+                      <span className="reply-author">
+                        <strong>{reply.name}</strong> ({reply.email})
+                      </span>
+                      {reply.image && (
+                        <div className="image-preview">
+                          <img src={reply.image} alt="reply" />
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+                <Tooltip title="Reply to this question">
+                  <Button
+                    type="link"
+                    onClick={() => openReplyModal(item.id)}
+                    loading={loadingReply}
+                    className="reply-button"
+                  >
+                    <FaReply /> Reply
+                  </Button>
+                </Tooltip>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Modal for Reply */}
       <Modal
-        title="Post a Reply"
-        visible={modalVisible}
+        title="✍️ Post a Reply"
+        open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
       >
@@ -233,20 +259,18 @@ const DiscussionForum = () => {
         />
         <Input
           placeholder="Your Email"
-          type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
         <textarea
-          className="reply-input"
+          className="reply-textarea"
           placeholder="Write a reply..."
           value={replyText}
           onChange={(e) => setReplyText(e.target.value)}
         />
-        <div className="image-picker">
+        <div className="file-upload">
           <label htmlFor="reply-image">
-            <FaImage size={24} color="gray" />
-            Upload Image
+            <FaImage size={20} /> Upload Image
           </label>
           <input
             type="file"
@@ -255,14 +279,51 @@ const DiscussionForum = () => {
             onChange={handleImageUpload}
             style={{ display: 'none' }}
           />
+          {image && <span>Image Selected</span>}
         </div>
-        <Button type="primary" onClick={submitReply} style={{ marginTop: '10px' }} loading={loadingReply}>
+        <Button
+          type="primary"
+          onClick={submitReply}
+          loading={loadingReply}
+          className="submit-button"
+        >
           Submit Reply
         </Button>
       </Modal>
+
+     {/* Forum Rules Section */}
+<div className="forum-rules">
+  <h2><FaGavel style={{ color: '#d35400' }} /> Forum Rules</h2>
+  <ul>
+    <li>
+      <FaUsers style={{ color: '#2980b9' }} />
+      <strong> Be Respectful:</strong> Treat everyone with kindness. Avoid offensive, aggressive, or dismissive behavior.
+    </li>
+    <li>
+      <FaGavel style={{ color: '#c0392b' }} />
+      <strong> No Spam or Self-Promotion:</strong> Promotional content, advertisements, or irrelevant links are not allowed.
+    </li>
+    <li>
+      <FaRegCommentDots style={{ color: '#27ae60' }} />
+      <strong> Stay On Topic:</strong> Make sure your replies directly contribute to the discussion or answer the question.
+    </li>
+    <li>
+      <FaImage style={{ color: '#8e44ad' }} />
+      <strong> Responsible Media Use:</strong> Only upload relevant and respectful images. No offensive or copyrighted content.
+    </li>
+    <li>
+      <FaReply style={{ color: '#16a085' }} />
+      <strong> Use the Reply Feature:</strong> Always use the reply button to respond—don’t create a new question to reply.
+    </li>
+    <li>
+      <FaGavel style={{ color: '#f39c12' }} />
+      <strong> Follow Community Guidelines:</strong> Any content violating our terms will be removed without notice.
+    </li>
+  </ul>
+</div>
+
     </div>
   );
 };
 
 export default DiscussionForum;
- 
