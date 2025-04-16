@@ -5,8 +5,8 @@
     top: 0px; /* Adjust for top bar height */
     z-index: 1050;
     
-background-image: linear-gradient(45deg, #dad4d463 0%, #e9e9e9 100%);
-    width: 100%;
+    background: linear-gradient(to right, #fefcea, #defcf9); /* Light Cream to Icy Aqua */
+
     height: 70px; /* Default height */ 
     transition: all 0.3s ease-in-out;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
@@ -129,3 +129,40 @@ background-image: linear-gradient(45deg, #dad4d463 0%, #e9e9e9 100%);
 
 }
 
+.news-bar {
+  width: 100%;
+  background: linear-gradient(to right, #fffde1, #d0ffef); /* Light Yellow to Soft Mint */
+
+  color: #000000;
+  padding: 6px 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  overflow: hidden;
+  position: relative;
+  z-index: 1049;
+  
+  white-space: nowrap;
+}
+
+.scrolling-news {
+  display: inline-block;
+  animation: scrollText 30s linear infinite;
+  padding-left: 100%;
+}
+
+@keyframes scrollText {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Optional for smaller devices */
+@media (max-width: 768px) {
+  .news-bar {
+    font-size: 0.75rem;
+    padding: 4px 0;
+  }
+}

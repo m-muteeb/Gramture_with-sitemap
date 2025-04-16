@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Form, Input, Upload, Button, Select, message, Card, Switch, InputNumber } from 'antd';
+import { Form, Input, Upload, Button, Select, message, Card, Switch } from 'antd';
 import { UploadOutlined, LoadingOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import { storage, fireStore } from '../../firebase/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -19,9 +19,9 @@ const ResponsiveForm = () => {
   const [addingClass, setAddingClass] = useState(false);
   const [newClass, setNewClass] = useState('');
   const [savingDraft, setSavingDraft] = useState(false);
-  const [isMCQ, setIsMCQ] = useState(false); // Toggle between MCQ and regular topic form
-  const [numMCQs, setNumMCQs] = useState(1); // Number of MCQs
-  const [mcqs, setMcqs] = useState([{ question: '', options: ['', '', '', ''], correctAnswer: '' }]); // MCQ data structure
+  const [isMCQ, setIsMCQ] = useState(false);
+  const [numMCQs, setNumMCQs] = useState(1);
+  const [mcqs, setMcqs] = useState([{ question: '', options: ['', '', '', ''], correctAnswer: '' }]);
 
   const [form] = Form.useForm();
 
@@ -35,13 +35,17 @@ const ResponsiveForm = () => {
       if (draft) {
         setDescription(draft.description || '');
         form.setFieldsValue(draft);
+        if (draft.mcqs) {
+          setMcqs(draft.mcqs);
+          setIsMCQ(true);
+          setNumMCQs(draft.mcqs.length);
+        }
       }
     };
 
     fetchClasses();
   }, [form]);
 
-  // Handle form submission
   const onFinish = async (values) => {
     const { topic, class: selectedClasses, category, subCategory, file } = values;
 
@@ -58,10 +62,7 @@ const ResponsiveForm = () => {
           return new Promise((resolve, reject) => {
             uploadTask.on(
               'state_changed',
-              (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log(`Upload is ${progress}% done`);
-              },
+              null,
               (error) => {
                 console.error('Upload failed:', error);
                 message.error('File upload failed.', 3);
@@ -88,17 +89,17 @@ const ResponsiveForm = () => {
         topic: topic || '',
         class: selectedClasses.join(', '),
         category: category || '',
-        subCategory: isMCQ ? 'MCQ Test' : subCategory, // Set subCategory as "MCQ Test" if isMCQ is true
-        description: isMCQ ? '' : description, // Hide description for MCQ
+        subCategory: isMCQ ? 'MCQ Test' : subCategory,
+        description: description || '',
         fileURLs,
-        mcqs: isMCQ ? mcqs : [], // Add MCQs if form is MCQ
+        mcqs: isMCQ ? mcqs : [],
         timestamp: new Date(),
       };
 
       await addDoc(collection(fireStore, 'topics'), topicData);
       message.success('Topic created successfully!', 3);
-
       localStorage.removeItem('draft');
+      navigate('/ManageProducts');
     } catch (e) {
       console.error('Error adding document:', e);
       message.error('Failed to save topic.', 3);
@@ -107,7 +108,6 @@ const ResponsiveForm = () => {
     }
   };
 
-  // Handle class addition
   const handleAddClass = async () => {
     if (newClass && !classes.some(cls => cls.name === newClass)) {
       setAddingClass(true);
@@ -125,11 +125,10 @@ const ResponsiveForm = () => {
     }
   };
 
-  // Handle saving draft
   const handleSaveDraft = async (values) => {
     setSavingDraft(true);
     try {
-      const draftData = { ...values, description };
+      const draftData = { ...values, description, mcqs };
       localStorage.setItem('draft', JSON.stringify(draftData));
       message.success('Draft saved successfully!', 3);
     } catch (error) {
@@ -139,76 +138,82 @@ const ResponsiveForm = () => {
     }
   };
 
-  // Handle clearing draft
   const handleClearDraft = () => {
     localStorage.removeItem('draft');
     form.resetFields();
     setDescription('');
+    setMcqs([{ question: '', options: ['', '', '', ''], correctAnswer: '' }]);
+    setNumMCQs(1);
     message.success('Draft cleared!', 3);
   };
 
-  // Handle MCQ question addition
-  const handleAddMCQ = () => {
-    setMcqs([...mcqs, { question: '', options: ['', '', '', ''], correctAnswer: '' }]);
-  };
-
-  // Handle MCQ input change
   const handleMCQChange = (index, key, value) => {
     const updatedMcqs = [...mcqs];
     updatedMcqs[index][key] = value;
     setMcqs(updatedMcqs);
   };
 
-  // Handle toggle for MCQ form
-  const handleToggleMCQ = (checked) => {
-    setIsMCQ(checked);
-    if (!checked) {
-      setDescription('');
-      setMcqs([{ question: '', options: ['', '', '', ''], correctAnswer: '' }]); // Reset MCQs when switching back
-    }
+  const handleAddMCQ = () => {
+    setMcqs([...mcqs, { question: '', options: ['', '', '', ''], correctAnswer: '' }]);
+    setNumMCQs(mcqs.length + 1);
   };
 
-  // MCQ Template
+  const handleMCQCountChange = (value) => {
+    setNumMCQs(value);
+    const updatedMcqs = [...mcqs];
+    while (updatedMcqs.length < value) {
+      updatedMcqs.push({ question: '', options: ['', '', '', ''], correctAnswer: '' });
+    }
+    setMcqs(updatedMcqs.slice(0, value));
+  };
+
   const renderMCQTemplate = () => {
     return mcqs.map((mcq, index) => (
-      <div key={index} style={{ marginBottom: '16px' }}>
-        <h4>Question {index + 1}</h4>
+      <div key={index} style={{ marginBottom: '16px', padding: '16px', border: '1px solid #f0f0f0', borderRadius: '8px' }}>
+        <h4>MCQ {index + 1}</h4>
         <Form.Item label="Question" required>
-          <Input
+          <JoditEditor
             value={mcq.question}
-            onChange={(e) => handleMCQChange(index, 'question', e.target.value)}
-            placeholder="Enter question"
+            config={{
+              readonly: false,
+              height: 150,
+              toolbarSticky: false,
+              toolbarAdaptive: false,
+              buttons: 'bold,italic,underline,brush,ul,ol,font,color',
+              uploader: { insertImageAsBase64URI: true },
+            }}
+            // ✅ CHANGED from onBlur to onChange
+            onChange={(newContent) => handleMCQChange(index, 'question', newContent)}
           />
         </Form.Item>
         <Form.Item label="Options" required>
           {mcq.options.map((option, optionIndex) => (
             <Input
               key={optionIndex}
+              addonBefore={
+                <input
+                  type="radio"
+                  name={`correct-${index}`}
+                  checked={mcq.correctAnswer === option}
+                  onChange={() => handleMCQChange(index, 'correctAnswer', option)}
+                />
+              }
               value={option}
               onChange={(e) => {
                 const updatedOptions = [...mcq.options];
+                const oldOption = option;
                 updatedOptions[optionIndex] = e.target.value;
                 handleMCQChange(index, 'options', updatedOptions);
+                if (mcq.correctAnswer === oldOption) {
+                  handleMCQChange(index, 'correctAnswer', e.target.value);
+                }
               }}
               placeholder={`Option ${optionIndex + 1}`}
             />
           ))}
         </Form.Item>
-        <Form.Item label="Correct Answer" required>
-          <Input
-            value={mcq.correctAnswer}
-            onChange={(e) => handleMCQChange(index, 'correctAnswer', e.target.value)}
-            placeholder="Enter correct answer"
-          />
-        </Form.Item>
       </div>
     ));
-  };
-
-  const joditConfig = {
-    readonly: false,
-    height: 400,
-    width: 800,
   };
 
   return (
@@ -227,7 +232,7 @@ const ResponsiveForm = () => {
               dropdownRender={(menu) => (
                 <>
                   {menu}
-                  <div style={{ display: 'flex', flexWrap: 'nowrap', padding: 8 }}>
+                  <div style={{ display: 'flex', padding: 8 }}>
                     <Input
                       style={{ flex: 'auto' }}
                       placeholder="Add new class"
@@ -235,20 +240,16 @@ const ResponsiveForm = () => {
                       onChange={(e) => setNewClass(e.target.value)}
                       onPressEnter={handleAddClass}
                     />
-                    <Button
-                      type="primary"
-                      icon={addingClass ? <LoadingOutlined /> : <PlusOutlined />}
-                      onClick={handleAddClass}
-                    >
+                    <Button type="primary" icon={addingClass ? <LoadingOutlined /> : <PlusOutlined />} onClick={handleAddClass}>
                       {addingClass ? 'Adding...' : 'Add'}
                     </Button>
                   </div>
                 </>
               )}
             >
-              {classes.map((classOption) => (
-                <Option key={classOption.id} value={classOption.name}>
-                  {classOption.name}
+              {classes.map((cls) => (
+                <Option key={cls.id} value={cls.name}>
+                  {cls.name}
                 </Option>
               ))}
             </Select>
@@ -259,26 +260,26 @@ const ResponsiveForm = () => {
           </Form.Item>
 
           <Form.Item label="MCQ Test" name="mcqSwitch">
-            <Switch checked={isMCQ} onChange={handleToggleMCQ} />
+            <Switch checked={isMCQ} onChange={setIsMCQ} />
+          </Form.Item>
+
+          <Form.Item label="Description">
+            <JoditEditor
+              ref={editor}
+              value={description}
+              config={{
+                readonly: false,
+                height: 300,
+                width: '100%',
+                buttons: 'bold,italic,underline,strikethrough,brush,ul,ol,font,color',
+                uploader: { insertImageAsBase64URI: true },
+              }}
+              onBlur={(newContent) => setDescription(newContent)}
+            />
           </Form.Item>
 
           {isMCQ && (
             <>
-              <Form.Item label="Number of MCQs" name="numMCQs">
-                <InputNumber
-                  min={1}
-                  value={numMCQs}
-                  onChange={(value) => {
-                    setNumMCQs(value);
-                    const updatedMcqs = [...mcqs];
-                    while (updatedMcqs.length < value) {
-                      updatedMcqs.push({ question: '', options: ['', '', '', ''], correctAnswer: '' });
-                    }
-                    setMcqs(updatedMcqs);
-                  }}
-                />
-              </Form.Item>
-
               {renderMCQTemplate()}
               <Form.Item>
                 <Button type="dashed" onClick={handleAddMCQ} block icon={<PlusOutlined />}>
@@ -286,17 +287,6 @@ const ResponsiveForm = () => {
                 </Button>
               </Form.Item>
             </>
-          )}
-
-          {!isMCQ && (
-            <Form.Item label="Description" name="description">
-              <JoditEditor
-                ref={editor}
-                value={description}
-                config={joditConfig}
-                onBlur={(newContent) => setDescription(newContent)}
-              />
-            </Form.Item>
           )}
 
           <Form.Item>

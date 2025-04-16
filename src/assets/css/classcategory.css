@@ -9,7 +9,7 @@
   
   .card-elegant .card-body {
     padding: 20px;
-    background-color: #f8f9fa;
+    background-color: rgb(250, 250, 250);
   }
   
   .card-elegant .card-title {
@@ -35,7 +35,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent black */
+    background-color: rgba(0, 162, 255, 0.301); /* Semi-transparent black */
     opacity: 0;
     transition: opacity 0.3s ease;
   }
@@ -63,10 +63,12 @@
   }
   /* Card background color */
 .card-custom {
-  background-color: #e8f5e9; /* Light green background */
+  background: linear-gradient(to right, #cce7ff, #b3d9ff); /* Light cyan to pastel blue */
+ 
+
 }
 
-/* Light Green Text for Titles and Subcategories */
+
 
 
 /* Bold all text */
@@ -79,18 +81,12 @@ h1{
 
 /* Styling for the Card */
 .card-custom {
-  background-color: #e8f5e9; /* Light greenish background */
-  border: 1px solid #c8e6c9; /* Light border to match the theme */
+  background-color: #0099ff75; /* Light greenish background */
+  border: 1px solid #000000; /* Light border to match the theme */
  
 }
 
-/* Chevron icon color */
 
-
-/* Card title color */
-
-
-/* Optional: Hover effect for cards */
 
   
   .col-6 {

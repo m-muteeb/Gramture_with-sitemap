@@ -1,7 +1,9 @@
 /* General Topbar Styles */
 .topbar {
-  background-color: #85FFBD;
-  background-image: linear-gradient(45deg, #35E87E 0%, #35E97E 50%, #35E87E 100%);
+  background: linear-gradient(to right, #e0f7fa, #b2ebf2); /* Aqua Light to Sky Mint */
+
+
+  
   position: sticky;
   top: 0;
   left: 0;
@@ -137,7 +139,7 @@
   display: flex;
   align-items: center;
   text-decoration: none;
-  color: #000;
+  color: #ffffff;
   padding: 15px 20px;
   font-weight: 500;
   transition: background-color 0.3s, color 0.3s;
