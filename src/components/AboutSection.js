@@ -30,14 +30,19 @@ const About = () => {
           </div>
         </Col>
         <Col xs={24} md={8} className='text-center'>
-          <Image
-            src={aboutImg}
-            alt="About"
-            width={400}
-            height={400}
-            className="rounded-2"  
-            style={{ borderRadius: '8px' }} 
-          />
+        <Image
+  src={aboutImg}
+  alt="About"
+  fill // Makes the image fill its container
+  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Responsive sizing
+  className="rounded-2"
+  style={{
+    borderRadius: '8px',
+    objectFit: 'cover', // Ensures proper filling without distortion
+    maxWidth: '100%', // Ensures responsiveness
+    height: 'auto' // Maintains aspect ratio
+  }}
+/>
         </Col>
       </Row>
 

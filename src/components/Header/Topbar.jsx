@@ -8,6 +8,16 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { fireStore } from '../../firebase/firebase'; // Firebase config
 import "../../assets/css/topbar.css";
 
+// Utility function to generate a slug from the topic name
+const generateSlug = (str) => {
+  return str
+  .toLowerCase()
+  .replace(/[^\w\s-]/g, '') // Remove non-word characters
+  .replace(/\s+/g, '-') // Replace spaces with -
+  .replace(/--+/g, '-') // Replace multiple - with single -
+  .trim();
+};
+
 const Topbar = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,11 +51,11 @@ const Topbar = () => {
           }
           const subCategoryData = data[className].find((item) => item.subCategory === subCategory);
           if (subCategoryData) {
-            subCategoryData.topics.push({ id: doc.id, topic });
+            subCategoryData.topics.push({ id: doc.id, topic, slug: generateSlug(topic) });
           } else {
             data[className].push({
               subCategory,
-              topics: [{ id: doc.id, topic }],
+              topics: [{ id: doc.id, topic, slug: generateSlug(topic) }],
             });
           }
         });
@@ -220,7 +230,6 @@ const Topbar = () => {
 
         {/* Display Classes and Subcategories */}
         <div className="class-list">
-         
           <ul>
             {dropdownData.map((dropdown, index) => (
               <li key={index}>
@@ -260,7 +269,11 @@ const Topbar = () => {
                           <ul style={{ paddingLeft: '20px' }}>
                             {category.topics.map((topic, tIdx) => (
                               <li key={tIdx}>
-                                <Link to={`/description/${category.subCategory}/${topic.id}`} className="topic-link" style={{ color: 'blue' }}>
+                                <Link
+                                  to={`/description/${category.subCategory}/${topic.slug}`} 
+                                  className="topic-link" 
+                                  style={{ color: 'blue' }}
+                                >
                                   {topic.topic}
                                 </Link>
                               </li>

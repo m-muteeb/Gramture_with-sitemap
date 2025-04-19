@@ -1,6 +1,7 @@
+// ResponsiveForm.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Form, Input, Upload, Button, Select, message, Card, Switch } from 'antd';
-import { UploadOutlined, LoadingOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Select, message, Card, Switch } from 'antd';
+import { LoadingOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import { storage, fireStore } from '../../firebase/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, getDocs } from 'firebase/firestore';
@@ -20,8 +21,9 @@ const ResponsiveForm = () => {
   const [newClass, setNewClass] = useState('');
   const [savingDraft, setSavingDraft] = useState(false);
   const [isMCQ, setIsMCQ] = useState(false);
-  const [numMCQs, setNumMCQs] = useState(1);
-  const [mcqs, setMcqs] = useState([{ question: '', options: ['', '', '', ''], correctAnswer: '' }]);
+  const [mcqs, setMcqs] = useState([{ question: '', options: ['', '', '', ''], correctAnswer: '', logic: '' }]);
+  const [isShortQuestion, setIsShortQuestion] = useState(false);
+  const [shortQuestions, setShortQuestions] = useState([{ question: '', answer: '' }]);
 
   const [form] = Form.useForm();
 
@@ -38,7 +40,10 @@ const ResponsiveForm = () => {
         if (draft.mcqs) {
           setMcqs(draft.mcqs);
           setIsMCQ(true);
-          setNumMCQs(draft.mcqs.length);
+        }
+        if (draft.shortQuestions) {
+          setShortQuestions(draft.shortQuestions);
+          setIsShortQuestion(true);
         }
       }
     };
@@ -48,7 +53,6 @@ const ResponsiveForm = () => {
 
   const onFinish = async (values) => {
     const { topic, class: selectedClasses, category, subCategory, file } = values;
-
     setUploading(true);
     let fileURLs = [];
 
@@ -89,10 +93,11 @@ const ResponsiveForm = () => {
         topic: topic || '',
         class: selectedClasses.join(', '),
         category: category || '',
-        subCategory: isMCQ ? 'MCQ Test' : subCategory,
+        subCategory: isMCQ ? 'MCQ Test' : isShortQuestion ? 'Short Questions' : subCategory,
         description: description || '',
         fileURLs,
         mcqs: isMCQ ? mcqs : [],
+        shortQuestions: isShortQuestion ? shortQuestions : [],
         timestamp: new Date(),
       };
 
@@ -128,7 +133,7 @@ const ResponsiveForm = () => {
   const handleSaveDraft = async (values) => {
     setSavingDraft(true);
     try {
-      const draftData = { ...values, description, mcqs };
+      const draftData = { ...values, description, mcqs, shortQuestions };
       localStorage.setItem('draft', JSON.stringify(draftData));
       message.success('Draft saved successfully!', 3);
     } catch (error) {
@@ -142,8 +147,10 @@ const ResponsiveForm = () => {
     localStorage.removeItem('draft');
     form.resetFields();
     setDescription('');
-    setMcqs([{ question: '', options: ['', '', '', ''], correctAnswer: '' }]);
-    setNumMCQs(1);
+    setMcqs([{ question: '', options: ['', '', '', ''], correctAnswer: '', logic: '' }]);
+    setShortQuestions([{ question: '', answer: '' }]);
+    setIsMCQ(false);
+    setIsShortQuestion(false);
     message.success('Draft cleared!', 3);
   };
 
@@ -154,17 +161,7 @@ const ResponsiveForm = () => {
   };
 
   const handleAddMCQ = () => {
-    setMcqs([...mcqs, { question: '', options: ['', '', '', ''], correctAnswer: '' }]);
-    setNumMCQs(mcqs.length + 1);
-  };
-
-  const handleMCQCountChange = (value) => {
-    setNumMCQs(value);
-    const updatedMcqs = [...mcqs];
-    while (updatedMcqs.length < value) {
-      updatedMcqs.push({ question: '', options: ['', '', '', ''], correctAnswer: '' });
-    }
-    setMcqs(updatedMcqs.slice(0, value));
+    setMcqs([...mcqs, { question: '', options: ['', '', '', ''], correctAnswer: '', logic: '' }]);
   };
 
   const renderMCQTemplate = () => {
@@ -182,35 +179,73 @@ const ResponsiveForm = () => {
               buttons: 'bold,italic,underline,brush,ul,ol,font,color',
               uploader: { insertImageAsBase64URI: true },
             }}
-            // ✅ CHANGED from onBlur to onChange
             onChange={(newContent) => handleMCQChange(index, 'question', newContent)}
           />
         </Form.Item>
         <Form.Item label="Options" required>
           {mcq.options.map((option, optionIndex) => (
-            <Input
-              key={optionIndex}
-              addonBefore={
-                <input
-                  type="radio"
-                  name={`correct-${index}`}
-                  checked={mcq.correctAnswer === option}
-                  onChange={() => handleMCQChange(index, 'correctAnswer', option)}
-                />
-              }
-              value={option}
-              onChange={(e) => {
-                const updatedOptions = [...mcq.options];
-                const oldOption = option;
-                updatedOptions[optionIndex] = e.target.value;
-                handleMCQChange(index, 'options', updatedOptions);
-                if (mcq.correctAnswer === oldOption) {
-                  handleMCQChange(index, 'correctAnswer', e.target.value);
+            <div key={optionIndex} style={{ marginBottom: '8px' }}>
+              <Input
+                addonBefore={
+                  <input
+                    type="radio"
+                    name={`correct-${index}`}
+                    checked={mcq.correctAnswer === option}
+                    onChange={() => handleMCQChange(index, 'correctAnswer', option)}
+                  />
                 }
-              }}
-              placeholder={`Option ${optionIndex + 1}`}
-            />
+                value={option}
+                onChange={(e) => {
+                  const updatedOptions = [...mcq.options];
+                  const oldOption = option;
+                  updatedOptions[optionIndex] = e.target.value;
+                  handleMCQChange(index, 'options', updatedOptions);
+                  if (mcq.correctAnswer === oldOption) {
+                    handleMCQChange(index, 'correctAnswer', e.target.value);
+                  }
+                }}
+                placeholder={`Option ${optionIndex + 1}`}
+              />
+            </div>
           ))}
+        </Form.Item>
+        {mcq.correctAnswer && (
+          <Form.Item label="Logic for Correct Answer (Optional)">
+            <Input.TextArea
+              rows={2}
+              placeholder="Explain why this is the correct answer"
+              value={mcq.logic}
+              onChange={(e) => handleMCQChange(index, 'logic', e.target.value)}
+            />
+          </Form.Item>
+        )}
+      </div>
+    ));
+  };
+
+  const renderShortQuestions = () => {
+    return shortQuestions.map((sq, index) => (
+      <div key={index} style={{ marginBottom: '16px', padding: '16px', border: '1px solid #f0f0f0', borderRadius: '8px' }}>
+        
+        <Form.Item label="Question" required>
+          <JoditEditor
+            value={sq.question}
+            config={{
+              readonly: false,
+              height: 150,
+              toolbarSticky: false,
+              buttons: 'bold,italic,underline,strikethrough,ul,ol,font,color',
+              uploader: { insertImageAsBase64URI: true },
+            }}
+            onChange={(newContent) => {
+              const updated = [...shortQuestions];
+              updated[index].question = newContent;
+              setShortQuestions(updated);
+            }}
+          />
+        </Form.Item>
+        <Form.Item label="Answer" required>
+         
         </Form.Item>
       </div>
     ));
@@ -260,8 +295,10 @@ const ResponsiveForm = () => {
           </Form.Item>
 
           <Form.Item label="MCQ Test" name="mcqSwitch">
-            <Switch checked={isMCQ} onChange={setIsMCQ} />
+            <Switch checked={isMCQ} onChange={(val) => { setIsMCQ(val); if (val) setIsShortQuestion(false); }} />
           </Form.Item>
+
+        
 
           <Form.Item label="Description">
             <JoditEditor
@@ -284,6 +321,22 @@ const ResponsiveForm = () => {
               <Form.Item>
                 <Button type="dashed" onClick={handleAddMCQ} block icon={<PlusOutlined />}>
                   Add More MCQs
+                </Button>
+              </Form.Item>
+            </>
+          )}
+
+          {isShortQuestion && (
+            <>
+              {renderShortQuestions()}
+              <Form.Item>
+                <Button
+                  type="dashed"
+                  onClick={() => setShortQuestions([...shortQuestions, { question: '', answer: '' }])}
+                  block
+                  icon={<PlusOutlined />}
+                >
+                  Add More Short Questions
                 </Button>
               </Form.Item>
             </>

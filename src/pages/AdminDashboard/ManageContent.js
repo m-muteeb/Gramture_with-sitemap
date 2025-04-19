@@ -15,10 +15,9 @@ const ManageProducts = () => {
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [classes, setClasses] = useState([]);
-  const [mcqs, setMcqs] = useState([]); // To store the MCQs of the product
+  const [mcqs, setMcqs] = useState([]);
   const editor = useRef(null);
 
-  // Debounced function to optimize the writing experience
   const debouncedDescriptionChange = useRef(
     debounce((newContent) => {
       setDescription(newContent);
@@ -76,12 +75,11 @@ const ManageProducts = () => {
   const handleEdit = (record) => {
     setEditingProduct(record);
     setDescription(record.description || '');
-    setMcqs(record.mcqs || []); // Set the MCQs for the product
+    setMcqs(record.mcqs || []);
     form.setFieldsValue({
       topic: record.topic,
       class: record.class,
       subCategory: record.subCategory,
-      description: record.description || '',
     });
     setIsModalVisible(true);
   };
@@ -89,7 +87,7 @@ const ManageProducts = () => {
   const handleModalClose = () => {
     setIsModalVisible(false);
     setDescription('');
-    setMcqs([]); // Clear MCQs when closing the modal
+    setMcqs([]);
     form.resetFields();
     setLoading(false);
   };
@@ -99,8 +97,8 @@ const ManageProducts = () => {
     try {
       const updatedValues = {
         ...values,
-        description, // Save the description with HTML formatting
-        mcqs, // Save the updated MCQs
+        description,
+        mcqs,
         timestamp: serverTimestamp(),
       };
 
@@ -124,7 +122,7 @@ const ManageProducts = () => {
   const handleAddMCQ = () => {
     setMcqs([
       ...mcqs,
-      { question: '', options: ['', '', '', ''], correctAnswer: '' },
+      { question: '', options: ['', '', '', ''], correctAnswer: '', logic: '' },
     ]);
   };
 
@@ -137,21 +135,14 @@ const ManageProducts = () => {
     { title: 'Topic', dataIndex: 'topic', key: 'topic' },
     { title: 'Class', dataIndex: 'class', key: 'class' },
     { title: 'SubCategory', dataIndex: 'subCategory', key: 'subCategory' },
-    { title: 'Action', key: 'action', render: (_, record) => (
+    {
+      title: 'Action',
+      key: 'action',
+      render: (_, record) => (
         <>
-          <Button
-            icon={<EditOutlined />}
-            style={{ margin: 3, color: 'green' }}
-            onClick={() => handleEdit(record)}
-            loading={loading}
-          />
+          <Button icon={<EditOutlined />} style={{ margin: 3, color: 'green' }} onClick={() => handleEdit(record)} loading={loading} />
           <Popconfirm title="Are you sure to delete this product?" onConfirm={() => handleDelete(record.id)} okText="Yes" cancelText="No">
-            <Button
-              style={{ color: 'red', margin: 3 }}
-              icon={<DeleteOutlined />}
-              danger
-              loading={deleting}
-            />
+            <Button style={{ color: 'red', margin: 3 }} icon={<DeleteOutlined />} danger loading={deleting} />
           </Popconfirm>
         </>
       ),
@@ -161,23 +152,14 @@ const ManageProducts = () => {
   const joditConfig = {
     readonly: false,
     height: 400,
-    caretColor: 'black',
     uploader: {
       insertImageAsBase64URI: true,
     },
     buttons: [
-      'source', '|',
       'bold', 'italic', 'underline', 'strikethrough', '|',
-      'superscript', 'subscript', '|',
-      'font', 'fontsize', 'brush', 'paragraph', '|',
       'ul', 'ol', '|',
-      'outdent', 'indent', '|',
-      'align', '|',
-      'undo', 'redo', '|',
-      'cut', 'copy', 'paste', '|',
-      'link', 'image', 'video', 'table', '|',
-      'hr', 'symbol', 'fullsize', '|',
-      'print', 'about'
+      'align', '|', 'link', 'image', 'video', '|',
+      'undo', 'redo', '|', 'fullsize'
     ],
   };
 
@@ -186,27 +168,27 @@ const ManageProducts = () => {
   };
 
   return (
-    <div className="container" style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h2 className="text-center py-5" style={{ textAlign: 'center', paddingBottom: '20px' }}>Manage Products</h2>
+    <div className="container" style={{ padding: '20px' }}>
+      <h2 style={{ textAlign: 'center', paddingBottom: '20px' }}>Manage Products</h2>
       <Table dataSource={products} columns={columns} rowKey="id" bordered />
+
       <Modal
         title="Edit Product"
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={handleModalClose}
         footer={null}
         width={1000}
-        className="responsive-modal"
       >
-        <Form form={form} layout="vertical" onFinish={handleUpdate} className="responsive-form">
+        <Form form={form} layout="vertical" onFinish={handleUpdate}>
           <Form.Item label="Topic" name="topic">
             <Input placeholder="Enter topic" />
           </Form.Item>
 
           <Form.Item label="Class" name="class">
             <Select placeholder="Select class">
-              {classes.map((classOption) => (
-                <Select.Option key={classOption.id} value={classOption.name}>
-                  {classOption.name}
+              {classes.map((cls) => (
+                <Select.Option key={cls.id} value={cls.name}>
+                  {cls.name}
                 </Select.Option>
               ))}
             </Select>
@@ -223,57 +205,72 @@ const ManageProducts = () => {
               config={joditConfig}
               onBlur={(newContent) => setDescription(newContent)}
               onChange={handleDescriptionChange}
-              style={{
-                border: '1px solid #d9d9d9',
-                borderRadius: '4px',
-                padding: '10px',
-                fontFamily: 'Arial, sans-serif',
-                fontSize: '14px',
-                lineHeight: '1.5',
-                minHeight: '150px',
-                overflowY: 'auto',
-              }}
             />
           </Form.Item>
 
           <Form.Item label="MCQs">
             {mcqs.map((mcq, index) => (
-              <Row key={index} gutter={[16, 16]} style={{ marginBottom: '16px' }}>
-                <Col span={24}>
-                  <Input
-                    placeholder={`Question ${index + 1}`}
-                    value={mcq.question}
-                    onChange={(e) => handleMCQChange(index, 'question', e.target.value)}
-                  />
-                </Col>
-                {mcq.options.map((option, optIndex) => (
-                  <Col span={12} key={optIndex}>
-                    <Input
-                      placeholder={`Option ${optIndex + 1}`}
-                      value={option}
-                      onChange={(e) => {
-                        const updatedOptions = [...mcq.options];
-                        updatedOptions[optIndex] = e.target.value;
-                        handleMCQChange(index, 'options', updatedOptions);
-                      }}
+              <div key={index} style={{ border: '1px solid #d9d9d9', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
+                <Row gutter={[16, 16]}>
+                  <Col span={24}>
+                    <div>
+                      <strong>Question {index + 1}</strong>
+                    </div>
+                    <JoditEditor
+                      ref={editor}
+                      value={mcq.question}
+                      config={joditConfig}
+                      onBlur={(newContent) => handleMCQChange(index, 'question', newContent)}
                     />
                   </Col>
-                ))}
-                <Col span={12}>
-                  <Input
-                    placeholder="Correct Answer"
-                    value={mcq.correctAnswer}
-                    onChange={(e) => handleMCQChange(index, 'correctAnswer', e.target.value)}
-                  />
-                </Col>
-                <Col span={24}>
-                  <Button danger onClick={() => handleDeleteMCQ(index)}>
-                    Delete MCQ
-                  </Button>
-                </Col>
-              </Row>
+
+                  {mcq.options.map((option, optIndex) => (
+                    <Col span={12} key={optIndex}>
+                      <Input
+                        addonBefore={
+                          <input
+                            type="radio"
+                            name={`correct-${index}`}
+                            checked={mcq.correctAnswer === option}
+                            onChange={() => handleMCQChange(index, 'correctAnswer', option)}
+                          />
+                        }
+                        placeholder={`Option ${optIndex + 1}`}
+                        value={option}
+                        onChange={(e) => {
+                          const updatedOptions = [...mcq.options];
+                          const oldOption = updatedOptions[optIndex];
+                          updatedOptions[optIndex] = e.target.value;
+                          handleMCQChange(index, 'options', updatedOptions);
+
+                          if (mcq.correctAnswer === oldOption) {
+                            handleMCQChange(index, 'correctAnswer', e.target.value);
+                          }
+                        }}
+                      />
+                    </Col>
+                  ))}
+
+                  {mcq.correctAnswer && (
+                    <Col span={24}>
+                      <Input.TextArea
+                        rows={2}
+                        placeholder="Explanation for correct answer"
+                        value={mcq.logic ? mcq.logic.replace(/<[^>]+>/g, '') : ''} // Stripping HTML
+                        onChange={(e) => handleMCQChange(index, 'logic', e.target.value)}
+                      />
+                    </Col>
+                  )}
+
+                  <Col span={24}>
+                    <Button danger onClick={() => handleDeleteMCQ(index)}>
+                      Delete MCQ
+                    </Button>
+                  </Col>
+                </Row>
+              </div>
             ))}
-            <Button onClick={handleAddMCQ}>Add MCQ</Button>
+            <Button type="dashed" onClick={handleAddMCQ}>Add MCQ</Button>
           </Form.Item>
 
           <Form.Item>

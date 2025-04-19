@@ -28,3 +28,6 @@ body {
   margin-top: -24px !important; /* Adjust to fine-tune */
   margin-left: -80px !important; /* Adjust to fine-tune */
 }
+modal{
+  margin-top: 48px;
+}

@@ -1,11 +1,9 @@
 const fs = require('fs');
 const path = require('path');
-
-// Import Firebase (you'll need to adjust these imports based on your Firebase setup)
 const { initializeApp } = require('firebase/app');
-const { getFirestore, collection, getDocs } = require('firebase/firestore');
+const { getFirestore, collection, getDocs, query, orderBy } = require('firebase/firestore');
 
-// Your Firebase configuration (replace with your actual config)
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCAIJkkLMF2no6waTa2ZAPmnLMOzzhFEc4",
   authDomain: "my-portfolio-64.firebaseapp.com",
@@ -20,10 +18,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Define your base URL for localhost
+// Base URL
 const BASE_URL = 'https://gramture.com';
 
-// Define your static routes from App.js
+// Static routes
 const staticRoutes = [
   '/',
   '/privacy-policy',
@@ -34,88 +32,103 @@ const staticRoutes = [
   '/login'
 ];
 
-// Function to fetch dynamic routes from Firebase
+// Helper function to generate slugs
+function generateSlug(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-')           // Replace spaces with -
+    .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+    .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+    .replace(/^-+/, '')             // Trim - from start of text
+    .replace(/-+$/, '');            // Trim - from end of text
+}
+
+// Fetch dynamic routes from Firebase
 async function fetchDynamicRoutes() {
   const dynamicRoutes = [];
   
   try {
-    // Get your topics or content collection
-    // Change 'topics' to whatever your collection name is
-    const topicsSnapshot = await getDocs(collection(db, 'topics'));
+    const q = query(collection(db, 'topics'), orderBy('timestamp', 'asc'));
+    const topicsSnapshot = await getDocs(q);
     
     topicsSnapshot.forEach((doc) => {
       const data = doc.data();
       
-      // Adjust these fields based on your data structure
-      if (data.subCategory) {
-        dynamicRoutes.push(`/description/${data.subCategory}/${doc.id}`);
+      if (data.subCategory && data.topic) {
+        // Generate slugs
+        const subCategorySlug = generateSlug(data.subCategory);
+        const topicSlug = generateSlug(data.topic);
+        
+        // Add route with slugs
+        dynamicRoutes.push(`/description/${subCategorySlug}/${topicSlug}`);
       }
     });
     
     console.log(`Fetched ${dynamicRoutes.length} dynamic routes from Firebase`);
   } catch (error) {
     console.error('Error fetching dynamic routes from Firebase:', error);
-    console.log('Continuing with only static routes...');
   }
   
   return dynamicRoutes;
 }
 
-// Generate sitemap XML
+// Generate sitemap with proper formatting
 async function generateSitemap() {
   try {
     console.log('Fetching dynamic routes...');
     const dynamicRoutes = await fetchDynamicRoutes();
     const allRoutes = [...staticRoutes, ...dynamicRoutes];
     
-    // Generate current date
     const date = new Date().toISOString().split('T')[0];
     
-    // Start XML sitemap content
     let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 `;
     
-    // Add each route to the sitemap
     allRoutes.forEach(route => {
+      const priority = route === '/' ? '1.00' : 
+                     route.includes('description') ? '0.80' : '0.70';
+      
       sitemap += `  <url>
     <loc>${BASE_URL}${route}</loc>
     <lastmod>${date}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>${route === '/' ? '1.0' : '0.8'}</priority>
+    <priority>${priority}</priority>
   </url>
 `;
     });
     
-    // Close sitemap
     sitemap += `</urlset>`;
     
-    // Make sure public directory exists
+    // Ensure public directory exists
     const publicDir = path.resolve('./public');
     if (!fs.existsSync(publicDir)) {
       fs.mkdirSync(publicDir, { recursive: true });
     }
     
-    // Write sitemap to file
-    const sitemapPath = path.resolve('./public/sitemap.xml');
-    fs.writeFileSync(sitemapPath, sitemap);
+    // Write sitemap files
+    fs.writeFileSync(path.resolve('./public/sitemap.xml'), sitemap);
     
-    // Create text version for easy reading
+    // Create text version
     let textSitemap = 'Sitemap URLs:\n\n';
     allRoutes.forEach(route => {
       textSitemap += `${BASE_URL}${route}\n`;
     });
-    
     fs.writeFileSync(path.resolve('./public/sitemap.txt'), textSitemap);
     
-    console.log(`Sitemap generated with ${allRoutes.length} URLs (${staticRoutes.length} static + ${dynamicRoutes.length} dynamic)`);
-    console.log('Sitemap saved to public/sitemap.xml');
-    console.log('Text version saved to public/sitemap.txt');
-    console.log('You can view your sitemap at https://gramture.com/sitemap.xml when your app is running');
+    console.log(`Sitemap generated with ${allRoutes.length} URLs`);
+    console.log(`Static routes: ${staticRoutes.length}`);
+    console.log(`Dynamic routes: ${dynamicRoutes.length}`);
+    console.log('Files saved to:');
+    console.log('- public/sitemap.xml');
+    console.log('- public/sitemap.txt');
+    
   } catch (error) {
     console.error('Error generating sitemap:', error);
+    process.exit(1);
   }
 }
 
-// Run the sitemap generator
+// Run the generator
 generateSitemap();

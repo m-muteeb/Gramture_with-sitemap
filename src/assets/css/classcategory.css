@@ -5,6 +5,8 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     margin-bottom: 30px;
+    cursor: pointer;
+
   }
   
   .card-elegant .card-body {
@@ -83,6 +85,7 @@ h1{
 .card-custom {
   background-color: #0099ff75; /* Light greenish background */
   border: 1px solid #000000; /* Light border to match the theme */
+  cursor: pointer;
  
 }
 

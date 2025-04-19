@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, message, Spin } from "antd";
+import { message, Spin } from "antd";
 import { getDocs, collection } from "firebase/firestore";
 import { fireStore } from "../firebase/firebase";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
@@ -11,8 +11,18 @@ import ShareArticle from "./ShareArticle";
 import { Helmet } from "react-helmet-async";
 import CertificateGenerator from "./CertificateGenerator";
 
+// Helper function to create slugs
+const createSlug = (str) => {
+  return str
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '') // Remove non-word characters
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/--+/g, '-') // Replace multiple - with single -
+    .trim();
+};
+
 export default function Description() {
-  const { subCategory, topicId } = useParams();
+  const { subCategory, topicSlug } = useParams();
   const navigate = useNavigate();
 
   const [products, setProducts] = useState([]);
@@ -21,27 +31,30 @@ export default function Description() {
   const [selectedAnswer, setSelectedAnswer] = useState({});
   const [answerFeedback, setAnswerFeedback] = useState({});
   const [currentMcqIndex, setCurrentMcqIndex] = useState(0);
-  const [completedMcqs, setCompletedMcqs] = useState([]);
   const [showResults, setShowResults] = useState(false);
-  const [showReviewSection, setShowReviewSection] = useState(false); // ✅ New state
+  const [showReviewSection, setShowReviewSection] = useState(false);
   const [allTopics, setAllTopics] = useState([]);
   const [currentTopicIndex, setCurrentTopicIndex] = useState(null);
-
   const [userName, setUserName] = useState("");
 
   useEffect(() => {
     fetchProducts();
     fetchAllTopics();
-  }, [subCategory, topicId]);
+  }, [subCategory, topicSlug]);
 
   const fetchProducts = async () => {
     try {
       const querySnapshot = await getDocs(collection(fireStore, "topics"));
       const productList = querySnapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .map((doc) => ({ 
+          id: doc.id, 
+          ...doc.data(),
+          slug: createSlug(doc.data().topic) // Add slug to each topic
+        }))
         .filter(
           (product) =>
-            product.subCategory === subCategory && product.id === topicId
+            product.subCategory === subCategory && 
+            (product.id === topicSlug || product.slug === topicSlug) // Match by ID or slug
         );
       setProducts(productList);
       setMcqs(productList[0]?.mcqs || []);
@@ -56,14 +69,18 @@ export default function Description() {
     try {
       const querySnapshot = await getDocs(collection(fireStore, "topics"));
       const topicsList = querySnapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .map((doc) => ({ 
+          id: doc.id, 
+          ...doc.data(),
+          slug: createSlug(doc.data().topic) // Add slug to each topic
+        }))
         .filter((topic) => topic.subCategory === subCategory)
         .sort((a, b) => a.timestamp - b.timestamp);
 
       setAllTopics(topicsList);
 
       const currentTopicIdx = topicsList.findIndex(
-        (topic) => topic.id === topicId
+        (topic) => topic.id === topicSlug || topic.slug === topicSlug
       );
       setCurrentTopicIndex(currentTopicIdx);
     } catch (error) {
@@ -76,8 +93,8 @@ export default function Description() {
     if (currentTopicIndex !== null) {
       const newTopicIndex = currentTopicIndex + direction;
       if (newTopicIndex >= 0 && newTopicIndex < allTopics.length) {
-        const newTopicId = allTopics[newTopicIndex].id;
-        navigate(`/description/${subCategory}/${newTopicId}`);
+        const newTopic = allTopics[newTopicIndex];
+        navigate(`/description/${subCategory}/${newTopic.slug}`);
         window.scrollTo(0, 0);
       }
     }
@@ -131,9 +148,8 @@ export default function Description() {
     setSelectedAnswer({});
     setAnswerFeedback({});
     setCurrentMcqIndex(0);
-    setCompletedMcqs([]);
     setShowResults(false);
-    setShowReviewSection(false); // Reset review visibility
+    setShowReviewSection(false);
   };
 
   const getNextTopic = () => {
@@ -335,7 +351,7 @@ export default function Description() {
           <div className="topic-navigation">
             {getPrevTopic() && getPrevTopic().subCategory === subCategory && getPrevTopic().class === products[0].class && (
               <Link
-                to={`/description/${subCategory}/${getPrevTopic().id}`}
+                to={`/description/${subCategory}/${getPrevTopic().slug}`}
                 className="prev-button"
                 style={{
                   display: "flex",
@@ -355,7 +371,7 @@ export default function Description() {
 
             {getNextTopic() && getNextTopic().subCategory === subCategory && getNextTopic().class === products[0].class && (
               <Link
-                to={`/description/${subCategory}/${getNextTopic().id}`}
+                to={`/description/${subCategory}/${getNextTopic().slug}`}
                 className="next-button"
                 style={{
                   display: "flex",
@@ -374,7 +390,7 @@ export default function Description() {
             )}
           </div>
 
-          <CommentSection subCategory={subCategory} topicId={topicId} />
+          <CommentSection subCategory={subCategory} topicId={products[0]?.id} />
           <p style={{ fontSize: "1.1rem", marginLeft: "10px" }}>
             Gramture is an Educational website that helps students in their 9th,
             10th, 1st year, and 2nd-year studies.

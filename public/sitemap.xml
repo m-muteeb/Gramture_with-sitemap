@@ -1,213 +1,261 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   <url>
     <loc>https://gramture.com/</loc>
-    <lastmod>2025-03-15</lastmod>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <priority>1.00</priority>
   </url>
   <url>
     <loc>https://gramture.com/privacy-policy</loc>
-    <lastmod>2025-03-15</lastmod>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.70</priority>
   </url>
   <url>
     <loc>https://gramture.com/construction</loc>
-    <lastmod>2025-03-15</lastmod>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.70</priority>
   </url>
   <url>
     <loc>https://gramture.com/about</loc>
-    <lastmod>2025-03-15</lastmod>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.70</priority>
   </url>
   <url>
     <loc>https://gramture.com/discussion_forum</loc>
-    <lastmod>2025-03-15</lastmod>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.70</priority>
   </url>
   <url>
     <loc>https://gramture.com/disclaimer</loc>
-    <lastmod>2025-03-15</lastmod>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.70</priority>
   </url>
   <url>
     <loc>https://gramture.com/login</loc>
-    <lastmod>2025-03-15</lastmod>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.70</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Book Lessons/0NCt64DR2ePRGU61n4DR</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/conditional-sentences/correct-form-of-verb</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Important Letters/51GlmPsUY2TNlO6ZQDVT</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/book-lessons/2-partiotism</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Important Applications/55H5UtuNa9uQrr2fUp1H</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/book-lessons/3-poem-daffodils</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Important Applications/66d1K5t97iEYs21iQMwF</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/book-lessons/5-women-empowerment-through-entrepreneurship</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Book Lessons/8395bVb1YhRwW9uokJ11</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/book-lessons/7-poem-if-by-rudyard-kipling</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Book Lessons/9ho8yOvZx9iHbBFUMryt</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/book-lessons/8-the-impact-of-globalisation-on-culture-and-economy</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/MCQ Test/DpO0TPiouBdekh7egOIA</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/book-lessons/1-the-saviour-of-mankind</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Poems/FtmR19v2muSJoPVJTnLZ</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/important-letters/letter-to-your-friend-about-the-profession-you-want-to-adopt</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Important Letters/KGIc8EaOreWPd3FXIri2</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/book-lessons/clearing-in-the-sky</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Important Letters/OqGTHEf89829rKifpqvc</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/poems/poem-5-in-the-street-of-the-fruit-stalls</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Important Stories/PQWm82S5ytevrftFVpaO</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/important-letters/letter-to-your-friend-congratulating-himher-on-his-her-success-in-hisher-examination</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Book Lessons/Uee87HRrsJilS9VwRljg</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/important-letters/letter-to-your-father-telling-him-about-your-health-and-studies</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Important Applications/X1ZaMyuesG0kT5WjZZIi</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/important-letters/letter-to-your-father-asking-him-to-increase-your-monthly-allowance</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/CONDITIONAL SENTENCES /YgT5tBPCMKLHMdVGIF6V</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/poems/the-rain</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Important Stories/ZRJC3b31sV4CL8AXjHZC</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/important-applications/application-to-the-principal-for-the-remission-of-fine</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Book Lessons/c7HCzj5JeXAReS8UTClp</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/important-applications/application-for-character-certificate-to-the-principal-of-your-college</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Important Applications/cQIDFfjU26XbTLBvBoJq</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/poems/leisure</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Important Stories/d3ul5SmLSUjpRYl9At7n</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/plays/visit-to-a-small-planet</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Poems/fMdjEfLi7ussj7RgT0da</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/important-stories/the-hen-that-laid-golden-eggs</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Book Lessons/fV5JZiNMxKSLMF1OLuUk</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/book-lessons/4-hazrat-asma</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Book Lessons/jaffnru0wIwphKzTC6oj</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/important-stories/three-friends-and-a-bag-of-gold</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Plays/k43tFt24PuKv7cLz2WQc</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/important-stories/the-honest-woodcutter</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Book Lessons/pk2Hv4r4VbgHNO5YYWJG</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/important-stories/the-hare-and-the-tortoise</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Poems/rqfT45dfwVpra5kx5TjZ</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/important-applications/application-for-sick-leave-in-college</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Important Letters/swGDxR9yuKAQJs5ncQIb</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/important-applications/medical-leave</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Book Lessons/tkpu4Y87LVP6vV9lZQ0a</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/mcq-test/verb-its-types</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/wefgh/vFDSYQXaruGDw4LWJ8qX</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/book-lessons/11-the-dear-departed-one-act-play</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://gramture.com/description/Important Stories/yQyo7IovgCNczNp7jSKZ</loc>
-    <lastmod>2025-03-15</lastmod>
+    <loc>https://gramture.com/description/mcq-test/mcqs-test-1-the-dear-departed</loc>
+    <lastmod>2025-04-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://gramture.com/description/mcq-test/mcqs-test-3-the-dear-departed</loc>
+    <lastmod>2025-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://gramture.com/description/book-lessons/1-buttonbutton-short-questions</loc>
+    <lastmod>2025-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://gramture.com/description/mcq-test/types-of-phrases-used-in-the-book-lesson</loc>
+    <lastmod>2025-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://gramture.com/description/book-lessons/1-hazrat-muhammad-an-embodiment-of-justice</loc>
+    <lastmod>2025-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://gramture.com/description/mcq-test/mcqs-test-4-the-dear-departed</loc>
+    <lastmod>2025-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://gramture.com/description/mcq-test/mcqs-test-2-the-dear-departed</loc>
+    <lastmod>2025-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://gramture.com/description/book-lessons/mr-chips-2-chips-retirement</loc>
+    <lastmod>2025-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://gramture.com/description/book-lessons/mr-chips-3-chips-activities-after-retirement</loc>
+    <lastmod>2025-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
   </url>
 </urlset>

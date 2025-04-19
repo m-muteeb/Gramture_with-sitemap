@@ -146,7 +146,7 @@
 
 .scrolling-news {
   display: inline-block;
-  animation: scrollText 30s linear infinite;
+  animation: scrollText 45s linear infinite;
   padding-left: 100%;
 }
 
