@@ -15,9 +15,9 @@ import CertificateGenerator from "./CertificateGenerator";
 const createSlug = (str) => {
   return str
     .toLowerCase()
-    .replace(/[^\w\s-]/g, '') // Remove non-word characters
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/--+/g, '-') // Replace multiple - with single -
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/--+/g, '-')
     .trim();
 };
 
@@ -49,12 +49,12 @@ export default function Description() {
         .map((doc) => ({ 
           id: doc.id, 
           ...doc.data(),
-          slug: createSlug(doc.data().topic) // Add slug to each topic
+          slug: createSlug(doc.data().topic)
         }))
         .filter(
           (product) =>
             product.subCategory === subCategory && 
-            (product.id === topicSlug || product.slug === topicSlug) // Match by ID or slug
+            (product.id === topicSlug || product.slug === topicSlug)
         );
       setProducts(productList);
       setMcqs(productList[0]?.mcqs || []);
@@ -72,7 +72,7 @@ export default function Description() {
         .map((doc) => ({ 
           id: doc.id, 
           ...doc.data(),
-          slug: createSlug(doc.data().topic) // Add slug to each topic
+          slug: createSlug(doc.data().topic)
         }))
         .filter((topic) => topic.subCategory === subCategory)
         .sort((a, b) => a.timestamp - b.timestamp);
@@ -245,8 +245,20 @@ export default function Description() {
                       Review Your Answers
                     </button>
                   ) : (
-                    <div className="review-section" style={{ marginTop: "30px" ,  marginBottom: "30px" }}>
+                    <div className="review-section" style={{ marginTop: "30px", marginBottom: "30px" }}>
                       <h2 style={{ textAlign: "center" }}>Review Your Answers</h2>
+                      <div style={{ 
+                        backgroundColor: '#f5f5f5',
+                        padding: '20px',
+                        borderRadius: '8px',
+                        marginBottom: '20px'
+                      }}>
+                        <h3 style={{ textAlign: 'center' }}>
+                          Score: {calculateResults()} out of {mcqs.length} (
+                          {Math.round((calculateResults() / mcqs.length) * 100)}%)
+                        </h3>
+                      </div>
+                      
                       {mcqs.map((mcq, index) => {
                         const userAnswer = selectedAnswer[index];
                         const isCorrect = userAnswer === mcq.correctAnswer;
@@ -275,6 +287,17 @@ export default function Description() {
                                 <strong>Correct Answer:</strong>{" "}
                                 <span style={{ color: "green" }}>{mcq.correctAnswer}</span>
                               </p>
+                            )}
+                            {mcq.logic && (
+                              <div style={{ 
+                                marginTop: '10px',
+                                padding: '10px',
+                                backgroundColor: '#f0f8ff',
+                                borderRadius: '5px'
+                              }}>
+                                <strong>Explanation:</strong>
+                                <div dangerouslySetInnerHTML={{ __html: mcq.logic }} />
+                              </div>
                             )}
                           </div>
                         );
