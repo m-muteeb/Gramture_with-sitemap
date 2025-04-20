@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { Container, Row, Col, Card, Spinner } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import "../assets/css/classcategory.css";
+import { RecentPostsSection } from './RecentPosts';
 
 // Constants for maintainability
 const CLASSES = ['Class 9', 'Class 10', 'Class 11', 'Class 12'];
@@ -49,34 +50,6 @@ TopicCard.propTypes = {
   topic: PropTypes.string.isRequired,
   subCategory: PropTypes.string.isRequired,
   id: PropTypes.string.isRequired,
-};
-
-// Memoized Recent Post Card component
-const RecentPostCard = memo(({ post }) => (
-  <Col xs={12} sm={6} md={4} lg={4} className="mb-4">
-    <Link
-      to={`/description/${post.subCategory}/${createSlug(post.topic)}`}
-      style={{ textDecoration: 'none', color: 'inherit' }}
-      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-    >
-      <Card className="shadow-sm border-0 rounded-lg h-100" style={{ backgroundColor: '#f8f9fa' }}>
-        <Card.Body>
-          <h5 className="text-danger">{post.topic}</h5>
-          <p className="text-muted">
-            {post.timestamp ? new Date(post.timestamp).toLocaleDateString() : 'No date'}
-          </p>
-        </Card.Body>
-      </Card>
-    </Link>
-  </Col>
-));
-
-RecentPostCard.propTypes = {
-  post: PropTypes.shape({
-    topic: PropTypes.string.isRequired,
-    subCategory: PropTypes.string.isRequired,
-    timestamp: PropTypes.instanceOf(Date),
-  }).isRequired,
 };
 
 // Feature Card component
@@ -177,7 +150,7 @@ const DropdownComponent = () => {
     }
   }, [organizeData, formatData]);
 
-  // Fetch recent posts
+  // Fetch recent posts with images
   const fetchRecentPosts = useCallback(async () => {
     try {
       const querySnapshot = await getDocs(
@@ -188,14 +161,40 @@ const DropdownComponent = () => {
         )
       );
 
-      const posts = querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          ...data,
-          timestamp: data.timestamp?.seconds ? new Date(data.timestamp.seconds * 1000) : null,
-          topicId: doc.id,
-        };
-      }).filter(post => post.topic);
+      const posts = await Promise.all(
+        querySnapshot.docs.map(async (doc) => {
+          const data = doc.data();
+          let imageUrl = '';
+          
+          // First try to get image from the topic document itself
+          if (data.imageUrl) {
+            imageUrl = data.imageUrl;
+          } 
+          // If no image in document, check the 'images' subcollection
+          else {
+            try {
+              const imagesRef = collection(fireStore, `topics/${doc.id}/images`);
+              const imagesSnapshot = await getDocs(imagesRef);
+              
+              if (!imagesSnapshot.empty) {
+                // Get the first image from the subcollection
+                const firstImage = imagesSnapshot.docs[0].data();
+                imageUrl = firstImage.url || '';
+              }
+            } catch (error) {
+              console.error('Error fetching images:', error);
+            }
+          }
+
+          return {
+            ...data,
+            timestamp: data.timestamp?.seconds ? new Date(data.timestamp.seconds * 1000) : null,
+            topicId: doc.id,
+            imageUrl: imageUrl,
+            slug: createSlug(data.topic)
+          };
+        })
+      ).then(posts => posts.filter(post => post.topic));
 
       setRecentPosts(posts);
     } catch (err) {
@@ -311,23 +310,15 @@ const DropdownComponent = () => {
         ))}
       </Row>
 
-      {/* Recent Posts Section */}
-      <Row className="mt-5 text-center">
+      {/* Recent Posts Section - Now using the separated component */}
+      <Row className="mt-5">
         <Col>
-          <h1 className="text-xl mb-4 text-center mt-4">Recent Posts</h1>
+          <RecentPostsSection 
+            recentPosts={recentPosts} 
+            loading={loading} 
+            error={error} 
+          />
         </Col>
-      </Row>
-
-      <Row className="justify-content-center mt-4">
-        {recentPosts.length > 0 ? (
-          recentPosts.map((post, index) => (
-            <RecentPostCard key={index} post={post} />
-          ))
-        ) : (
-          <Col xs={12} className="text-center">
-            <p className="text-muted">No recent posts available.</p>
-          </Col>
-        )}
       </Row>
 
       {/* Features Section */}

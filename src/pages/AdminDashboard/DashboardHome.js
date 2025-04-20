@@ -1,7 +1,6 @@
-// ResponsiveForm.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Form, Input, Button, Select, message, Card, Switch } from 'antd';
-import { LoadingOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Select, message, Card, Switch, Upload } from 'antd';
+import { LoadingOutlined, PlusOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons';
 import { storage, fireStore } from '../../firebase/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, getDocs } from 'firebase/firestore';
@@ -10,6 +9,7 @@ import JoditEditor from 'jodit-react';
 import "../../assets/css/dashboardhome.css";
 
 const { Option } = Select;
+const { Dragger } = Upload;
 
 const ResponsiveForm = () => {
   const navigate = useNavigate();
@@ -22,8 +22,8 @@ const ResponsiveForm = () => {
   const [savingDraft, setSavingDraft] = useState(false);
   const [isMCQ, setIsMCQ] = useState(false);
   const [mcqs, setMcqs] = useState([{ question: '', options: ['', '', '', ''], correctAnswer: '', logic: '' }]);
-  const [isShortQuestion, setIsShortQuestion] = useState(false);
-  const [shortQuestions, setShortQuestions] = useState([{ question: '', answer: '' }]);
+  const [featuredImage, setFeaturedImage] = useState(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const [form] = Form.useForm();
 
@@ -41,9 +41,8 @@ const ResponsiveForm = () => {
           setMcqs(draft.mcqs);
           setIsMCQ(true);
         }
-        if (draft.shortQuestions) {
-          setShortQuestions(draft.shortQuestions);
-          setIsShortQuestion(true);
+        if (draft.featuredImage) {
+          setFeaturedImage(draft.featuredImage);
         }
       }
     };
@@ -51,41 +50,47 @@ const ResponsiveForm = () => {
     fetchClasses();
   }, [form]);
 
+  const uploadFeaturedImage = async (file) => {
+    setImageUploading(true);
+    try {
+      const uniqueFileName = `${Date.now()}-${file.name}`;
+      const storageRef = ref(storage, `featured-images/${uniqueFileName}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      return new Promise((resolve, reject) => {
+        uploadTask.on(
+          'state_changed',
+          null,
+          (error) => {
+            console.error('Image upload failed:', error);
+            message.error('Featured image upload failed.', 3);
+            reject(error);
+          },
+          async () => {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            setFeaturedImage(downloadURL);
+            message.success('Featured image uploaded successfully!', 3);
+            resolve(downloadURL);
+          }
+        );
+      });
+    } catch (error) {
+      console.error('Error uploading featured image:', error);
+      message.error('Error uploading featured image', 3);
+      return null;
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
   const onFinish = async (values) => {
-    const { topic, class: selectedClasses, category, subCategory, file } = values;
+    const { topic, class: selectedClasses, category, subCategory } = values;
     setUploading(true);
-    let fileURLs = [];
 
-    if (file && file.length > 0) {
-      try {
-        const uploadPromises = file.map((fileItem) => {
-          const uniqueFileName = `${Date.now()}-${fileItem.name}`;
-          const storageRef = ref(storage, `uploads/${uniqueFileName}`);
-          const uploadTask = uploadBytesResumable(storageRef, fileItem.originFileObj);
-
-          return new Promise((resolve, reject) => {
-            uploadTask.on(
-              'state_changed',
-              null,
-              (error) => {
-                console.error('Upload failed:', error);
-                message.error('File upload failed.', 3);
-                reject(error);
-              },
-              async () => {
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                fileURLs.push(downloadURL);
-                resolve();
-              }
-            );
-          });
-        });
-
-        await Promise.all(uploadPromises);
-      } catch (error) {
-        setUploading(false);
-        return;
-      }
+    // Upload featured image if exists
+    let featuredImageUrl = null;
+    if (featuredImage) {
+      featuredImageUrl = featuredImage;
     }
 
     try {
@@ -93,12 +98,11 @@ const ResponsiveForm = () => {
         topic: topic || '',
         class: selectedClasses.join(', '),
         category: category || '',
-        subCategory: isMCQ ? 'MCQ Test' : isShortQuestion ? 'Short Questions' : subCategory,
+        subCategory: isMCQ ? 'MCQ Test' : subCategory,
         description: description || '',
-        fileURLs,
         mcqs: isMCQ ? mcqs : [],
-        shortQuestions: isShortQuestion ? shortQuestions : [],
         timestamp: new Date(),
+        featuredImage: featuredImageUrl,
       };
 
       await addDoc(collection(fireStore, 'topics'), topicData);
@@ -133,7 +137,12 @@ const ResponsiveForm = () => {
   const handleSaveDraft = async (values) => {
     setSavingDraft(true);
     try {
-      const draftData = { ...values, description, mcqs, shortQuestions };
+      const draftData = { 
+        ...values, 
+        description, 
+        mcqs,
+        featuredImage 
+      };
       localStorage.setItem('draft', JSON.stringify(draftData));
       message.success('Draft saved successfully!', 3);
     } catch (error) {
@@ -148,9 +157,8 @@ const ResponsiveForm = () => {
     form.resetFields();
     setDescription('');
     setMcqs([{ question: '', options: ['', '', '', ''], correctAnswer: '', logic: '' }]);
-    setShortQuestions([{ question: '', answer: '' }]);
     setIsMCQ(false);
-    setIsShortQuestion(false);
+    setFeaturedImage(null);
     message.success('Draft cleared!', 3);
   };
 
@@ -160,25 +168,57 @@ const ResponsiveForm = () => {
     setMcqs(updatedMcqs);
   };
 
+  const handleOptionChange = (mcqIndex, optionIndex, value) => {
+    const updatedMcqs = [...mcqs];
+    const oldOption = updatedMcqs[mcqIndex].options[optionIndex];
+    updatedMcqs[mcqIndex].options[optionIndex] = value;
+    
+    // Update correct answer if it was the changed option
+    if (updatedMcqs[mcqIndex].correctAnswer === oldOption) {
+      updatedMcqs[mcqIndex].correctAnswer = value;
+    }
+    
+    setMcqs(updatedMcqs);
+  };
+
+  const handleCorrectAnswerChange = (mcqIndex, value) => {
+    const updatedMcqs = [...mcqs];
+    updatedMcqs[mcqIndex].correctAnswer = value;
+    setMcqs(updatedMcqs);
+  };
+
   const handleAddMCQ = () => {
     setMcqs([...mcqs, { question: '', options: ['', '', '', ''], correctAnswer: '', logic: '' }]);
+  };
+
+  const handleRemoveMCQ = (index) => {
+    if (mcqs.length > 1) {
+      const updatedMcqs = [...mcqs];
+      updatedMcqs.splice(index, 1);
+      setMcqs(updatedMcqs);
+    } else {
+      message.warning('At least one MCQ is required');
+    }
   };
 
   const renderMCQTemplate = () => {
     return mcqs.map((mcq, index) => (
       <div key={index} style={{ marginBottom: '16px', padding: '16px', border: '1px solid #f0f0f0', borderRadius: '8px' }}>
-        <h4>MCQ {index + 1}</h4>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h4>MCQ {index + 1}</h4>
+          <Button 
+            type="link" 
+            danger 
+            onClick={() => handleRemoveMCQ(index)}
+            disabled={mcqs.length <= 1}
+          >
+            Remove
+          </Button>
+        </div>
         <Form.Item label="Question" required>
           <JoditEditor
             value={mcq.question}
-            config={{
-              readonly: false,
-              height: 150,
-              toolbarSticky: false,
-              toolbarAdaptive: false,
-              buttons: 'bold,italic,underline,brush,ul,ol,font,color',
-              uploader: { insertImageAsBase64URI: true },
-            }}
+            config={mcqJoditConfig}
             onChange={(newContent) => handleMCQChange(index, 'question', newContent)}
           />
         </Form.Item>
@@ -191,64 +231,118 @@ const ResponsiveForm = () => {
                     type="radio"
                     name={`correct-${index}`}
                     checked={mcq.correctAnswer === option}
-                    onChange={() => handleMCQChange(index, 'correctAnswer', option)}
+                    onChange={() => handleCorrectAnswerChange(index, option)}
                   />
                 }
                 value={option}
-                onChange={(e) => {
-                  const updatedOptions = [...mcq.options];
-                  const oldOption = option;
-                  updatedOptions[optionIndex] = e.target.value;
-                  handleMCQChange(index, 'options', updatedOptions);
-                  if (mcq.correctAnswer === oldOption) {
-                    handleMCQChange(index, 'correctAnswer', e.target.value);
-                  }
-                }}
+                onChange={(e) => handleOptionChange(index, optionIndex, e.target.value)}
                 placeholder={`Option ${optionIndex + 1}`}
               />
             </div>
           ))}
         </Form.Item>
-        {mcq.correctAnswer && (
-          <Form.Item label="Logic for Correct Answer (Optional)">
-            <Input.TextArea
-              rows={2}
-              placeholder="Explain why this is the correct answer"
-              value={mcq.logic}
-              onChange={(e) => handleMCQChange(index, 'logic', e.target.value)}
-            />
-          </Form.Item>
-        )}
+        <Form.Item label="Logic for Correct Answer (Optional)">
+          <JoditEditor
+            value={mcq.logic}
+            config={mcqJoditConfig}
+            onChange={(newContent) => handleMCQChange(index, 'logic', newContent)}
+          />
+        </Form.Item>
       </div>
     ));
   };
 
-  const renderShortQuestions = () => {
-    return shortQuestions.map((sq, index) => (
-      <div key={index} style={{ marginBottom: '16px', padding: '16px', border: '1px solid #f0f0f0', borderRadius: '8px' }}>
-        
-        <Form.Item label="Question" required>
-          <JoditEditor
-            value={sq.question}
-            config={{
-              readonly: false,
-              height: 150,
-              toolbarSticky: false,
-              buttons: 'bold,italic,underline,strikethrough,ul,ol,font,color',
-              uploader: { insertImageAsBase64URI: true },
-            }}
-            onChange={(newContent) => {
-              const updated = [...shortQuestions];
-              updated[index].question = newContent;
-              setShortQuestions(updated);
-            }}
-          />
-        </Form.Item>
-        <Form.Item label="Answer" required>
-         
-        </Form.Item>
-      </div>
-    ));
+  const joditConfig = {
+    readonly: false,
+    height: 300,
+    width: '100%',
+    buttons: [
+      'source', '|',
+      'bold', 'italic', 'underline', 'strikethrough', '|',
+      'ul', 'ol', '|',
+      'font', 'fontsize', 'brush', 'paragraph', '|',
+      'align', 'outdent', 'indent', '|',
+      'cut', 'copy', 'paste', 'copyformat', '|',
+      'hr', 'table', 'link', '|',
+      'undo', 'redo', '|',
+      'preview', 'print', 'find', 'fullsize',
+      'image', 'video', 'file'
+    ],
+    uploader: {
+      insertImageAsBase64URI: false,
+      url: '/api/upload',
+      format: 'json',
+      imagesExtensions: ['jpg', 'png', 'jpeg', 'gif'],
+      filesVariableName: 'files',
+      withCredentials: false,
+      prepareData: (data) => {
+        const formData = new FormData();
+        Object.keys(data).forEach((key) => {
+          formData.append(key, data[key]);
+        });
+        return formData;
+      },
+      isSuccess: (resp) => resp.success,
+      getMessage: (resp) => resp.message,
+      process: (resp) => ({
+        files: resp.files || [],
+        path: resp.path || '',
+        baseurl: resp.baseurl || '',
+        error: resp.error || 0,
+        message: resp.message || ''
+      }),
+      error: (e) => {
+        console.error('Upload error:', e);
+        message.error('Image upload failed');
+      },
+      defaultHandlerSuccess: (data) => {
+        const { files } = data;
+        if (files && files.length) {
+          return files[0];
+        }
+        return '';
+      }
+    },
+    imageDefaultWidth: 300,
+    imagePosition: 'center',
+    spellcheck: true,
+    toolbarAdaptive: false,
+    showCharsCounter: true,
+    showWordsCounter: true,
+    showXPathInStatusbar: true,
+    askBeforePasteHTML: true,
+    askBeforePasteFromWord: true,
+    allowTabNavigtion: false,
+    placeholder: 'Type your content here...'
+  };
+
+  const mcqJoditConfig = {
+    ...joditConfig,
+    height: 150,
+    buttons: 'bold,italic,underline,strikethrough,ul,ol,font,fontsize,brush,paragraph,align,link,image'
+  };
+
+  const beforeImageUpload = (file) => {
+    const isImage = file.type.startsWith('image/');
+    if (!isImage) {
+      message.error('You can only upload image files!');
+    }
+    const isLt5M = file.size / 1024 / 1024 < 5;
+    if (!isLt5M) {
+      message.error('Image must be smaller than 5MB!');
+    }
+    return isImage && isLt5M;
+  };
+
+  const handleImageUpload = async (options) => {
+    const { file } = options;
+    try {
+      const url = await uploadFeaturedImage(file);
+      return url;
+    } catch (error) {
+      console.error('Image upload error:', error);
+      return null;
+    }
   };
 
   return (
@@ -256,7 +350,44 @@ const ResponsiveForm = () => {
       <h1 className="text-center mb-2">Create Topic</h1>
       <Card bordered={false} style={{ margin: '20px auto', width: '100%', borderRadius: '10px' }}>
         <Form layout="vertical" onFinish={onFinish} autoComplete="off" form={form}>
-          <Form.Item label="Topic Name" name="topic">
+          <Form.Item label="Featured Image (Optional)">
+            <Dragger
+              name="featuredImage"
+              multiple={false}
+              beforeUpload={beforeImageUpload}
+              customRequest={handleImageUpload}
+              showUploadList={false}
+              accept="image/*"
+            >
+              <p className="ant-upload-drag-icon">
+                <UploadOutlined />
+              </p>
+              <p className="ant-upload-text">Click or drag image to upload</p>
+              <p className="ant-upload-hint">
+                Upload a featured image for this topic (Max 5MB)
+              </p>
+            </Dragger>
+            {featuredImage && (
+              <div style={{ marginTop: '16px' }}>
+                <img 
+                  src={featuredImage} 
+                  alt="Featured preview" 
+                  style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '4px' }} 
+                />
+                <Button 
+                  type="link" 
+                  danger 
+                  onClick={() => setFeaturedImage(null)}
+                  style={{ marginTop: '8px' }}
+                >
+                  Remove Image
+                </Button>
+              </div>
+            )}
+            {imageUploading && <LoadingOutlined style={{ marginLeft: '8px' }} />}
+          </Form.Item>
+
+          <Form.Item label="Topic Name" name="topic" rules={[{ required: true, message: 'Please enter topic name!' }]}>
             <Input placeholder="Enter topic name" />
           </Form.Item>
 
@@ -290,27 +421,21 @@ const ResponsiveForm = () => {
             </Select>
           </Form.Item>
 
+          
+
           <Form.Item label="SubCategory" name="subCategory">
             <Input placeholder="Enter subcategory" />
           </Form.Item>
 
-          <Form.Item label="MCQ Test" name="mcqSwitch">
-            <Switch checked={isMCQ} onChange={(val) => { setIsMCQ(val); if (val) setIsShortQuestion(false); }} />
+          <Form.Item label="MCQ Test" name="mcqSwitch" valuePropName="checked">
+            <Switch checked={isMCQ} onChange={(checked) => setIsMCQ(checked)} />
           </Form.Item>
-
-        
 
           <Form.Item label="Description">
             <JoditEditor
               ref={editor}
               value={description}
-              config={{
-                readonly: false,
-                height: 300,
-                width: '100%',
-                buttons: 'bold,italic,underline,strikethrough,brush,ul,ol,font,color',
-                uploader: { insertImageAsBase64URI: true },
-              }}
+              config={joditConfig}
               onBlur={(newContent) => setDescription(newContent)}
             />
           </Form.Item>
@@ -326,25 +451,9 @@ const ResponsiveForm = () => {
             </>
           )}
 
-          {isShortQuestion && (
-            <>
-              {renderShortQuestions()}
-              <Form.Item>
-                <Button
-                  type="dashed"
-                  onClick={() => setShortQuestions([...shortQuestions, { question: '', answer: '' }])}
-                  block
-                  icon={<PlusOutlined />}
-                >
-                  Add More Short Questions
-                </Button>
-              </Form.Item>
-            </>
-          )}
-
           <Form.Item>
-            <Button type="primary" htmlType="submit" block disabled={uploading}>
-              {uploading ? <LoadingOutlined /> : 'Submit'}
+            <Button type="primary" htmlType="submit" block loading={uploading}>
+              {uploading ? 'Submitting...' : 'Submit'}
             </Button>
           </Form.Item>
 

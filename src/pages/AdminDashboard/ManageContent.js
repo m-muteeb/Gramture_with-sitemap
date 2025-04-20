@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Table, Button, Popconfirm, message, Modal, Form, Input, Select, Row, Col } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Button, Popconfirm, message, Modal, Form, Input, Select, Row, Col, Upload, Image } from 'antd';
+import { EditOutlined, DeleteOutlined, UploadOutlined , PlusOutlined} from '@ant-design/icons';
 import { collection, getDocs, deleteDoc, doc, updateDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
-import { fireStore } from '../../firebase/firebase';
+import { fireStore, storage } from '../../firebase/firebase';
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import JoditEditor from 'jodit-react';
 import { debounce } from 'lodash';
 
@@ -16,6 +17,8 @@ const ManageProducts = () => {
   const [deleting, setDeleting] = useState(false);
   const [classes, setClasses] = useState([]);
   const [mcqs, setMcqs] = useState([]);
+  const [featuredImage, setFeaturedImage] = useState(null);
+  const [imageUploading, setImageUploading] = useState(false);
   const editor = useRef(null);
 
   const debouncedDescriptionChange = useRef(
@@ -76,6 +79,7 @@ const ManageProducts = () => {
     setEditingProduct(record);
     setDescription(record.description || '');
     setMcqs(record.mcqs || []);
+    setFeaturedImage(record.featuredImage || null);
     form.setFieldsValue({
       topic: record.topic,
       class: record.class,
@@ -88,8 +92,67 @@ const ManageProducts = () => {
     setIsModalVisible(false);
     setDescription('');
     setMcqs([]);
+    setFeaturedImage(null);
     form.resetFields();
     setLoading(false);
+  };
+
+  const uploadFeaturedImage = async (file) => {
+    setImageUploading(true);
+    try {
+      // Delete old image if exists
+      if (featuredImage) {
+        try {
+          const oldImageRef = ref(storage, featuredImage);
+          await deleteObject(oldImageRef);
+        } catch (error) {
+          console.error('Error deleting old image:', error);
+        }
+      }
+
+      const uniqueFileName = `${Date.now()}-${file.name}`;
+      const storageRef = ref(storage, `featured-images/${uniqueFileName}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      return new Promise((resolve, reject) => {
+        uploadTask.on(
+          'state_changed',
+          null,
+          (error) => {
+            console.error('Image upload failed:', error);
+            message.error('Featured image upload failed.', 3);
+            reject(error);
+          },
+          async () => {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            setFeaturedImage(downloadURL);
+            message.success('Featured image uploaded successfully!', 3);
+            resolve(downloadURL);
+          }
+        );
+      });
+    } catch (error) {
+      console.error('Error uploading featured image:', error);
+      message.error('Error uploading featured image', 3);
+      return null;
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const handleImageUpload = async (options) => {
+    const { file } = options;
+    try {
+      const url = await uploadFeaturedImage(file);
+      return url;
+    } catch (error) {
+      console.error('Image upload error:', error);
+      return null;
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFeaturedImage(null);
   };
 
   const handleUpdate = async (values) => {
@@ -99,6 +162,7 @@ const ManageProducts = () => {
         ...values,
         description,
         mcqs,
+        featuredImage,
         timestamp: serverTimestamp(),
       };
 
@@ -136,6 +200,23 @@ const ManageProducts = () => {
     { title: 'Class', dataIndex: 'class', key: 'class' },
     { title: 'SubCategory', dataIndex: 'subCategory', key: 'subCategory' },
     {
+      title: 'Featured Image',
+      key: 'featuredImage',
+      render: (_, record) => (
+        record.featuredImage ? (
+          <Image
+            src={record.featuredImage}
+            width={50}
+            height={50}
+            style={{ objectFit: 'cover' }}
+            preview={{
+              src: record.featuredImage,
+            }}
+          />
+        ) : 'No Image'
+      ),
+    },
+    {
       title: 'Action',
       key: 'action',
       render: (_, record) => (
@@ -152,39 +233,144 @@ const ManageProducts = () => {
   const joditConfig = {
     readonly: false,
     height: 400,
-    uploader: {
-      insertImageAsBase64URI: true,
-    },
     buttons: [
+      'source', '|',
       'bold', 'italic', 'underline', 'strikethrough', '|',
       'ul', 'ol', '|',
-      'align', '|', 'link', 'image', 'video', '|',
-      'undo', 'redo', '|', 'fullsize'
+      'font', 'fontsize', 'brush', 'paragraph', '|',
+      'align', 'outdent', 'indent', '|',
+      'cut', 'copy', 'paste', 'copyformat', '|',
+      'hr', 'table', 'link', '|',
+      'undo', 'redo', '|',
+      'preview', 'print', 'find', 'fullsize',
+      'image', 'video', 'file'
     ],
+    uploader: {
+      insertImageAsBase64URI: true,
+      url: '/api/upload',
+      format: 'json',
+      imagesExtensions: ['jpg', 'png', 'jpeg', 'gif'],
+      filesVariableName: 'files',
+      withCredentials: false,
+      prepareData: (data) => {
+        const formData = new FormData();
+        Object.keys(data).forEach((key) => {
+          formData.append(key, data[key]);
+        });
+        return formData;
+      },
+      isSuccess: (resp) => resp.success,
+      getMessage: (resp) => resp.message,
+      process: (resp) => ({
+        files: resp.files || [],
+        path: resp.path || '',
+        baseurl: resp.baseurl || '',
+        error: resp.error || 0,
+        message: resp.message || ''
+      }),
+      error: (e) => {
+        console.error('Upload error:', e);
+        message.error('Image upload failed');
+      },
+      defaultHandlerSuccess: (data) => {
+        const { files } = data;
+        if (files && files.length) {
+          return files[0];
+        }
+        return '';
+      }
+    },
+    imageDefaultWidth: 300,
+    imagePosition: 'center',
+    spellcheck: true,
+    toolbarAdaptive: false,
+    showCharsCounter: true,
+    showWordsCounter: true,
+    showXPathInStatusbar: true,
+    askBeforePasteHTML: true,
+    askBeforePasteFromWord: true,
+    allowTabNavigtion: false,
+    placeholder: 'Type your content here...'
   };
 
   const handleDescriptionChange = (newContent) => {
     debouncedDescriptionChange.current(newContent);
   };
 
+  const beforeImageUpload = (file) => {
+    const isImage = file.type.startsWith('image/');
+    if (!isImage) {
+      message.error('You can only upload image files!');
+    }
+    const isLt5M = file.size / 1024 / 1024 < 5;
+    if (!isLt5M) {
+      message.error('Image must be smaller than 5MB!');
+    }
+    return isImage && isLt5M;
+  };
+
   return (
     <div className="container" style={{ padding: '20px' }}>
       <h2 style={{ textAlign: 'center', paddingBottom: '20px' }}>Manage Products</h2>
-      <Table dataSource={products} columns={columns} rowKey="id" bordered />
+      <Table 
+        dataSource={products} 
+        columns={columns} 
+        rowKey="id" 
+        bordered
+        scroll={{ x: true }}
+      />
 
-      <Modal
-        title="Edit Product"
-        open={isModalVisible}
-        onCancel={handleModalClose}
-        footer={null}
-        width={1000}
-      >
-        <Form form={form} layout="vertical" onFinish={handleUpdate}>
-          <Form.Item label="Topic" name="topic">
+<Modal
+  title="Edit Product"
+  open={isModalVisible}
+  onCancel={handleModalClose}
+  footer={null}
+  width={1000}
+  style={{ 
+    marginTop: '70px',
+    zIndex: 50000000000000000000,
+   
+  }}
+ 
+>
+        <Form form={form} layout="vertical" onFinish={handleUpdate} >
+          <Form.Item label="Featured Image">
+            <Upload
+              name="featuredImage"
+              customRequest={handleImageUpload}
+              beforeUpload={beforeImageUpload}
+              showUploadList={false}
+              accept="image/*"
+            >
+              <Button icon={<UploadOutlined />} loading={imageUploading}>
+                Change Featured Image
+              </Button>
+            </Upload>
+            {featuredImage && (
+              <div style={{ marginTop: 16 }}>
+                <Image
+                  src={featuredImage}
+                  width={200}
+                  style={{ maxHeight: 200, objectFit: 'contain' }}
+                  alt="Featured Preview"
+                />
+                <Button
+                  type="link"
+                  danger
+                  onClick={handleRemoveImage}
+                  style={{ marginLeft: 8 }}
+                >
+                  Remove Image
+                </Button>
+              </div>
+            )}
+          </Form.Item>
+
+          <Form.Item label="Topic" name="topic" rules={[{ required: true, message: 'Please enter topic name!' }]}>
             <Input placeholder="Enter topic" />
           </Form.Item>
 
-          <Form.Item label="Class" name="class">
+          <Form.Item label="Class" name="class" rules={[{ required: true, message: 'Please select a class!' }]}>
             <Select placeholder="Select class">
               {classes.map((cls) => (
                 <Select.Option key={cls.id} value={cls.name}>
@@ -213,13 +399,19 @@ const ManageProducts = () => {
               <div key={index} style={{ border: '1px solid #d9d9d9', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
                 <Row gutter={[16, 16]}>
                   <Col span={24}>
-                    <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <strong>Question {index + 1}</strong>
+                      <Button danger onClick={() => handleDeleteMCQ(index)} size="small">
+                        Delete
+                      </Button>
                     </div>
                     <JoditEditor
-                      ref={editor}
                       value={mcq.question}
-                      config={joditConfig}
+                      config={{
+                        ...joditConfig,
+                        height: 150,
+                        buttons: 'bold,italic,underline,strikethrough,ul,ol,font,fontsize,brush,paragraph,align,link,image'
+                      }}
                       onBlur={(newContent) => handleMCQChange(index, 'question', newContent)}
                     />
                   </Col>
@@ -253,24 +445,23 @@ const ManageProducts = () => {
 
                   {mcq.correctAnswer && (
                     <Col span={24}>
-                      <Input.TextArea
-                        rows={2}
-                        placeholder="Explanation for correct answer"
-                        value={mcq.logic ? mcq.logic.replace(/<[^>]+>/g, '') : ''} // Stripping HTML
-                        onChange={(e) => handleMCQChange(index, 'logic', e.target.value)}
+                      <JoditEditor
+                        value={mcq.logic}
+                        config={{
+                          ...joditConfig,
+                          height: 100,
+                          buttons: 'bold,italic,underline,strikethrough,ul,ol,font,fontsize,brush,paragraph,align,link'
+                        }}
+                        onBlur={(newContent) => handleMCQChange(index, 'logic', newContent)}
                       />
                     </Col>
                   )}
-
-                  <Col span={24}>
-                    <Button danger onClick={() => handleDeleteMCQ(index)}>
-                      Delete MCQ
-                    </Button>
-                  </Col>
                 </Row>
               </div>
             ))}
-            <Button type="dashed" onClick={handleAddMCQ}>Add MCQ</Button>
+            <Button type="dashed" onClick={handleAddMCQ}>
+              Add MCQ
+            </Button>
           </Form.Item>
 
           <Form.Item>

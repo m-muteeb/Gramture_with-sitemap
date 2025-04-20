@@ -1,8 +1,9 @@
 import React from "react";
 import "../../assets/css/homepage.css"; // Import the CSS file
-import img1 from "../../assets/images/1.jpg";
-import img2 from "../../assets/images/2.jpg";
-import img3 from "../../assets/images/3.jpg";
+import img1 from "../../assets/images/9.jpg";
+import img2 from "../../assets/images/10.jpg";
+import img3 from "../../assets/images/11.jpg";
+import img4 from "../../assets/images/dear departed.jpg";
 import { Helmet } from "react-helmet-async";
 
 const Home = () => {
@@ -31,7 +32,7 @@ const Home = () => {
               <h1 className="text-xl mb-4 text-center mt-4">
                 Welcome to Gramture
               </h1>
-              <p>
+              <p className="mt-4">
                 Whenever curriculum wings update or publish new content,
                 students face unavailability or a shortage of books in the
                 market, leading to difficulties in purchasing new books. This
@@ -68,10 +69,12 @@ const Home = () => {
                       className="d-block w-100"
                       alt="Slide 1"
                       style={{
-                        objectFit: "cover",
-                        width: "100%",
-                        height: "370px",
+                        width: "35vw",              // Take 50% of the viewport width
+                        height: "auto",             // Let height adjust proportionally
+                        maxHeight: "65vh",          // Keep image within view height
+                        objectFit: "contain",       // Ensures the full image is shown without cropping
                         marginTop: "10px",
+                        borderRadius: "10px",       // Optional: for aesthetics
                       }}
                     />
                   </div>
@@ -81,10 +84,12 @@ const Home = () => {
                       className="d-block w-100"
                       alt="Slide 2"
                       style={{
-                        objectFit: "cover",
-                        width: "100%",
-                        height: "370px",
+                        width: "35vw",              // Take 50% of the viewport width
+                        height: "auto",             // Let height adjust proportionally
+                        maxHeight: "65vh",          // Keep image within view height
+                        objectFit: "contain",       // Ensures the full image is shown without cropping
                         marginTop: "10px",
+                        borderRadius: "10px",       // Optional: for aesthetics
                       }}
                     />
                   </div>
@@ -94,10 +99,27 @@ const Home = () => {
                       className="d-block w-100"
                       alt="Slide 3"
                       style={{
-                        objectFit: "cover",
-                        width: "100%",
-                        height: "370px",
+                        width: "35vw",              // Take 50% of the viewport width
+                        height: "auto",             // Let height adjust proportionally
+                        maxHeight: "65vh",          // Keep image within view height
+                        objectFit: "contain",       // Ensures the full image is shown without cropping
                         marginTop: "10px",
+                        borderRadius: "10px",       // Optional: for aesthetics
+                      }}
+                    />
+                  </div>
+                  <div className="carousel-item">
+                    <img
+                      src={img4}
+                      className="d-block w-100"
+                      alt="Slide 3"
+                      style={{
+                        width: "35vw",              // Take 50% of the viewport width
+                        height: "auto",             // Let height adjust proportionally
+                        maxHeight: "65vh",          // Keep image within view height
+                        objectFit: "contain",       // Ensures the full image is shown without cropping
+                        marginTop: "10px",
+                        borderRadius: "10px",       // Optional: for aesthetics
                       }}
                     />
                   </div>

@@ -24,7 +24,7 @@ a:hover {
 
 /* Make the Previous and Next buttons black */
 .custom-carousel-button {
-  background-color: black;  /* Black background */
+  background-color: brown;  /* Black background */
   border: none;             /* Remove any borders */
   padding: 10px;            /* Adjust padding for size */
   display: flex;
@@ -34,7 +34,8 @@ a:hover {
 
 .carousel-control-prev-icon,
 .carousel-control-next-icon {
-  background-color: rgb(0, 0, 0); /* Keep the arrows white to make them visible on the black button */
+  background-color: #123; /* Black background for the arrows */
+  /* Keep the arrows white to make them visible on the black button */
   width: 20px;
   height: 20px;
 }
