@@ -5,15 +5,17 @@
     top: 0px; /* Adjust for top bar height */
     z-index: 1050;
     
-    background: linear-gradient(to right, #fefcea, #defcf9); /* Light Cream to Icy Aqua */
+    background: linear-gradient(to right, #5493f0, #4c8ef1); /* Light Cream to Icy Aqua */
 
     height: 70px; /* Default height */ 
     transition: all 0.3s ease-in-out;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    color: #ffffff;
     
     @media (max-width: 768px) {
       height: auto; /* Let the content determine height */
       overflow: hidden;
+      
     }
   
   }

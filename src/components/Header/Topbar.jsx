@@ -138,7 +138,7 @@ const Topbar = () => {
   return (
     <div
       className="topbar"
-      style={{ zIndex: 15000, transition: "top 0.3s ease" }}
+      style={{ zIndex: 15000, transition: "top 0.3s ease" ,  color: "#ffffff" }}
     >
       <div className="topbar-content">
         {/* Left: Hamburger Menu Button */}
@@ -146,7 +146,7 @@ const Topbar = () => {
           <i
             className="fas fa-bars"
             style={{
-              color: 'black',
+              color: '#ffffff',
               fontSize: '25px',
               border: '2px solid lightgray',
               borderRadius: '5px',
@@ -164,7 +164,7 @@ const Topbar = () => {
         </div>
 
         {/* Center: Links */}
-        <div className="topbar-links">
+        <div className="topbar-links ">
           <Link to="/" className="topbar-link">
             <FaHome style={{ marginRight: '8px' }} />
             Home
@@ -174,7 +174,7 @@ const Topbar = () => {
             About Us
           </Link>
           <Link to="/discussion_forum" className="topbar-link">
-            <FaComments style={{ marginRight: '8px' }} />
+            <FaComments style={{ marginRight: '8px' ,}} />
             Discussion Forum
           </Link>
         </div>

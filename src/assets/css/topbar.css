@@ -1,6 +1,6 @@
 /* General Topbar Styles */
 .topbar {
-  background: linear-gradient(to right, #e0f7fa, #b2ebf2); /* Aqua Light to Sky Mint */
+  background: linear-gradient(to right, #0064fa, #0066ff); /* Aqua Light to Sky Mint */
 
 
   
@@ -8,7 +8,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  color: #ff0000;
+  color: #ffffff;
   padding: 10px 20px;
   z-index: 15000;
 }
@@ -38,7 +38,7 @@
 
 .topbar-link {
   text-decoration: none;
-  color: #000;
+  color: #ffffff;
   font-weight: 500;
   transition: color 0.3s;
 }
@@ -58,7 +58,7 @@
   background: none;
   border: none;
   font-size: 20px;
-  color: #000;
+  color: #ffffff;
   cursor: pointer;
 }
 
