@@ -198,6 +198,7 @@ const ManageProducts = () => {
   const columns = [
     { title: 'Topic', dataIndex: 'topic', key: 'topic' },
     { title: 'Class', dataIndex: 'class', key: 'class' },
+    { title: 'notesFile', dataIndex: 'notesFile', key: 'notesFile' },
     { title: 'SubCategory', dataIndex: 'subCategory', key: 'subCategory' },
     {
       title: 'Featured Image',

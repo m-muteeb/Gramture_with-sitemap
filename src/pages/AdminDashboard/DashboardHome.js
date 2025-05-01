@@ -1,11 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Form, Input, Button, Select, message, Card, Switch, Upload } from 'antd';
-import { LoadingOutlined, PlusOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons';
-import { storage, fireStore } from '../../firebase/firebase';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom';
-import JoditEditor from 'jodit-react';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Form,
+  Input,
+  Button,
+  Select,
+  message,
+  Card,
+  Switch,
+  Upload,
+} from "antd";
+import {
+  LoadingOutlined,
+  PlusOutlined,
+  SaveOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
+import { storage, fireStore } from "../../firebase/firebase";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { collection, addDoc, getDocs } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+import JoditEditor from "jodit-react";
 import "../../assets/css/dashboardhome.css";
 
 const { Option } = Select;
@@ -14,28 +28,35 @@ const { Dragger } = Upload;
 const ResponsiveForm = () => {
   const navigate = useNavigate();
   const editor = useRef(null);
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState("");
   const [uploading, setUploading] = useState(false);
   const [classes, setClasses] = useState([]);
   const [addingClass, setAddingClass] = useState(false);
-  const [newClass, setNewClass] = useState('');
+  const [newClass, setNewClass] = useState("");
   const [savingDraft, setSavingDraft] = useState(false);
   const [isMCQ, setIsMCQ] = useState(false);
-  const [mcqs, setMcqs] = useState([{ question: '', options: ['', '', '', ''], correctAnswer: '', logic: '' }]);
+  const [mcqs, setMcqs] = useState([
+    { question: "", options: ["", "", "", ""], correctAnswer: "", logic: "" },
+  ]);
   const [featuredImage, setFeaturedImage] = useState(null);
   const [imageUploading, setImageUploading] = useState(false);
+  const [noteFile, setNoteFile] = useState(null);
+  const [noteUploading, setNoteUploading] = useState(false);
 
   const [form] = Form.useForm();
 
   useEffect(() => {
     const fetchClasses = async () => {
-      const querySnapshot = await getDocs(collection(fireStore, 'classes'));
-      const fetchedClasses = querySnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name }));
+      const querySnapshot = await getDocs(collection(fireStore, "classes"));
+      const fetchedClasses = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        name: doc.data().name,
+      }));
       setClasses(fetchedClasses);
 
-      const draft = JSON.parse(localStorage.getItem('draft'));
+      const draft = JSON.parse(localStorage.getItem("draft"));
       if (draft) {
-        setDescription(draft.description || '');
+        setDescription(draft.description || "");
         form.setFieldsValue(draft);
         if (draft.mcqs) {
           setMcqs(draft.mcqs);
@@ -59,35 +80,67 @@ const ResponsiveForm = () => {
 
       return new Promise((resolve, reject) => {
         uploadTask.on(
-          'state_changed',
+          "state_changed",
           null,
           (error) => {
-            console.error('Image upload failed:', error);
-            message.error('Featured image upload failed.', 3);
+            console.error("Image upload failed:", error);
+            message.error("Featured image upload failed.", 3);
             reject(error);
           },
           async () => {
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
             setFeaturedImage(downloadURL);
-            message.success('Featured image uploaded successfully!', 3);
+            message.success("Featured image uploaded successfully!", 3);
             resolve(downloadURL);
           }
         );
       });
     } catch (error) {
-      console.error('Error uploading featured image:', error);
-      message.error('Error uploading featured image', 3);
+      console.error("Error uploading featured image:", error);
+      message.error("Error uploading featured image", 3);
       return null;
     } finally {
       setImageUploading(false);
     }
   };
 
+  const uploadNoteFile = async (file) => {
+    setNoteUploading(true);
+    try {
+      const sanitizedName = file.name.replace(/\s+/g, '-');
+      const uniqueFileName = `${Date.now()}-${sanitizedName}`;
+      const storageRef = ref(storage, `note-files/${uniqueFileName}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      return new Promise((resolve, reject) => {
+        uploadTask.on(
+          "state_changed",
+          null,
+          (error) => {
+            message.error("Note file upload failed");
+            reject(error);
+          },
+          async () => {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            setNoteFile(downloadURL);
+            message.success("Note file uploaded!");
+            resolve(downloadURL);
+          }
+        );
+      });
+    } catch (error) {
+      console.error("Upload error:", error);
+      message.error("PDF upload failed");
+      throw error;
+    } finally {
+      setNoteUploading(false);
+    }
+  };
+
   const onFinish = async (values) => {
     const { topic, class: selectedClasses, category, subCategory } = values;
     setUploading(true);
-
-    // Upload featured image if exists
+  
     let featuredImageUrl = null;
     if (featuredImage) {
       featuredImageUrl = featuredImage;
@@ -95,39 +148,43 @@ const ResponsiveForm = () => {
 
     try {
       const topicData = {
-        topic: topic || '',
-        class: selectedClasses.join(', '),
-        category: category || '',
-        subCategory: isMCQ ? 'MCQ Test' : subCategory,
-        description: description || '',
+        topic: topic || "",
+        class: selectedClasses.join(", "),
+        category: category || "",
+        subCategory: isMCQ ? "MCQ Test" : subCategory,
+        description: description || "",
         mcqs: isMCQ ? mcqs : [],
         timestamp: new Date(),
         featuredImage: featuredImageUrl,
+        notesFile: noteFile,
       };
 
-      await addDoc(collection(fireStore, 'topics'), topicData);
-      message.success('Topic created successfully!', 3);
-      localStorage.removeItem('draft');
-      navigate('/ManageProducts');
+      await addDoc(collection(fireStore, "topics"), topicData);
+      message.success("Topic created successfully!", 3);
+      localStorage.removeItem("draft");
+      navigate("/ManageProducts");
     } catch (e) {
-      console.error('Error adding document:', e);
-      message.error('Failed to save topic.', 3);
+      console.error("Error adding document:", e);
+      message.error("Failed to save topic.", 3);
     } finally {
       setUploading(false);
     }
   };
+  
 
   const handleAddClass = async () => {
-    if (newClass && !classes.some(cls => cls.name === newClass)) {
+    if (newClass && !classes.some((cls) => cls.name === newClass)) {
       setAddingClass(true);
       try {
-        const docRef = await addDoc(collection(fireStore, 'classes'), { name: newClass });
+        const docRef = await addDoc(collection(fireStore, "classes"), {
+          name: newClass,
+        });
         setClasses([...classes, { id: docRef.id, name: newClass }]);
-        setNewClass('');
+        setNewClass("");
         message.success(`Class ${newClass} added successfully!`, 3);
       } catch (e) {
-        console.error('Error adding class:', e);
-        message.error('Failed to add class.', 3);
+        console.error("Error adding class:", e);
+        message.error("Failed to add class.", 3);
       } finally {
         setAddingClass(false);
       }
@@ -137,29 +194,31 @@ const ResponsiveForm = () => {
   const handleSaveDraft = async (values) => {
     setSavingDraft(true);
     try {
-      const draftData = { 
-        ...values, 
-        description, 
+      const draftData = {
+        ...values,
+        description,
         mcqs,
-        featuredImage 
+        featuredImage,
       };
-      localStorage.setItem('draft', JSON.stringify(draftData));
-      message.success('Draft saved successfully!', 3);
+      localStorage.setItem("draft", JSON.stringify(draftData));
+      message.success("Draft saved successfully!", 3);
     } catch (error) {
-      message.error('Error saving draft', 3);
+      message.error("Error saving draft", 3);
     } finally {
       setSavingDraft(false);
     }
   };
 
   const handleClearDraft = () => {
-    localStorage.removeItem('draft');
+    localStorage.removeItem("draft");
     form.resetFields();
-    setDescription('');
-    setMcqs([{ question: '', options: ['', '', '', ''], correctAnswer: '', logic: '' }]);
+    setDescription("");
+    setMcqs([
+      { question: "", options: ["", "", "", ""], correctAnswer: "", logic: "" },
+    ]);
     setIsMCQ(false);
     setFeaturedImage(null);
-    message.success('Draft cleared!', 3);
+    message.success("Draft cleared!", 3);
   };
 
   const handleMCQChange = (index, key, value) => {
@@ -172,12 +231,12 @@ const ResponsiveForm = () => {
     const updatedMcqs = [...mcqs];
     const oldOption = updatedMcqs[mcqIndex].options[optionIndex];
     updatedMcqs[mcqIndex].options[optionIndex] = value;
-    
+
     // Update correct answer if it was the changed option
     if (updatedMcqs[mcqIndex].correctAnswer === oldOption) {
       updatedMcqs[mcqIndex].correctAnswer = value;
     }
-    
+
     setMcqs(updatedMcqs);
   };
 
@@ -188,7 +247,10 @@ const ResponsiveForm = () => {
   };
 
   const handleAddMCQ = () => {
-    setMcqs([...mcqs, { question: '', options: ['', '', '', ''], correctAnswer: '', logic: '' }]);
+    setMcqs([
+      ...mcqs,
+      { question: "", options: ["", "", "", ""], correctAnswer: "", logic: "" },
+    ]);
   };
 
   const handleRemoveMCQ = (index) => {
@@ -197,18 +259,33 @@ const ResponsiveForm = () => {
       updatedMcqs.splice(index, 1);
       setMcqs(updatedMcqs);
     } else {
-      message.warning('At least one MCQ is required');
+      message.warning("At least one MCQ is required");
     }
   };
 
   const renderMCQTemplate = () => {
     return mcqs.map((mcq, index) => (
-      <div key={index} style={{ marginBottom: '16px', padding: '16px', border: '1px solid #f0f0f0', borderRadius: '8px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+      <div
+        key={index}
+        style={{
+          marginBottom: "16px",
+          padding: "16px",
+          border: "1px solid #f0f0f0",
+          borderRadius: "8px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "16px",
+          }}
+        >
           <h4>MCQ {index + 1}</h4>
-          <Button 
-            type="link" 
-            danger 
+          <Button
+            type="link"
+            danger
             onClick={() => handleRemoveMCQ(index)}
             disabled={mcqs.length <= 1}
           >
@@ -219,12 +296,14 @@ const ResponsiveForm = () => {
           <JoditEditor
             value={mcq.question}
             config={mcqJoditConfig}
-            onChange={(newContent) => handleMCQChange(index, 'question', newContent)}
+            onChange={(newContent) =>
+              handleMCQChange(index, "question", newContent)
+            }
           />
         </Form.Item>
         <Form.Item label="Options" required>
           {mcq.options.map((option, optionIndex) => (
-            <div key={optionIndex} style={{ marginBottom: '8px' }}>
+            <div key={optionIndex} style={{ marginBottom: "8px" }}>
               <Input
                 addonBefore={
                   <input
@@ -235,7 +314,9 @@ const ResponsiveForm = () => {
                   />
                 }
                 value={option}
-                onChange={(e) => handleOptionChange(index, optionIndex, e.target.value)}
+                onChange={(e) =>
+                  handleOptionChange(index, optionIndex, e.target.value)
+                }
                 placeholder={`Option ${optionIndex + 1}`}
               />
             </div>
@@ -245,7 +326,9 @@ const ResponsiveForm = () => {
           <JoditEditor
             value={mcq.logic}
             config={mcqJoditConfig}
-            onChange={(newContent) => handleMCQChange(index, 'logic', newContent)}
+            onChange={(newContent) =>
+              handleMCQChange(index, "logic", newContent)
+            }
           />
         </Form.Item>
       </div>
@@ -255,25 +338,53 @@ const ResponsiveForm = () => {
   const joditConfig = {
     readonly: false,
     height: 300,
-    width: '100%',
+    width: "100%",
     buttons: [
-      'source', '|',
-      'bold', 'italic', 'underline', 'strikethrough', '|',
-      'ul', 'ol', '|',
-      'font', 'fontsize', 'brush', 'paragraph', '|',
-      'align', 'outdent', 'indent', '|',
-      'cut', 'copy', 'paste', 'copyformat', '|',
-      'hr', 'table', 'link', '|',
-      'undo', 'redo', '|',
-      'preview', 'print', 'find', 'fullsize',
-      'image', 'video', 'file'
+      "source",
+      "|",
+      "bold",
+      "italic",
+      "underline",
+      "strikethrough",
+      "|",
+      "ul",
+      "ol",
+      "|",
+      "font",
+      "fontsize",
+      "brush",
+      "paragraph",
+      "|",
+      "align",
+      "outdent",
+      "indent",
+      "|",
+      "cut",
+      "copy",
+      "paste",
+      "copyformat",
+      "|",
+      "hr",
+      "table",
+      "link",
+      "|",
+      "undo",
+      "redo",
+      "|",
+      "preview",
+      "print",
+      "find",
+      "fullsize",
+      "image",
+      "video",
+      "file",
     ],
     uploader: {
       insertImageAsBase64URI: false,
-      url: '/api/upload',
-      format: 'json',
-      imagesExtensions: ['jpg', 'png', 'jpeg', 'gif'],
-      filesVariableName: 'files',
+      url: "/api/upload",
+      format: "json",
+      imagesExtensions: ["jpg", "png", "jpeg", "gif"],
+      filesVariableName: "files",
       withCredentials: false,
       prepareData: (data) => {
         const formData = new FormData();
@@ -286,25 +397,25 @@ const ResponsiveForm = () => {
       getMessage: (resp) => resp.message,
       process: (resp) => ({
         files: resp.files || [],
-        path: resp.path || '',
-        baseurl: resp.baseurl || '',
+        path: resp.path || "",
+        baseurl: resp.baseurl || "",
         error: resp.error || 0,
-        message: resp.message || ''
+        message: resp.message || "",
       }),
       error: (e) => {
-        console.error('Upload error:', e);
-        message.error('Image upload failed');
+        console.error("Upload error:", e);
+        message.error("Image upload failed");
       },
       defaultHandlerSuccess: (data) => {
         const { files } = data;
         if (files && files.length) {
           return files[0];
         }
-        return '';
-      }
+        return "";
+      },
     },
     imageDefaultWidth: 300,
-    imagePosition: 'center',
+    imagePosition: "center",
     spellcheck: true,
     toolbarAdaptive: false,
     showCharsCounter: true,
@@ -313,26 +424,28 @@ const ResponsiveForm = () => {
     askBeforePasteHTML: true,
     askBeforePasteFromWord: true,
     allowTabNavigtion: false,
-    placeholder: 'Type your content here...'
+    placeholder: "Type your content here...",
   };
 
   const mcqJoditConfig = {
     ...joditConfig,
     height: 150,
-    buttons: 'bold,italic,underline,strikethrough,ul,ol,font,fontsize,brush,paragraph,align,link,image'
+    buttons:
+      "bold,italic,underline,strikethrough,ul,ol,font,fontsize,brush,paragraph,align,link,image",
   };
 
   const beforeImageUpload = (file) => {
-    const isImage = file.type.startsWith('image/');
+    const isImage = file.type.startsWith("image/");
     if (!isImage) {
-      message.error('You can only upload image files!');
+      message.error("You can only upload image files!");
     }
     const isLt5M = file.size / 1024 / 1024 < 5;
     if (!isLt5M) {
-      message.error('Image must be smaller than 5MB!');
+      message.error("Image must be smaller than 5MB!");
     }
     return isImage && isLt5M;
   };
+  
 
   const handleImageUpload = async (options) => {
     const { file } = options;
@@ -340,7 +453,7 @@ const ResponsiveForm = () => {
       const url = await uploadFeaturedImage(file);
       return url;
     } catch (error) {
-      console.error('Image upload error:', error);
+      console.error("Image upload error:", error);
       return null;
     }
   };
@@ -348,8 +461,16 @@ const ResponsiveForm = () => {
   return (
     <div className="form-container mt-2">
       <h1 className="text-center mb-2">Create Topic</h1>
-      <Card bordered={false} style={{ margin: '20px auto', width: '100%', borderRadius: '10px' }}>
-        <Form layout="vertical" onFinish={onFinish} autoComplete="off" form={form}>
+      <Card
+        bordered={false}
+        style={{ margin: "20px auto", width: "100%", borderRadius: "10px" }}
+      >
+        <Form
+          layout="vertical"
+          onFinish={onFinish}
+          autoComplete="off"
+          form={form}
+        >
           <Form.Item label="Featured Image (Optional)">
             <Dragger
               name="featuredImage"
@@ -368,46 +489,66 @@ const ResponsiveForm = () => {
               </p>
             </Dragger>
             {featuredImage && (
-              <div style={{ marginTop: '16px' }}>
-                <img 
-                  src={featuredImage} 
-                  alt="Featured preview" 
-                  style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '4px' }} 
+              <div style={{ marginTop: "16px" }}>
+                <img
+                  src={featuredImage}
+                  alt="Featured preview"
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "200px",
+                    borderRadius: "4px",
+                  }}
                 />
-                <Button 
-                  type="link" 
-                  danger 
+                <Button
+                  type="link"
+                  danger
                   onClick={() => setFeaturedImage(null)}
-                  style={{ marginTop: '8px' }}
+                  style={{ marginTop: "8px" }}
                 >
                   Remove Image
                 </Button>
               </div>
             )}
-            {imageUploading && <LoadingOutlined style={{ marginLeft: '8px' }} />}
+            {imageUploading && (
+              <LoadingOutlined style={{ marginLeft: "8px" }} />
+            )}
           </Form.Item>
 
-          <Form.Item label="Topic Name" name="topic" rules={[{ required: true, message: 'Please enter topic name!' }]}>
+          <Form.Item
+            label="Topic Name"
+            name="topic"
+            rules={[{ required: true, message: "Please enter topic name!" }]}
+          >
             <Input placeholder="Enter topic name" />
           </Form.Item>
 
-          <Form.Item label="Class" name="class" rules={[{ required: true, message: 'Please select a class!' }]}>
+          <Form.Item
+            label="Class"
+            name="class"
+            rules={[{ required: true, message: "Please select a class!" }]}
+          >
             <Select
               mode="multiple"
               placeholder="Select class(es)"
               dropdownRender={(menu) => (
                 <>
                   {menu}
-                  <div style={{ display: 'flex', padding: 8 }}>
+                  <div style={{ display: "flex", padding: 8 }}>
                     <Input
-                      style={{ flex: 'auto' }}
+                      style={{ flex: "auto" }}
                       placeholder="Add new class"
                       value={newClass}
                       onChange={(e) => setNewClass(e.target.value)}
                       onPressEnter={handleAddClass}
                     />
-                    <Button type="primary" icon={addingClass ? <LoadingOutlined /> : <PlusOutlined />} onClick={handleAddClass}>
-                      {addingClass ? 'Adding...' : 'Add'}
+                    <Button
+                      type="primary"
+                      icon={
+                        addingClass ? <LoadingOutlined /> : <PlusOutlined />
+                      }
+                      onClick={handleAddClass}
+                    >
+                      {addingClass ? "Adding..." : "Add"}
                     </Button>
                   </div>
                 </>
@@ -421,10 +562,60 @@ const ResponsiveForm = () => {
             </Select>
           </Form.Item>
 
-          
-
           <Form.Item label="SubCategory" name="subCategory">
             <Input placeholder="Enter subcategory" />
+          </Form.Item>
+
+
+          <Form.Item label="Attach Notes">
+            <Upload
+              accept=".pdf"
+              showUploadList={false}
+              beforeUpload={(file) => {
+                const isValid = file.type === "application/pdf";
+                const isLt10M = file.size / 1024 / 1024 < 10;
+                
+                if (!isValid) message.error("Only PDF files allowed!");
+                if (!isLt10M) message.error("File must be smaller than 10MB!");
+                
+                return (isValid && isLt10M) || Upload.LIST_IGNORE;
+              }}
+              customRequest={async ({ file, onSuccess, onError }) => {
+                try {
+                  const url = await uploadNoteFile(file);
+                  onSuccess(url);
+                } catch (err) {
+                  onError(err);
+                  message.error("File upload failed");
+                }
+              }}
+            >
+              <Button 
+                icon={<UploadOutlined />} 
+                loading={noteUploading}
+              >
+                {noteUploading ? "Uploading..." : "Upload PDF Notes"}
+              </Button>
+            </Upload>
+            {noteFile && (
+              <div style={{ marginTop: 8 }}>
+                <a 
+                  href={noteFile} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ marginRight: 8 }}
+                >
+                  View Uploaded PDF
+                </a>
+                <Button
+                  type="link"
+                  danger
+                  onClick={() => setNoteFile(null)}
+                >
+                  Remove
+                </Button>
+              </div>
+            )}
           </Form.Item>
 
           <Form.Item label="MCQ Test" name="mcqSwitch" valuePropName="checked">
@@ -444,7 +635,12 @@ const ResponsiveForm = () => {
             <>
               {renderMCQTemplate()}
               <Form.Item>
-                <Button type="dashed" onClick={handleAddMCQ} block icon={<PlusOutlined />}>
+                <Button
+                  type="dashed"
+                  onClick={handleAddMCQ}
+                  block
+                  icon={<PlusOutlined />}
+                >
                   Add More MCQs
                 </Button>
               </Form.Item>
@@ -453,12 +649,16 @@ const ResponsiveForm = () => {
 
           <Form.Item>
             <Button type="primary" htmlType="submit" block loading={uploading}>
-              {uploading ? 'Submitting...' : 'Submit'}
+              {uploading ? "Submitting..." : "Submit"}
             </Button>
           </Form.Item>
 
           <Form.Item>
-            <Button type="default" block onClick={() => navigate('/ManageProducts')}>
+            <Button
+              type="default"
+              block
+              onClick={() => navigate("/ManageProducts")}
+            >
               Manage Topics
             </Button>
           </Form.Item>
@@ -471,7 +671,7 @@ const ResponsiveForm = () => {
               onClick={() => handleSaveDraft(form.getFieldsValue())}
               loading={savingDraft}
             >
-              {savingDraft ? 'Saving Draft...' : 'Save as Draft'}
+              {savingDraft ? "Saving Draft..." : "Save as Draft"}
             </Button>
           </Form.Item>
 

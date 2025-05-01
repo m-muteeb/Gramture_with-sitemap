@@ -10,14 +10,19 @@ import CommentSection from "./CommentSection";
 import ShareArticle from "./ShareArticle";
 import { Helmet } from "react-helmet-async";
 import CertificateGenerator from "./CertificateGenerator";
+import { Document, Page } from "react-pdf";
+import { pdfjs } from 'react-pdf';
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
+
+pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 // Helper function to create slugs
 const createSlug = (str) => {
   return str
     .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/--+/g, '-')
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/--+/g, "-")
     .trim();
 };
 
@@ -36,6 +41,8 @@ export default function Description() {
   const [allTopics, setAllTopics] = useState([]);
   const [currentTopicIndex, setCurrentTopicIndex] = useState(null);
   const [userName, setUserName] = useState("");
+  const [numPages, setNumPages] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
 
   useEffect(() => {
     fetchProducts();
@@ -46,17 +53,18 @@ export default function Description() {
     try {
       const querySnapshot = await getDocs(collection(fireStore, "topics"));
       const productList = querySnapshot.docs
-        .map((doc) => ({ 
-          id: doc.id, 
+        .map((doc) => ({
+          id: doc.id,
           ...doc.data(),
-          slug: createSlug(doc.data().topic)
+          slug: createSlug(doc.data().topic),
         }))
         .filter(
           (product) =>
-            product.subCategory === subCategory && 
+            product.subCategory === subCategory &&
             (product.id === topicSlug || product.slug === topicSlug)
         );
       setProducts(productList);
+      console.log("Product List:", productList[0].notesFile);
       setMcqs(productList[0]?.mcqs || []);
       setLoading(false);
     } catch (error) {
@@ -69,10 +77,10 @@ export default function Description() {
     try {
       const querySnapshot = await getDocs(collection(fireStore, "topics"));
       const topicsList = querySnapshot.docs
-        .map((doc) => ({ 
-          id: doc.id, 
+        .map((doc) => ({
+          id: doc.id,
           ...doc.data(),
-          slug: createSlug(doc.data().topic)
+          slug: createSlug(doc.data().topic),
         }))
         .filter((topic) => topic.subCategory === subCategory)
         .sort((a, b) => a.timestamp - b.timestamp);
@@ -88,6 +96,10 @@ export default function Description() {
       console.error(error);
     }
   };
+    const onDocumentLoadSuccess = ({ numPages }) => {
+      console.log('PDF loaded with', numPages, 'pages');
+    };
+
 
   const navigateToTopic = (direction) => {
     if (currentTopicIndex !== null) {
@@ -113,11 +125,14 @@ export default function Description() {
     const selected = selectedAnswer[currentMcqIndex];
 
     if (selected === undefined) {
-      message.error("Please select an answer before moving to the next question.");
+      message.error(
+        "Please select an answer before moving to the next question."
+      );
       return;
     }
 
-    const feedback = selected === currentMcq.correctAnswer ? "Correct!" : "Incorrect.";
+    const feedback =
+      selected === currentMcq.correctAnswer ? "Correct!" : "Incorrect.";
     setAnswerFeedback({
       ...answerFeedback,
       [currentMcqIndex]: feedback,
@@ -176,7 +191,10 @@ export default function Description() {
           <title>Gramture - {products[0].topic}</title>
           <meta
             name="description"
-            content={extractTextFromHTML(products[0].description).substring(0, 150)}
+            content={extractTextFromHTML(products[0].description).substring(
+              0,
+              150
+            )}
           />
         </Helmet>
       )}
@@ -208,6 +226,24 @@ export default function Description() {
               </div>
             </article>
           ))}
+
+      <Document
+        file={products[0].notesFile}
+        onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+        loading={<Spin size="large" tip="Loading PDF..." />}
+        error={<div className="text-red-500">Failed to load PDF</div>}
+      >
+        {Array.from({ length: numPages }, (_, index) => (
+          <Page
+            key={`page_${index + 1}`}
+            pageNumber={index + 1}
+            renderTextLayer={false}
+            renderAnnotationLayer={false}
+          />
+        ))}
+      </Document>
+
+
 
           {mcqs.length > 0 && (
             <div className="mcq-section">
@@ -245,20 +281,28 @@ export default function Description() {
                       Review Your Answers
                     </button>
                   ) : (
-                    <div className="review-section" style={{ marginTop: "30px", marginBottom: "30px" }}>
-                      <h2 style={{ textAlign: "center" }}>Review Your Answers</h2>
-                      <div style={{ 
-                        backgroundColor: '#f5f5f5',
-                        padding: '20px',
-                        borderRadius: '8px',
-                        marginBottom: '20px'
-                      }}>
-                        <h3 style={{ textAlign: 'center' }}>
+                    <div
+                      className="review-section"
+                      style={{ marginTop: "30px", marginBottom: "30px" }}
+                    >
+                      <h2 style={{ textAlign: "center" }}>
+                        Review Your Answers
+                      </h2>
+                      <div
+                        style={{
+                          backgroundColor: "#f5f5f5",
+                          padding: "20px",
+                          borderRadius: "8px",
+                          marginBottom: "20px",
+                        }}
+                      >
+                        <h3 style={{ textAlign: "center" }}>
                           Score: {calculateResults()} out of {mcqs.length} (
-                          {Math.round((calculateResults() / mcqs.length) * 100)}%)
+                          {Math.round((calculateResults() / mcqs.length) * 100)}
+                          %)
                         </h3>
                       </div>
-                      
+
                       {mcqs.map((mcq, index) => {
                         const userAnswer = selectedAnswer[index];
                         const isCorrect = userAnswer === mcq.correctAnswer;
@@ -272,31 +316,50 @@ export default function Description() {
                               padding: "15px",
                               border: "1px solid #ccc",
                               borderRadius: "8px",
-                              backgroundColor: isCorrect ? "#e6ffed" : "#ffe6e6",
+                              backgroundColor: isCorrect
+                                ? "#e6ffed"
+                                : "#ffe6e6",
                             }}
                           >
-                            <h4>{index + 1}. <span dangerouslySetInnerHTML={{ __html: mcq.question }} /></h4>
+                            <h4>
+                              {index + 1}.{" "}
+                              <span
+                                dangerouslySetInnerHTML={{
+                                  __html: mcq.question,
+                                }}
+                              />
+                            </h4>
                             <p>
                               <strong>Your Answer:</strong>{" "}
-                              <span style={{ color: isCorrect ? "green" : "red" }}>
+                              <span
+                                style={{ color: isCorrect ? "green" : "red" }}
+                              >
                                 {userAnswer || "Not Answered"}
                               </span>
                             </p>
                             {!isCorrect && (
                               <p>
                                 <strong>Correct Answer:</strong>{" "}
-                                <span style={{ color: "green" }}>{mcq.correctAnswer}</span>
+                                <span style={{ color: "green" }}>
+                                  {mcq.correctAnswer}
+                                </span>
                               </p>
                             )}
                             {mcq.logic && (
-                              <div style={{ 
-                                marginTop: '10px',
-                                padding: '10px',
-                                backgroundColor: '#f0f8ff',
-                                borderRadius: '5px'
-                              }}>
+                              <div
+                                style={{
+                                  marginTop: "10px",
+                                  padding: "10px",
+                                  backgroundColor: "#f0f8ff",
+                                  borderRadius: "5px",
+                                }}
+                              >
                                 <strong>Explanation:</strong>
-                                <div dangerouslySetInnerHTML={{ __html: mcq.logic }} />
+                                <div
+                                  dangerouslySetInnerHTML={{
+                                    __html: mcq.logic,
+                                  }}
+                                />
                               </div>
                             )}
                           </div>
@@ -311,7 +374,11 @@ export default function Description() {
                     Question {currentMcqIndex + 1} of {mcqs.length}
                   </h4>
                   <div className="mcq-item">
-                    <div dangerouslySetInnerHTML={{ __html: mcqs[currentMcqIndex]?.question }} />
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: mcqs[currentMcqIndex]?.question,
+                      }}
+                    />
                     <div className="mcq-options">
                       {mcqs[currentMcqIndex]?.options.map((option, index) => (
                         <label key={index} className="mcq-option">
@@ -372,45 +439,49 @@ export default function Description() {
           <ShareArticle />
 
           <div className="topic-navigation">
-            {getPrevTopic() && getPrevTopic().subCategory === subCategory && getPrevTopic().class === products[0].class && (
-              <Link
-                to={`/description/${subCategory}/${getPrevTopic().slug}`}
-                className="prev-button"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: "20px",
-                  fontSize: "18px",
-                  fontWeight: "bold",
-                  textDecoration: "none",
-                  color: "#0073e6",
-                }}
-                onClick={() => window.scrollTo(0, 0)}
-              >
-                <FaChevronLeft className="nav-icon" /> Previous Topic:{" "}
-                {getPrevTopic().topic}
-              </Link>
-            )}
+            {getPrevTopic() &&
+              getPrevTopic().subCategory === subCategory &&
+              getPrevTopic().class === products[0].class && (
+                <Link
+                  to={`/description/${subCategory}/${getPrevTopic().slug}`}
+                  className="prev-button"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "20px",
+                    fontSize: "18px",
+                    fontWeight: "bold",
+                    textDecoration: "none",
+                    color: "#0073e6",
+                  }}
+                  onClick={() => window.scrollTo(0, 0)}
+                >
+                  <FaChevronLeft className="nav-icon" /> Previous Topic:{" "}
+                  {getPrevTopic().topic}
+                </Link>
+              )}
 
-            {getNextTopic() && getNextTopic().subCategory === subCategory && getNextTopic().class === products[0].class && (
-              <Link
-                to={`/description/${subCategory}/${getNextTopic().slug}`}
-                className="next-button"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: "20px",
-                  fontSize: "18px",
-                  fontWeight: "bold",
-                  textDecoration: "none",
-                  color: "#0073e6",
-                }}
-                onClick={() => window.scrollTo(0, 0)}
-              >
-                Next Topic: {getNextTopic().topic}{" "}
-                <FaChevronRight className="nav-icon" />
-              </Link>
-            )}
+            {getNextTopic() &&
+              getNextTopic().subCategory === subCategory &&
+              getNextTopic().class === products[0].class && (
+                <Link
+                  to={`/description/${subCategory}/${getNextTopic().slug}`}
+                  className="next-button"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "20px",
+                    fontSize: "18px",
+                    fontWeight: "bold",
+                    textDecoration: "none",
+                    color: "#0073e6",
+                  }}
+                  onClick={() => window.scrollTo(0, 0)}
+                >
+                  Next Topic: {getNextTopic().topic}{" "}
+                  <FaChevronRight className="nav-icon" />
+                </Link>
+              )}
           </div>
 
           <CommentSection subCategory={subCategory} topicId={products[0]?.id} />
