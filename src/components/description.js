@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { message, Spin } from "antd";
 import { getDocs, collection } from "firebase/firestore";
@@ -10,11 +10,15 @@ import CommentSection from "./CommentSection";
 import ShareArticle from "./ShareArticle";
 import { Helmet } from "react-helmet-async";
 import CertificateGenerator from "./CertificateGenerator";
-import { Document, Page } from "react-pdf";
-import { pdfjs } from 'react-pdf';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
+import PdfViewer from "./pdfViewer/Index";
+// import { Worker, Viewer } from "@react-pdf-viewer/core";
+// import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
+// import "@react-pdf-viewer/core/lib/styles/index.css";
+// import "@react-pdf-viewer/default-layout/lib/styles/index.css";
+// import * as pdfjs from "pdfjs-dist/build/pdf";
 
-pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+// pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+
 
 // Helper function to create slugs
 const createSlug = (str) => {
@@ -41,14 +45,16 @@ export default function Description() {
   const [allTopics, setAllTopics] = useState([]);
   const [currentTopicIndex, setCurrentTopicIndex] = useState(null);
   const [userName, setUserName] = useState("");
-  const [numPages, setNumPages] = useState(null);
-  const [pageNumber, setPageNumber] = useState(1);
-
+  // const [numPages, setNumPages] = useState(null);
+  // const [pageNumber, setPageNumber] = useState(1);
+  
   useEffect(() => {
     fetchProducts();
     fetchAllTopics();
   }, [subCategory, topicSlug]);
-
+  
+  // const defaultLayoutPluginInstance = useMemo(() => defaultLayoutPlugin(), []);
+ 
   const fetchProducts = async () => {
     try {
       const querySnapshot = await getDocs(collection(fireStore, "topics"));
@@ -64,9 +70,14 @@ export default function Description() {
             (product.id === topicSlug || product.slug === topicSlug)
         );
       setProducts(productList);
-      console.log("Product List:", productList[0].notesFile);
-      setMcqs(productList[0]?.mcqs || []);
+      if (productList.length > 0) {
+        console.log("Product List:", productList[0].notesFile);
+        setMcqs(productList[0].mcqs || []);
+      } else {
+        message.warning("No matching topics found.");
+      }
       setLoading(false);
+      
     } catch (error) {
       message.error("Failed to fetch products.");
       console.error(error);
@@ -96,9 +107,9 @@ export default function Description() {
       console.error(error);
     }
   };
-    const onDocumentLoadSuccess = ({ numPages }) => {
-      console.log('PDF loaded with', numPages, 'pages');
-    };
+    // const onDocumentLoadSuccess = ({ numPages }) => {
+    //   console.log('PDF loaded with', numPages, 'pages');
+    // };
 
 
   const navigateToTopic = (direction) => {
@@ -227,21 +238,24 @@ export default function Description() {
             </article>
           ))}
 
-      <Document
-        file={products[0].notesFile}
-        onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-        loading={<Spin size="large" tip="Loading PDF..." />}
-        error={<div className="text-red-500">Failed to load PDF</div>}
-      >
-        {Array.from({ length: numPages }, (_, index) => (
-          <Page
-            key={`page_${index + 1}`}
-            pageNumber={index + 1}
-            renderTextLayer={false}
-            renderAnnotationLayer={false}
+         <PdfViewer fileUrl={products[0].notesFile} />
+
+    
+{/* <Worker workerUrl={pdfjs.GlobalWorkerOptions.workerSrc}>
+        {products.length > 0 && products[0].notesFile ? (
+          <Viewer
+            fileUrl={products[0].notesFile}
+            plugins={[defaultLayoutPluginInstance]}
           />
-        ))}
-      </Document>
+        ) : (
+          <div className="pdf-placeholder">
+            {!loading && "No PDF document available"}
+          </div>
+        )}
+      </Worker> */}
+
+
+
 
 
 
