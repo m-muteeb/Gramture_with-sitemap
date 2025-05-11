@@ -71,7 +71,7 @@ export default function Description() {
         );
       setProducts(productList);
       if (productList.length > 0) {
-        console.log("Product List:", productList[0].notesFile);
+        console.log("Topic File:", productList[0].notesFile);
         setMcqs(productList[0].mcqs || []);
       } else {
         message.warning("No matching topics found.");
@@ -238,13 +238,7 @@ export default function Description() {
             </article>
           ))}
 
-{products.notesFile ? (
-  <PdfViewer fileUrl={products.notesFile} />
-) : (
-  <p style={{ textAlign: "center", marginTop: "1rem", color: "gray" }}>
-    Notes file is not available for this topic.
-  </p>
-)}
+
 
     
 {/* <Worker workerUrl={pdfjs.GlobalWorkerOptions.workerSrc}>
@@ -446,6 +440,13 @@ export default function Description() {
               )}
             </div>
           )}
+               {products.length > 0 && products[0].notesFile ? (
+  <PdfViewer fileUrl={products[0].notesFile} />
+) : (
+  <p style={{ textAlign: "center", marginTop: "1rem", color: "gray" }}>
+    Notes file is not available for this topic.
+  </p>
+)}
 
           <CertificateGenerator
             mcqs={mcqs}
