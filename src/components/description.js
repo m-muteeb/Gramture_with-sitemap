@@ -238,7 +238,13 @@ export default function Description() {
             </article>
           ))}
 
-         <PdfViewer fileUrl={products[0].notesFile} />
+{products.notesFile ? (
+  <PdfViewer fileUrl={products.notesFile} />
+) : (
+  <p style={{ textAlign: "center", marginTop: "1rem", color: "gray" }}>
+    Notes file is not available for this topic.
+  </p>
+)}
 
     
 {/* <Worker workerUrl={pdfjs.GlobalWorkerOptions.workerSrc}>
